@@ -1,11 +1,13 @@
 import React from "react";
-import NasId from "../api/nasid";
-import { Button , Col, Row} from "antd";
-// import intl from "react-intl-universal";
+import { Button , Col} from "antd";
+import getcontract from "../api/contractbackend.js";
+// import NasId from "../api/nasid";
+import contractoption from "../api/contractoption.js"
+const contract = contractoption.nebulas_nub.address;
 
 const backgroundImg = 'https://i.loli.net/2018/07/16/5b4c4a832a920.jpg'
-const contract = 'n1vhZgBFYt7AE6nP3VFap9c67VPqn1eFoTi'
-const contractAddr = 'https://explorer.nebulas.io/#/testnet/address/n1vhZgBFYt7AE6nP3VFap9c67VPqn1eFoTi'
+// const contract = 'n1vhZgBFYt7AE6nP3VFap9c67VPqn1eFoTi'
+// const contractAddr = 'https://explorer.nebulas.io/#/testnet/address/n1vhZgBFYt7AE6nP3VFap9c67VPqn1eFoTi'
 const buttonStyle = {
     margin: "0.5rem"
 }
@@ -27,6 +29,8 @@ class Faq extends React.Component {
 //    constructor() {
 //        super();
 //    }
+
+
 
     render() {
         return (
