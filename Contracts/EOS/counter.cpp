@@ -4,26 +4,33 @@ using namespace eosio;
 
 class counter_contract : public eosio::contract {
   public:
-    counter_contract(account_name self):eosio::contract(self),todos(_slef, _self) {
-        todos.emplace(self, [&](auto& new_todo)) {
+    counter_contract(account_name self):eosio::contract(self),todos(_self, _self) {
+        todos.emplace(self, [&](auto& new_todo) {
             new_todo.id = 0;
-            new_todo.counter = 0;
-        }
+            new_todo.counter = 1;
+        });
     }
     using eosio::contract::contract;
+
+    // @abi action    
     void add(account_name author) {
         auto itr = todos.find(0);
+        eosio_assert(itr != todos.end(), "No found");
+        auto k = itr->counter;
         todos.modify(itr, author, [&](auto& new_todo) {
-            new_todo.counter += 1;
+            new_todo.id = 0;
+            new_todo.counter = k + 1;
         });
-        eosio::print("Now counter is %d", counter);
+        eosio::print("Now counter is ", itr->counter);
     }
+
   private:
   // @abi table todos i64
     struct todo {
         uint64_t id;
         uint64_t counter;
         uint64_t primary_key() const { return id; }
+        uint64_t getCounter() const { return counter; }
         EOSLIB_SERIALIZE(todo, (id)(counter))
     };
 
@@ -31,4 +38,4 @@ class counter_contract : public eosio::contract {
     todo_table todos;
 };
 
-EOSIO_ABI( counter_contract, (add)(sub) )
+EOSIO_ABI( counter_contract, (add) )
