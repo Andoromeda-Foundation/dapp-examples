@@ -5,14 +5,19 @@ using namespace eosio;
 class counter_contract : public eosio::contract {
   public:
     counter_contract(account_name self):eosio::contract(self),todos(_self, _self) {
+
+    }
+    using eosio::contract::contract;
+
+    // @abi action
+    void init(account_name self) {
         todos.emplace(self, [&](auto& new_todo) {
             new_todo.id = 0;
             new_todo.counter = 1;
         });
     }
-    using eosio::contract::contract;
 
-    // @abi action    
+    // @abi action
     void add(account_name author) {
         auto itr = todos.find(0);
         eosio_assert(itr != todos.end(), "No found");
@@ -38,4 +43,4 @@ class counter_contract : public eosio::contract {
     todo_table todos;
 };
 
-EOSIO_ABI( counter_contract, (add) )
+EOSIO_ABI( counter_contract, (init)(add) )
