@@ -1,0 +1,54 @@
+{
+    "homepage": {
+        "welcome": "Welcome to the decentralized future",
+        "buy_button": "Buy",
+        "sell_button": "Sell",
+        "claim_button": "Claim Share",
+        "buy": "Buy",
+        "sell": "Sell",
+        "claim": "Claim Share",
+        "cancel_popup": "Cancel",
+        "buy_title": "Buy",
+        "sell_title": "Sell",
+        "wallet_balance": "My balance",
+        "contract_balance": "Contract Balance",
+        "contract_claim_balance": "Claim Balance",
+        "contract_bonus_balance": "Bonus Balance",
+        "my_claim_balance": "My Claim Balance",
+        "user_addr": "My address",
+        "my_token" : "My Crystal",
+        "totalSupply" : "Total Crystal",          
+        "current_price": "Current price",
+        "tx_rejected_msg": "You have canceled this transcation"
+    },
+    "history": {
+        "player": "player",
+        "event": "event",
+        "amount": "amount",
+        "price": "price",
+        "time": "time"
+    },
+    "navbar": {
+        "faq": "FAQ",
+        "theme": "Theme",
+        "home": "Home",
+        "unit": "Unit"
+    },
+    "theme": {
+        "dark": "Dark",
+        "light": "Light"
+    },
+    "404": {
+        "title": "Oops, something went wrong.",
+        "code": "Code",
+        "The page you requested": "The page you requested",
+        "is not exist": "is not exist.",
+        "report-to-us": "If you were directed to here, please let us know!",
+        "Go Back": "Go Back",
+        "Go Home": "Go to Home Page" 
+    },
+    "Construction": {
+        "in custruction": "Is in custruction",
+        "checkout later": "Please Checkout Later"
+    }
+}

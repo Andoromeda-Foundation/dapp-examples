@@ -1,0 +1,54 @@
+{
+    "homepage": {
+        "welcome": "未来欢迎您！",
+        "buy_button": "购买",
+        "sell_button": "出售",
+        "claim_button": "分红",
+        "buy": "购买",
+        "sell": "出售",
+        "claim": "收取分红",
+        "cancel_popup": "取消",
+        "buy_title": "确认购买",
+        "sell_title": "确认卖出",
+        "wallet_balance": "我的余额",
+        "contract_balance": "合约资金",
+        "contract_claim_balance": "产生总分红",
+        "contract_bonus_balance": "奖金池",
+        "my_claim_balance": "我的分红",
+        "user_addr": "我的钱包",
+        "my_token" : "我的水晶",
+        "totalSupply" : "水晶发行量",        
+        "current_price": "当前价格",
+        "tx_rejected_msg": "您已取消交易"
+    },
+    "history": {
+        "player": "玩家",
+        "event": "事件",
+        "amount": "数量",
+        "price": "价格",
+        "time": "时间"
+    },
+    "navbar": {
+        "faq": "常见问题",
+        "theme": "主题",
+        "home": "首页",
+        "unit": "単位"
+    },
+    "theme": {
+        "dark": "黑色",
+        "light": "白色"
+    },
+    "404": {
+        "title": "哎呀，出了什么错.",
+        "code": "コード",
+        "The page you requested": "您请求的页面",
+        "is not exist": "不存在.",
+        "report-to-us": "如果你被带到这里，请联系我们",
+        "Go Back": "返回",
+        "Go Home": "回到首页" 
+    },
+    "Construction": {
+        "in custruction": "页面构筑",
+        "checkout later": "Please Checkout Later"
+    }
+}

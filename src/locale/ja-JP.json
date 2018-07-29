@@ -1,0 +1,50 @@
+{
+    "homepage": {
+        "welcome": "未来へようこそ！"
+    },
+    "user": {
+        "register": {
+            "title": "新規取得",
+            "email": "メールアドレス",
+            "username": "ID番号",
+            "password": "パスワード",
+            "confirm password": "パスワードを再入力",
+            "register": "新規登録"
+        },
+        "login": {
+            "user login": "会員ログイン",
+            "remember me": "私を覚える",
+            "forgot password": "パスワードを忘れた",
+            "login": "ログイン",
+            "register new account": "新規取得",
+            "or": "or",
+            "username": "ID番号",
+            "password": "パスワード"
+        }
+    },
+    "navbar": {
+        "market": "マーケット",
+        "app store": "DApp ストア",
+        "theme": "着せかえ",
+        "home": "トップ",
+        "my account": "My アカウント",
+        "unit": "単位"
+    },
+    "theme": {
+        "dark": "黒系",
+        "light": "白系"
+    },
+    "404": {
+        "title": "あらー, なにがあった.",
+        "code": "コード",
+        "The page you requested": "このページ",
+        "is not exist": "ございません.",
+        "report-to-us": "もしここにいらしゃるなら、私達に連絡してください",
+        "Go Back": "前に戻り",
+        "Go Home": "トップに戻り" 
+    },
+    "Construction": {
+        "in custruction": "ただ今作成中",
+        "checkout later": "ご会計、少々お待ちしてください"
+    }
+}
