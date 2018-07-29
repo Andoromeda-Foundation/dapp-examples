@@ -1,13 +1,18 @@
 import React from "react";
-import { Button , Col} from "antd";
-import getcontract from "../api/contractbackend.js";
 // import NasId from "../api/nasid";
+import { Button , Col} from "antd";
+import intl from "react-intl-universal";
+import getcontract from "../api/counterbackend.js";
+import NasId from "../api/nasid";
 import contractoption from "../api/contractoption.js"
+import "nasa.js";
 const contract = contractoption.nebulas_nub.address;
+
+
 
 const backgroundImg = 'https://i.loli.net/2018/07/16/5b4c4a832a920.jpg'
 // const contract = 'n1vhZgBFYt7AE6nP3VFap9c67VPqn1eFoTi'
-// const contractAddr = 'https://explorer.nebulas.io/#/testnet/address/n1vhZgBFYt7AE6nP3VFap9c67VPqn1eFoTi'
+const contractAddr = 'https://explorer.nebulas.io/#/testnet/address/n1vhZgBFYt7AE6nP3VFap9c67VPqn1eFoTi'
 const buttonStyle = {
     margin: "0.5rem"
 }
@@ -25,40 +30,63 @@ const number = {
     height: '150px',
     backgroundColor: 'darksalmon'
 }
+
+function BuyEvent(e) {
+    var args = []
+    var option = {}
+    window.Nasa.call(contract, "inc", args, option)
+        .then((payId) => {
+            setTimeout(() => {
+            }, 5000)
+        })
+        .catch((e) => {
+            let msg = e.message
+            if (msg === window.Nasa.error.TX_REJECTED_BY_USER) {
+                msg = intl.get("homepage.tx_rejected_msg");
+            }
+            alert(msg)
+        })
+}
+
 class Faq extends React.Component {
-//    constructor() {
-//        super();
-//    }
+    constructor() {
+        super();    
+        this.state = {
+            counter: null
+        };
+    }
 
+    async fetchDataFromNebulas() {
+        const counter = (await window.Nasa.query(contract, "get", [])).toString()
+        return { counter }
+    }
 
+    async componentDidMount() {
+        const {
+            counter
+        } = await this.fetchDataFromNebulas()
+        this.setState({
+            counter
+        })
+    }    
 
     render() {
+        const {
+            counter
+        } = this.state        
         return (
             <div className="index-page" style={{ marginTop: "-64px" }}>
                 <div className="banner" style={bannerStyle}>
                     <div>
-                    游戏背景
-                        游戏背景：你好，我是侠盗一号，我们已经盗取了死星的设计图， 我们的飞船被帝国军微商了，请资助我们购买凯伯水晶返回地球。 我们回来以后，就把死星设计图交给你，保你当共和国的王。
-                        支援获得了价值连城的帝国宝物的反抗军安全返回地球！反抗军首领将会把宝藏分给最后支援的人。
-                    </div>
-                    <div>
-                        游戏规则：每购买超过 1 单位水晶，反抗军就可以再多周旋 12 小时，宝藏的价值也会增加。 gas 燃料价格等于: basePrice + k x supply。
-                    </div>
-                    <div>
-                        basePrice = 0.000001 nas 
-                    </div>
-                    <div>
-                        k = 0.000001 nas per cryskal                        
-                    </div>
-                    <div>
                         <a href={contractAddr}>合约地址：{contract}</a>
+
                         <Col span="5" style={colStyle}>
-                        <Button type="primary" size="large" style={buttonStyle}>
+                        <Button type="primary" size="large" style={buttonStyle} onClick={BuyEvent}>
                         点击加数字
-                    </Button>
-                    <div className="custom-image" style={number}>
-                    <p>0</p>
-                                </div>
+                        </Button>
+                        <div className="custom-card">
+                            {counter?(counter.substr(0,counter.length>15?15:counter.length)):0}
+                        </div>
                     </Col>
                     </div>                    
                 </div>
