@@ -509,7 +509,7 @@ class Home extends React.Component {
             <div className="index-page" style={{ marginTop: "-64px" }}>
                 <div className="banner" style={bannerStyle}>
                     <Row>
-                        <Col span="5" style={colStyle}>
+                {/*        <Col span="5" style={colStyle}>
                             <Card bordered={false}>
                                 <div className="custom-image" style={{ marginBottom: '5px' }}>
                                     {intl.get("homepage.player_balance")}
@@ -518,8 +518,8 @@ class Home extends React.Component {
                                     {player_balance?(player_balance.substr(0,player_balance.length>15?15:player_balance.length)):0} Gas
                                     </div>
                             </Card>
-                        </Col>
-                        <Col span="5" style={colStyle}>
+                        </Col>*/}
+                        <Col span="6" style={colStyle}>
                             <Card bordered={false}>
                                 <div className="custom-image" style={{ marginBottom: '5px' }}>
                                     {intl.get("homepage.contract_claim_balance")}
@@ -529,7 +529,7 @@ class Home extends React.Component {
                                     </div>
                             </Card>
                         </Col>
-                        <Col span="5" style={colStyle}>
+                        <Col span="6" style={colStyle}>
                             <Card bordered={false}>
                                 <div className="custom-image" style={{ marginBottom: '5px' }}>
                                     {intl.get("homepage.contract_bonus_balance")}
@@ -539,17 +539,20 @@ class Home extends React.Component {
                                     </div>
                             </Card>
                         </Col>
-                        <Col span="5" style={colStyle}>
+                        <Col span="6" style={colStyle}>
                             <Card bordered={false}>
                                 <div className="custom-image" style={{ marginBottom: '5px' }}>
                                     {intl.get("homepage.my_claim_balance")}
                                 </div>
-                                <div className="custom-card">
+                               {/* <div className="custom-card">
                                     {player_available_share}({player_total_share}) NAS
-                                    </div>
+                                    </div>*/}
+                                <div className="custom-card">
+                                    {player_available_share?(player_available_share.substr(0,player_available_share.length>15?15:player_available_share.length)):0}NAS
+                                </div>
                             </Card>
                         </Col>
-                        <Col span="4" style={colStyle}>
+                        <Col span="6" style={colStyle}>
                             <Card bordered={false}>
                                 <div className="custom-image" style={{ marginBottom: '5px' }}>
                                     {intl.get("homepage.current_price")}
