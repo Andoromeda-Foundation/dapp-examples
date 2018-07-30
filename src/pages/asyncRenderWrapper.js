@@ -11,4 +11,9 @@ export const Faq = Loadable({
 export const Home = Loadable({
   loader: () => import('../containers/Home'),
   loading: () => LoadingMessage('Home')
+})
+
+export const Eth = Loadable({
+  loader: () => import ('./Eth'),
+  loading: () => LoadingMessage('Eth')
 });

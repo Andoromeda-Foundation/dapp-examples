@@ -13,7 +13,7 @@ import locales from "./locale";
 // Pages
 import VisiableHeader from "./containers/VisiableHeader";
 import PageNotFound from "./pages/PageNotFound";
-import { Home, Faq } from "./pages/asyncRenderWrapper";
+import { Home, Faq,Eth } from "./pages/asyncRenderWrapper";
 import config from './config'
 import './App.css';
 
@@ -52,6 +52,8 @@ class App extends Component {
               <Switch>
                 <Route exact path="/" component={Home} />
                 <Route path="/faq" component={Faq} />
+                <Route path="/Eth" component={Eth} />
+
 
                 <Route component={PageNotFound} />
               </Switch>

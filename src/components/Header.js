@@ -116,6 +116,11 @@ class HeaderComponent extends Component {
                 path: '/faq',
                 icon: 'area-chart',
                 name: navbarI18n('faq')
+            },
+            {
+                path: '/Eth',
+                icon: 'area-chart',
+                name: navbarI18n("eth")
             }
         ]
         const { headerBackgroundColor, otherColor } = smartNavbarColor({ location, theme })
