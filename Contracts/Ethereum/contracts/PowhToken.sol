@@ -243,7 +243,25 @@ contract Hourglass {
         
 
     }
-    
+
+
+    /**
+    * @dev Make profit from an external project
+    */
+    function makeProfit() external payable {
+        makeProfit(msg.value);
+    }    
+
+    /**
+    * @dev Make profit inside this contact
+    */
+    function makeProfit(uint256 _profit) internal {
+        // take the amount of dividends gained through this transaction, and allocates them evenly to each shareholder
+        profitPerShare_ = SafeMath.add(profitPerShare_, (_profit * magnitude) / tokenSupply_);            
+    }
+
+    /**
+    */
      
     /**
      * Converts all incoming ethereum to tokens for the caller, and passes down the referral addy (if any)
@@ -350,7 +368,7 @@ contract Hourglass {
 
        _customerAddress.transfer(_taxedEthereum);
 
-        profitPerShare_ = SafeMath.add(profitPerShare_, (_dividends * magnitude) / tokenSupply_);    
+        makeProfit(_dividends);
         withdraw();
 
         // update dividends tracker
@@ -405,7 +423,7 @@ contract Hourglass {
         payoutsTo_[_toAddress] += (int256) (profitPerShare_ * _taxedTokens);
         
         // disperse dividends among holders
-        profitPerShare_ = SafeMath.add(profitPerShare_, (_dividends * magnitude) / tokenSupply_);
+        makeProfit(_dividends);
         
         // fire event
         Transfer(_customerAddress, _toAddress, _taxedTokens);
@@ -652,13 +670,11 @@ contract Hourglass {
             _dividends = SafeMath.add(_dividends, _referralBonus);
             _fee = _dividends * magnitude;
         }
-        
             
         // add tokens to the pool
         tokenSupply_ = SafeMath.add(tokenSupply_, _amountOfTokens);
-
-        // take the amount of dividends gained through this transaction, and allocates them evenly to each shareholder
-        profitPerShare_ += (_dividends * magnitude / (tokenSupply_));
+        
+        makeProfit(_dividends);
         
         // calculate the amount of tokens the customer receives over his purchase 
         _fee = _amountOfTokens * (_dividends * magnitude / (tokenSupply_));
