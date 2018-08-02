@@ -48,12 +48,6 @@ contract Hourglass {
         uint256 ethereumEarned
     );
     
-    event onReinvestment(
-        address indexed customerAddress,
-        uint256 ethereumReinvested,
-        uint256 tokensMinted
-    );
-    
     event onWithdraw(
         address indexed customerAddress,
         uint256 ethereumWithdrawn
@@ -70,8 +64,8 @@ contract Hourglass {
     /*=====================================
     =            CONFIGURABLES            =
     =====================================*/
-    string public name = "PowH3D";
-    string public symbol = "P3D";
+    string public name = "DGame Maker";
+    string public symbol = "DGM";
     uint8 constant public decimals = 18;
     uint8 constant internal dividendFee_ = 10;
     uint256 constant internal tokenPriceInitial_ = 0.0000001 ether;
@@ -98,8 +92,6 @@ contract Hourglass {
     // when this is set to true, only ambassadors can purchase tokens (this prevents a whale premine, it ensures a fairly distributed upper pyramid)
     bool public onlyAmbassadors = true;
     
-
-
     /*=======================================
     =            PUBLIC FUNCTIONS            =
     =======================================*/
@@ -130,9 +122,6 @@ contract Hourglass {
     }
 
     /**
-    */
-     
-    /**
      * Converts all incoming ethereum to tokens for the caller, and passes down the referral addy (if any)
      */
     function buy(address _referredBy)
@@ -153,32 +142,7 @@ contract Hourglass {
     {
         purchaseTokens(msg.value, 0x0);
     }
-    
-    /**
-     * Converts all of caller's dividends to tokens.
-     */
-    function reinvest()
-        onlyStronghands()
-        public
-    {
-        // fetch dividends
-        uint256 _dividends = myDividends(false); // retrieve ref. bonus later in the code
         
-        // pay out the dividends virtually
-        address _customerAddress = msg.sender;
-        payoutsTo_[_customerAddress] +=  (int256) (_dividends * magnitude);
-        
-        // retrieve ref. bonus
-        _dividends += referralBalance_[_customerAddress];
-        referralBalance_[_customerAddress] = 0;
-        
-        // dispatch a buy order with the virtualized "withdrawn dividends"
-        uint256 _tokens = purchaseTokens(_dividends, 0x0);
-        
-        // fire event
-        onReinvestment(_customerAddress, _dividends, _tokens);
-    }
-    
     /**
      * Alias of sell() and withdraw().
      */
