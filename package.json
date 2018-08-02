@@ -24,8 +24,7 @@
     "react-scripts": "1.1.4",
     "reactjs-popup": "^1.1.1",
     "redux": "^4.0.0",
-    "superagent": "^3.8.3",
-    "web3": "^1.0.0-beta.35"
+    "superagent": "^3.8.3"
   },
   "scripts": {
     "start": "react-app-rewired start",
