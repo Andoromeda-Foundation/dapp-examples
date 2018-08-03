@@ -11,7 +11,7 @@ import BrandLight from "../Brand-Light1.svg";
 import BrandDark from "../Brand-Dark1.svg";
 import contractoption from "../api/contractoption.js"
 
-const contract = contractoption.lost_in_nebulas.address;
+// const contract = contractoption.lost_in_nebulas.address;
 
 const { Header } = Layout;
 const { SubMenu } = Menu

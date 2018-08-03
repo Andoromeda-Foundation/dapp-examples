@@ -1,4 +1,4 @@
-# Lost In Nebulas
+# Dapp Rosetta
 
 [![Join our Telegram](https://icon-icons.com/icons2/555/PNG/32/telegram_icon-icons.com_53603.png)](https://t.me/CryptoHero_Official)
 [![Join our Discord](https://www.shareicon.net/data/32x32/2016/12/30/866945_game_512x512.png)](https://discord.gg/nMXUYGQ)
@@ -16,9 +16,6 @@ Welcome to Dapp Rosetta, a dapp version of [Rosetta Code
 
 Dapp Rosetta Code is a programming chrestomathy site expecially focus on Dapp Development. The idea is to present solutions to the same task in as many different contract languages as possible, to demonstrate how languages and blockchain infrastructure are similar and different, and to aid a person with a grounding in one approach to a problem in learning another. 
 
-欢迎来到 Dapp Rosetta Code，Dapp 版本的 [Rosetta Code
-](http://rosettacode.org/wiki/Rosetta_Code)。
-
 ## Get Start
 
 ```bash
@@ -29,6 +26,7 @@ yarn start # Developer Mode
 ## Get Start
 - Counter
 - Ponzi Coin
+- Hot Potato
 
 ## Reference
 - ['Yarn'](https://yarnpkg.com/zh-Hans/)
