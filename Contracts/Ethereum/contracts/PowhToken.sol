@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.24;
 
 contract Hourglass {
     /*=================================
@@ -81,7 +81,7 @@ contract Hourglass {
     // amount of shares for each address (scaled number)
     mapping(address => uint256) internal tokenBalanceLedger_;
     mapping(address => uint256) internal referralBalance_;
-    mapping(address => uint256) internal payoutsTo_;
+    mapping(address => int256) internal payoutsTo_;
     mapping(address => uint256) internal ambassadorAccumulatedQuota_;
     uint256 internal tokenSupply_ = 0;
     uint256 internal profitPerShare_;
@@ -198,20 +198,20 @@ contract Hourglass {
         uint256 _ethereum = tokensToEthereum_(_tokens);
         uint256 _dividends = SafeMath.div(_ethereum, dividendFee_);
         uint256 _taxedEthereum = SafeMath.sub(_ethereum, _dividends);
-
-       _customerAddress.transfer(_taxedEthereum);
-
-        makeProfit(_dividends);
-        withdraw();
-
-        // update dividends tracker
-        uint256 _updatedPayouts =  profitPerShare_ * _tokens;
-        payoutsTo_[_customerAddress] -= _updatedPayouts; 
-
-
+        
         // burn the sold tokens
         tokenSupply_ = SafeMath.sub(tokenSupply_, _tokens);
         tokenBalanceLedger_[_customerAddress] = SafeMath.sub(tokenBalanceLedger_[_customerAddress], _tokens);
+        
+        // update dividends tracker
+        int256 _updatedPayouts = (int256) (profitPerShare_ * _tokens + (_taxedEthereum * magnitude));
+        payoutsTo_[_customerAddress] -= _updatedPayouts;       
+        
+        // dividing by zero is a bad idea
+        if (tokenSupply_ > 0) {
+            // update the amount of dividends per token
+            profitPerShare_ = SafeMath.add(profitPerShare_, (_dividends * magnitude) / tokenSupply_);
+        }
         
         // fire event
         onTokenSell(_customerAddress, _tokens, _taxedEthereum);
@@ -460,10 +460,12 @@ contract Hourglass {
     }
     
     
+
     /*==========================================
     =            INTERNAL FUNCTIONS            =
     ==========================================*/
     function purchaseTokens(uint256 _incomingEthereum, address _referredBy)
+        antiEarlyWhale(_incomingEthereum)
         internal
         returns(uint256)
     {
@@ -502,21 +504,30 @@ contract Hourglass {
             _dividends = SafeMath.add(_dividends, _referralBonus);
             _fee = _dividends * magnitude;
         }
+        
+        // we can't give people infinite ethereum
+        if(tokenSupply_ > 0){
             
-        // add tokens to the pool
-        tokenSupply_ = SafeMath.add(tokenSupply_, _amountOfTokens);
+            // add tokens to the pool
+            tokenSupply_ = SafeMath.add(tokenSupply_, _amountOfTokens);
+ 
+            // take the amount of dividends gained through this transaction, and allocates them evenly to each shareholder
+            profitPerShare_ += (_dividends * magnitude / (tokenSupply_));
+            
+            // calculate the amount of tokens the customer receives over his purchase 
+            _fee = _amountOfTokens * (_dividends * magnitude / (tokenSupply_));
         
-        makeProfit(_dividends);
-        
-        // calculate the amount of tokens the customer receives over his purchase 
-        _fee = _amountOfTokens * (_dividends * magnitude / (tokenSupply_));
+        } else {
+            // add tokens to the pool
+            tokenSupply_ = _amountOfTokens;
+        }
         
         // update circulating supply & the ledger address for the customer
         tokenBalanceLedger_[_customerAddress] = SafeMath.add(tokenBalanceLedger_[_customerAddress], _amountOfTokens);
         
         // Tells the contract that the buyer doesn't deserve dividends for the tokens before they owned them;
         //really i know you think you do but you don't
-        uint256 _updatedPayouts =  (profitPerShare_ * _amountOfTokens) - _fee;
+        int256 _updatedPayouts = (int256) ((profitPerShare_ * _amountOfTokens) - _fee);
         payoutsTo_[_customerAddress] += _updatedPayouts;
         
         // fire event
