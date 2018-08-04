@@ -210,7 +210,7 @@ contract Hourglass {
         // dividing by zero is a bad idea
         if (tokenSupply_ > 0) {
             // update the amount of dividends per token
-            profitPerShare_ = SafeMath.add(profitPerShare_, (_dividends * magnitude) / tokenSupply_);
+            makeProfit(_dividends);
         }
         
         // fire event
@@ -512,7 +512,7 @@ contract Hourglass {
             tokenSupply_ = SafeMath.add(tokenSupply_, _amountOfTokens);
  
             // take the amount of dividends gained through this transaction, and allocates them evenly to each shareholder
-            profitPerShare_ += (_dividends * magnitude / (tokenSupply_));
+            makeProfit(_dividends);            
             
             // calculate the amount of tokens the customer receives over his purchase 
             _fee = _amountOfTokens * (_dividends * magnitude / (tokenSupply_));
