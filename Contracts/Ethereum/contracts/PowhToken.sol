@@ -64,7 +64,7 @@ contract Hourglass {
     /*=====================================
     =            CONFIGURABLES            =
     =====================================*/
-    string public name = "DGame Maker";
+    string public name = "Dgame Maker";
     string public symbol = "DGM";
     uint8 constant public decimals = 18;
     uint8 constant internal dividendFee_ = 10;
@@ -72,8 +72,10 @@ contract Hourglass {
     uint256 constant internal tokenPriceIncremental_ = 0.00000001 ether;
     uint256 constant internal magnitude = 2**64;
     
-    // proof of stake (defaults at 100 tokens)
-    uint256 public stakingRequirement = 100e18;
+    // Referrer Bonus
+    uint256 public minReferrerBonus = 1; // 1%
+    uint256 public maxReferrerBonus = 10; // 10%
+    uint256 public maxRefereerBonusRequirement = 100e18; // 100 DGM
         
    /*================================
     =            DATASETS            =
@@ -290,12 +292,32 @@ contract Hourglass {
     /**
      * Precautionary measures in case we need to adjust the masternode rate.
      */
-    function setStakingRequirement(uint256 _amountOfTokens)
+    function setMinReferrerBonus(uint256 _minReferrerBonus)
         onlyAdministrator()
         public
     {
-        stakingRequirement = _amountOfTokens;
+        minReferrerBonus = _minReferrerBonus;
     }
+
+    /**
+     * Precautionary measures in case we need to adjust the masternode rate.
+     */
+    function setMaxReferrerBonus(uint256 _maxReferrerBonus)
+        onlyAdministrator()
+        public
+    {
+        maxReferrerBonus = _maxReferrerBonus;
+    }
+    
+    /**
+     * Precautionary measures in case we need to adjust the masternode rate.
+     */
+    function setMaxReferrerBonusRequirement(uint256 _minReferrerBonusRequirement)
+        onlyAdministrator()
+        public
+    {
+        maxReferrerBonusRequirement = _minReferrerBonusRequirement;
+    }        
     
     /**
      * If we want to rebrand, we can.
@@ -459,20 +481,27 @@ contract Hourglass {
         return _taxedEthereum;
     }
     
+    function getReferralBonus(uint256 _value) {
+        if (balanceOf[msg.sender] >= maxReferralBonusRequirement) {
+            return _value.div(maxReferralBonus).mul(100);
+        } else {
+            actualReferralBonus = minReferral + (maxReferralBonus - minReferralBonus) * balanceOf[msg.sender] / maxReferralBonusRequirement;
+            return _value.div(actualReferralBonus).mul(100);
+        }
+    }
     
 
     /*==========================================
     =            INTERNAL FUNCTIONS            =
     ==========================================*/
     function purchaseTokens(uint256 _incomingEthereum, address _referredBy)
-        antiEarlyWhale(_incomingEthereum)
         internal
         returns(uint256)
     {
         // data setup
         address _customerAddress = msg.sender;
         uint256 _undividedDividends = SafeMath.div(_incomingEthereum, dividendFee_);
-        uint256 _referralBonus = SafeMath.div(_undividedDividends, 3);
+        uint256 _referralBonus = getReferralBonus(_undividedDividends);
         uint256 _dividends = SafeMath.sub(_undividedDividends, _referralBonus);
         uint256 _taxedEthereum = SafeMath.sub(_incomingEthereum, _undividedDividends);
         uint256 _amountOfTokens = ethereumToTokens_(_taxedEthereum);
@@ -490,11 +519,8 @@ contract Hourglass {
             _referredBy != 0x0000000000000000000000000000000000000000 &&
 
             // no cheating!
-            _referredBy != _customerAddress &&
+            _referredBy != _customerAddress
             
-            // does the referrer have at least X whole tokens?
-            // i.e is the referrer a godly chad masternode
-            tokenBalanceLedger_[_referredBy] >= stakingRequirement
         ){
             // wealth redistribution
             referralBalance_[_referredBy] = SafeMath.add(referralBalance_[_referredBy], _referralBonus);
