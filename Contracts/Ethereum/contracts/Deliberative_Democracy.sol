@@ -2,7 +2,14 @@ pragma solidity ^0.4.24;
 
 contract Deliberative_Democracy {
 
-    address domain;
+    struct Proposal {
+        address advocate; // 发起人
+        uint256 act;
+        uint256 startTime;
+        uint256 endTime;
+    }
+
+    address public IssuerContractAddress;
 
     mapping(address => uint256) public unused_balance; // 未使用的投票
     mapping(address => uint256) public used_balance; // 使用的投票  
@@ -11,7 +18,7 @@ contract Deliberative_Democracy {
     mapping(address => uint256) public lastVoteTime; // 上次投票时间
 
     mapping(uint256 => address) public senate; // 议会 
-    mapping(uint256 => record) public 
+    mapping(uint256 => Proposal) public proposals; // 提案
  
     function vote(address _candidate) public {
 
@@ -38,8 +45,20 @@ contract Deliberative_Democracy {
     }
 
     function withdraw() public {
-
+        Issuer issuer = Issuer(IssuerContractAddress);
+        issuer.transfer(msg.sender, unused_balance[msg.sender]);
     }
+
+    function recharge(uint256 _value) {
+        Issuer issuer = Issuer(IssuerContractAddress);
+        issuer.transferFrom(msg.sender, address(this), _value);
+        unused_balance[msg.sender] += _value;
+    }
+}
+
+interface Issuer {
+    function transferFrom(address _from, address _to, uint256 _value) external;  
+    function transfer(address _to, uint256 _value) external;
 }
 
 /**
