@@ -1,5 +1,20 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.17;
 
+/**
+ * ________                                    _____          __                 
+ * \______ \    _________    _____   ____     /     \ _____  |  | __ ___________ 
+ * |    |  \  / ___\__  \  /     \_/ __ \   /  \ /  \\__  \ |  |/ // __ \_  __ \
+ * |    `   \/ /_/  > __ \|  Y Y  \  ___/  /    Y    \/ __ \|    <\  ___/|  | \/
+ * /_______  /\___  (____  /__|_|  /\___  > \____|__  (____  /__|_ \\___  >__|   
+ *         \//_____/     \/      \/     \/          \/     \/     \/    \/       
+ * Powered by Andoromeda 
+ */
+
+/**
+ * @title Dgame Maker Token
+ * @dev Dgame Maker Token which can be trade in the contract.
+ * we support buy() and sell() function in a simpilified 50% CW bancor algorithm.
+ */
 contract Hourglass {
     /*=================================
     =            MODIFIERS            =
@@ -75,7 +90,7 @@ contract Hourglass {
     // Referrer Bonus
     uint256 public minReferrerBonus = 1; // 1%
     uint256 public maxReferrerBonus = 10; // 10%
-    uint256 public maxRefereerBonusRequirement = 100e18; // 100 DGM
+    uint256 public maxReferrerBonusRequirement = 100e18; // 100 DGM
         
    /*================================
     =            DATASETS            =
@@ -312,11 +327,11 @@ contract Hourglass {
     /**
      * Precautionary measures in case we need to adjust the masternode rate.
      */
-    function setMaxReferrerBonusRequirement(uint256 _minReferrerBonusRequirement)
+    function setMaxReferrerBonusRequirement(uint256 _maxReferrerBonusRequirement)
         onlyAdministrator()
         public
     {
-        maxReferrerBonusRequirement = _minReferrerBonusRequirement;
+        maxReferrerBonusRequirement = _maxReferrerBonusRequirement;
     }        
     
     /**
@@ -481,12 +496,12 @@ contract Hourglass {
         return _taxedEthereum;
     }
     
-    function getReferralBonus(uint256 _value) {
-        if (balanceOf[msg.sender] >= maxReferralBonusRequirement) {
-            return _value.div(maxReferralBonus).mul(100);
+    function getReferralBonus(uint256 _value) public returns (uint256 referralBonus){
+        if (balanceOf(msg.sender) >= maxReferrerBonusRequirement) {
+            return SafeMath.div(SafeMath.mul(_value, 100), maxReferrerBonus);
         } else {
-            actualReferralBonus = minReferral + (maxReferralBonus - minReferralBonus) * balanceOf[msg.sender] / maxReferralBonusRequirement;
-            return _value.div(actualReferralBonus).mul(100);
+            uint256 actualReferrerBonus = minReferrerBonus + (maxReferrerBonus - minReferrerBonus) * balanceOf(msg.sender) / maxReferrerBonusRequirement;
+            return SafeMath.div(SafeMath.mul(_value, 100), actualReferrerBonus);
         }
     }
     
