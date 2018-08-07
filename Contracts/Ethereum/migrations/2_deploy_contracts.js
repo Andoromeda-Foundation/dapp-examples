@@ -1,7 +1,5 @@
-var Example = artifacts.require("./Example.sol");
+var Counter = artifacts.require("./Counter.sol");
 
-/*
 module.exports = function(deployer) {
-    deployer.deploy(Example);
+    deployer.deploy(Counter);
 };
-*/
