@@ -24,19 +24,19 @@ contract TradeableToken is StandardToken {
     ==========================================*/   
     event onBuy(
         address indexed customerAddress,
-        uint256 incomingEthereum,
+        uint256 incomingether,
         uint256 tokensMinted
     );
     
     event onSell(
         address indexed customerAddress,
         uint256 tokensBurned,
-        uint256 ethereumEarned
+        uint256 etherEarned
     );
     
     event onWithdraw(
         address indexed customerAddress,
-        uint256 ethereumWithdrawn
+        uint256 etherWithdrawn
     );
 
     /*==========================================
@@ -57,7 +57,7 @@ contract TradeableToken is StandardToken {
     
     function _buy(uint256 _incomingEther) internal returns(uint256) {
         address _customerAddress = msg.sender;
-        uint256 _amountOfTokens = ethereumToTokens_(_incomingEther);
+        uint256 _amountOfTokens = etherToTokens_(_incomingEther);
         _mint(_customerAddress, _amountOfTokens);
         emit onBuy(_customerAddress, _incomingEther, _amountOfTokens);        
         return _amountOfTokens;        
@@ -66,7 +66,7 @@ contract TradeableToken is StandardToken {
     function _sell(uint256 _incomingToken) internal returns(uint256) {
         address _customerAddress = msg.sender;
         require(_incomingToken <= balances[_customerAddress]);
-        uint256 _amountOfEther = tokensToEthereum_(_incomingToken);
+        uint256 _amountOfEther = tokensToether_(_incomingToken);
         _burn(_customerAddress, _incomingToken);
         _customerAddress.transfer(_amountOfEther);
         emit onSell(msg.sender, _incomingToken, _amountOfEther);
@@ -115,11 +115,12 @@ contract TradeableToken is StandardToken {
     }
 
     /**
-     * Calculate Token price based on an amount of incoming ethereum
-     * It's an algorithm, hopefully we gave you the whitepaper with it in scientific notation;
-     * Some conversions occurred to prevent decimal errors or underflows / overflows in solidity code.
-     */
-    function ethereumToTokens_(uint256 _ethereum)
+    * @dev calculate how many token will be minted when sending amount of ether.
+    * We use a simplified bancor algorithm which CW = 50% to deal with this.
+    * https://storage.googleapis.com/website-bancor/2018/04/01ba8253-bancor_protocol_whitepaper_en.pdf
+    * @return uint256 representing the amount of token will be minted.
+    */
+    function etherToTokens_(uint256 _ether)
         public
         view
         returns(uint256)
@@ -134,7 +135,7 @@ contract TradeableToken is StandardToken {
                         (
                             (_tokenPriceInitial**2)
                             +
-                            (2*(tokenPriceIncremental_ * 1e18)*(_ethereum * 1e18))
+                            (2*(tokenPriceIncremental_ * 1e18)*(_ether * 1e18))
                             +
                             (((tokenPriceIncremental_)**2)*(totalSupply_**2))
                             +
@@ -145,16 +146,14 @@ contract TradeableToken is StandardToken {
             )/(tokenPriceIncremental_)
         )-(totalSupply_)
         ;
-        require(_tokensReceived == ethereumToTokens2_(_ethereum));
+        require(_tokensReceived == etherToTokens2_(_ether));
         return _tokensReceived;
     }
 
     /**
-     * Calculate Token price based on an amount of incoming ethereum
-     * It's an algorithm, hopefully we gave you the whitepaper with it in scientific notation;
-     * Some conversions occurred to prevent decimal errors or underflows / overflows in solidity code.
+     * @dev This should be a better implementation.
      */
-    function ethereumToTokens2_(uint256 _ethereum)
+    function etherToTokens2_(uint256 _ether)
         public
         view
         returns(uint256)
@@ -169,7 +168,7 @@ contract TradeableToken is StandardToken {
                         (
                             (_tokenPriceInitial**2)
                             +
-                            (2*(tokenPriceIncremental_ * 1e18)*(_ethereum * 1e18))
+                            (2*(tokenPriceIncremental_ * 1e18)*(_ether * 1e18))
                         )
                     ), _tokenPriceInitial
                 )
@@ -179,13 +178,12 @@ contract TradeableToken is StandardToken {
   
         return _tokensReceived;
     }    
-    
+
     /**
-     * Calculate token sell value.
-     * It's an algorithm, hopefully we gave you the whitepaper with it in scientific notation;
-     * Some conversions occurred to prevent decimal errors or underflows / overflows in solidity code.
-     */
-     function tokensToEthereum_(uint256 _tokens)
+    * @dev be aware, this two function didn't have consistency.
+    */    
+    
+    function tokensToether_(uint256 _tokens)
         internal
         view
         returns(uint256)

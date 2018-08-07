@@ -82,7 +82,8 @@ contract PowhToken {
     string public name = "Dgame Maker";
     string public symbol = "DGM";
     uint8 constant public decimals = 18;
-    uint8 constant internal dividendFee_ = 10;
+    uint8 constant internal dividendFee_ = 20;
+    uint8 constant internal communityFee_ = 50;
     uint256 constant internal tokenPriceInitial_ = 0.0000001 ether;
     uint256 constant internal tokenPriceIncremental_ = 0.00000001 ether;
     uint256 constant internal magnitude = 2**64;
@@ -102,6 +103,8 @@ contract PowhToken {
     mapping(address => uint256) internal ambassadorAccumulatedQuota_;
     uint256 internal tokenSupply_ = 0;
     uint256 internal profitPerShare_;
+    uint256 internal communityFeeTo_ = 0; // admins can withdraw amount;
+
     
     // administrator list (see above on what they can do)
     mapping(bytes32 => bool) public administrators;
@@ -199,6 +202,18 @@ contract PowhToken {
         // fire event
         emit onWithdraw(_customerAddress, _dividends);
     }
+
+    /**
+     * @dev withdraw communityFee_
+     */
+    function withdrawCommunity(uint256 _amount)
+        public
+        onlyAdministrator
+    {
+        require(_amount <= communityFeeTo_);
+
+        msg.sender.transfer(_amount);
+    }
     
     /**
      * Liquifies tokens to ethereum.
@@ -213,16 +228,18 @@ contract PowhToken {
         require(_amountOfTokens <= tokenBalanceLedger_[_customerAddress]);
         uint256 _tokens = _amountOfTokens;
         uint256 _ethereum = tokensToEthereum_(_tokens);
-        uint256 _dividends = SafeMath.div(_ethereum, dividendFee_);
+        uint256 _dividends = SafeMath.div(_ethereum, communityFee_);
         uint256 _taxedEthereum = SafeMath.sub(_ethereum, _dividends);
         
         // burn the sold tokens
         tokenSupply_ = SafeMath.sub(tokenSupply_, _tokens);
         tokenBalanceLedger_[_customerAddress] = SafeMath.sub(tokenBalanceLedger_[_customerAddress], _tokens);
         
+        communityFeeTo_ = SafeMath.add(communityFeeTo_, _dividends);
+        
         // update dividends tracker
         int256 _updatedPayouts = (int256) (profitPerShare_ * _tokens + (_taxedEthereum * magnitude));
-        payoutsTo_[_customerAddress] -= _updatedPayouts;       
+        payoutsTo_[_customerAddress] -= _updatedPayouts;   
         
         // dividing by zero is a bad idea
         if (tokenSupply_ > 0) {
@@ -233,6 +250,7 @@ contract PowhToken {
         // fire event
         emit onTokenSell(_customerAddress, _tokens, _taxedEthereum);
     }
+    
     
     
     /**
@@ -608,7 +626,7 @@ contract PowhToken {
             )/(tokenPriceIncremental_)
         )-(tokenSupply_)
         ;
-        require(_tokensReceived == ethereumToTokens2_(_ethereum));
+        // require(_tokensReceived == ethereumToTokens2_(_ethereum));
         return _tokensReceived;
     }
 
@@ -619,7 +637,7 @@ contract PowhToken {
      */
     function ethereumToTokens2_(uint256 _ethereum)
         public
-        view
+        pure
         returns(uint256)
     {
         uint256 _tokenPriceInitial = tokenPriceInitial_ * 1e18;
