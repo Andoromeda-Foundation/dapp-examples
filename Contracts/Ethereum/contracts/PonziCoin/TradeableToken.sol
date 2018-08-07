@@ -42,18 +42,35 @@ contract TradeableToken is StandardToken {
     /*==========================================
     =            INTERNAL FUNCTIONS            =
     ==========================================*/
+
+    function _mint(address _customerAddress, uint256 _amount) internal {
+        require(_amount > 0 && (SafeMath.add(_amount, totalSupply_) > totalSupply_));        
+        totalSupply_ = SafeMath.add(totalSupply_, _amount);
+        balances[_customerAddress] = SafeMath.add(balances[_customerAddress], _amount);        
+    }
+
+    function _burn(address _customerAddress, uint256 _amount) internal {
+        require(_amount > 0 && (SafeMath.sub(_amount, totalSupply_) < totalSupply_));            
+        totalSupply_ = SafeMath.sub(totalSupply_, _amount);
+        balances[_customerAddress] = SafeMath.sub(balances[_customerAddress], _amount);        
+    }    
     
     function _buy(uint256 _incomingEther) internal returns(uint256) {
         address _customerAddress = msg.sender;
         uint256 _amountOfTokens = ethereumToTokens_(_incomingEther);
-
-        // ? Is this necessary?
-        require(_amountOfTokens > 0 && (SafeMath.add(_amountOfTokens, totalSupply_) > totalSupply_));
-        totalSupply_ = SafeMath.add(totalSupply_, _amountOfTokens);
-        balances[_customerAddress] = SafeMath.add(balances[_customerAddress], _amountOfTokens);
-       
+        _mint(_customerAddress, _amountOfTokens);
         emit onBuy(_customerAddress, _incomingEther, _amountOfTokens);        
         return _amountOfTokens;        
+    }
+
+    function _sell(uint256 _incomingToken) internal returns(uint256) {
+        address _customerAddress = msg.sender;
+        require(_incomingToken <= balances[_customerAddress]);
+        uint256 _amountOfEther = tokensToEthereum_(_incomingToken);
+        _burn(_customerAddress, _incomingToken);
+        _customerAddress.transfer(_amountOfEther);
+        emit onSell(msg.sender, _incomingToken, _amountOfEther);
+        return _amountOfEther;
     }
 
     /*==========================================
@@ -86,8 +103,7 @@ contract TradeableToken is StandardToken {
     * @dev Sell some token
     */
     function sell(uint256 _amount) public {
-        // require(balanceOf[msg.sender] >= _amount);
-		// emit Sell(msg.sender, msg.value, amount);
+        _sell(_amount);
     }	
 
     /**
