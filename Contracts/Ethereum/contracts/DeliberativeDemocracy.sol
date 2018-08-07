@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 
-contract Deliberative_Democracy {
+contract DeliberativeDemocracy {
 
     struct Proposal {
         address advocate; // 发起人
@@ -10,7 +10,7 @@ contract Deliberative_Democracy {
         uint256 endTime;
     }
 
-    address public IssuerContractAddress;
+    address public clientContractAddress;
 
     mapping(address => uint256) public unused_balance; // 未使用的投票
     mapping(address => uint256) public used_balance; // 使用的投票  
@@ -20,15 +20,29 @@ contract Deliberative_Democracy {
 
     mapping(uint256 => address) public senate; // 议会 
     mapping(uint256 => Proposal) public proposals; // 提案
+
+    constructor(address client) public {
+        clientContractAddress = client;
+    }
+
+    function setClientAddress(address _client) public {
+        if (clientContractAddress == 0x00) clientContractAddress = _client;
+    }
  
+    function revote() public {
+        ticket[candidate[msg.sender]] -= used_balance[msg.sender];
+        unused_balance[msg.sender] += used_balance[msg.sender];
+    }
+
     function vote(address _candidate) public {
-
+        revote();
+        candidate[msg.sender] = _candidate;
+        ticket[_candidate] += unused_balance[msg.sender];
+        used_balance[msg.sender] = unused_balance[msg.sender];
+        unused_balance[msg.sender] = 0;
     }
 
-    function cancel() public {
-
-    }
-
+    /*
     function challenge(address _voter) public {
 
     }
@@ -44,20 +58,29 @@ contract Deliberative_Democracy {
     function examine() public {
 
     }
+    */
 
-    function withdraw() public {
-        Issuer issuer = Issuer(IssuerContractAddress);
-        issuer.transfer(msg.sender, unused_balance[msg.sender]);
+    function execute(string method, uint256 para) public returns(bool){
+        bytes4 methodId = bytes4(keccak256(method));
+        return clientContractAddress.call(methodId, para);
+        //if (!clientContractAddress.call(method, para)) {
+        //    revert();
+        //}
     }
 
-    function recharge(uint256 _value) {
-        Issuer issuer = Issuer(IssuerContractAddress);
-        issuer.transferFrom(msg.sender, address(this), _value);
-        unused_balance[msg.sender] += _value;
+    function withdraw() public {
+       // Issuer issuer = Issuer(IssuerContractAddress);
+       // issuer.transfer(msg.sender, unused_balance[msg.sender]);
+    }
+
+    function recharge(uint256 _value) public {
+       // Issuer issuer = Issuer(IssuerContractAddress);
+       // issuer.transferFrom(msg.sender, address(this), _value);
+       // unused_balance[msg.sender] += _value;        
     }
 }
 
-interface Issuer {
+interface Client {
     function transferFrom(address _from, address _to, uint256 _value) external;  
     function transfer(address _to, uint256 _value) external;
 }

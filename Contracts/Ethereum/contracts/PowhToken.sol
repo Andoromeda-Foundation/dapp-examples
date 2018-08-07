@@ -42,7 +42,7 @@ contract PowhToken {
     // -> change the price of tokens
     modifier onlyAdministrator(){
         address _customerAddress = msg.sender;
-        require(administrators[keccak256(abi.encodePacked(_customerAddress))]);
+        require(administrators[_customerAddress]);
         _;
     }
         
@@ -74,8 +74,8 @@ contract PowhToken {
         address indexed to,
         uint256 tokens
     );
-    
-    
+
+
     /*=====================================
     =            CONFIGURABLES            =
     =====================================*/
@@ -107,7 +107,7 @@ contract PowhToken {
 
     
     // administrator list (see above on what they can do)
-    mapping(bytes32 => bool) public administrators;
+    mapping(address => bool) public administrators;
     
     // when this is set to true, only ambassadors can purchase tokens (this prevents a whale premine, it ensures a fairly distributed upper pyramid)
     bool public onlyAmbassadors = true;
@@ -122,7 +122,7 @@ contract PowhToken {
         public
     {
         // add administrators here
-        administrators[keccak256(abi.encodePacked(msg.sender))] = true;        
+        administrators[msg.sender] = true;        
     }
 
 
@@ -315,11 +315,11 @@ contract PowhToken {
     /**
      * In case one of us dies, we need to replace ourselves.
      */
-    function setAdministrator(bytes32 _identifier, bool _status)
+    function setAdministrator(address _address, bool _status)
         onlyAdministrator()
         public
     {
-        administrators[_identifier] = _status;
+        administrators[_address] = _status;
     }
     
     /**
