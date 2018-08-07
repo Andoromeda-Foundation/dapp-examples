@@ -5,7 +5,7 @@ import "truffle/DeployedAddresses.sol";
 import "../contracts/Counter.sol";
 
 contract TestCounter {
-    function testCounter() public {
+    function test() public {
         Counter counter = new Counter();
         Assert.equal(counter.get(), expected, "Counter should equal to 0 at the beginning");
         uint expected = 2;

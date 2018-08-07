@@ -15,7 +15,7 @@ pragma solidity ^0.4.24;
  * @dev Dgame Maker Token which can be trade in the contract.
  * we support buy() and sell() function in a simpilified 50% CW bancor algorithm.
  */
-contract Hourglass {
+contract PowhToken {
     /*=================================
     =            MODIFIERS            =
     =================================*/
@@ -583,7 +583,7 @@ contract Hourglass {
      * Some conversions occurred to prevent decimal errors or underflows / overflows in solidity code.
      */
     function ethereumToTokens_(uint256 _ethereum)
-        internal
+        public
         view
         returns(uint256)
     {
@@ -608,7 +608,7 @@ contract Hourglass {
             )/(tokenPriceIncremental_)
         )-(tokenSupply_)
         ;
-        require(_tokensReceived == ethereumToTokens2_(_ethereum));
+        // require(_tokensReceived == ethereumToTokens2_(_ethereum));
         return _tokensReceived;
     }
 
@@ -618,7 +618,7 @@ contract Hourglass {
      * Some conversions occurred to prevent decimal errors or underflows / overflows in solidity code.
      */
     function ethereumToTokens2_(uint256 _ethereum)
-        internal
+        public
         view
         returns(uint256)
     {
@@ -649,7 +649,7 @@ contract Hourglass {
      * Some conversions occurred to prevent decimal errors or underflows / overflows in solidity code.
      */
      function tokensToEthereum_(uint256 _tokens)
-        internal
+        public
         view
         returns(uint256)
     {
