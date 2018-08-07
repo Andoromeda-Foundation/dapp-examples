@@ -8,7 +8,7 @@
 
 # production
 /build
-/Contract/Ethereum/build
+/Contracts/Ethereum/build/contracts
 
 # misc
 .DS_Store
