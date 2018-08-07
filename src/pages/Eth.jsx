@@ -2,7 +2,7 @@ import React from "react";
 // import NasId from "../api/nasid";
 import Web3 from 'web3'; 
 import { Button , Col} from "antd";
-import MyCounterAbi from "../api/MyWeb3Abi";
+import MyCounterAbi from "../api/MycounterAbi";
 // import intl from "react-intl-universal";
 // import getcontract from "../api/counterbackend.js";
 // import NasId from "../api/nasid";
@@ -35,9 +35,12 @@ const number = {
 }
 //  let web3;
  
- function startApp() {
-    var counterAddress = "0x36b308910158f7f7aB78A29D2E3704F12139f680";
-   var counter = new Web3.eth.Contract(MyCounterAbi, counterAddress);
+function startApp(web3) {
+    var ContractAddress = "0x36b308910158f7f7aB78A29D2E3704F12139f680";
+   var counter = new web3.eth.Contract(MyCounterAbi, ContractAddress);
+  }
+  function counter() {
+    return counter.methods.myMethod(123).send()
   }
 
 
@@ -47,7 +50,9 @@ function BuyEvent(e) {
     } else {
         alert("aaa");
     }
-    startApp();
+    startApp(web3);
+    counter();
+}
     // var v = parseFloat(prompt("请输入买入值"));
     // if (v) {
 //        inc();
@@ -68,7 +73,7 @@ function BuyEvent(e) {
             alert(msg)
         })
         */
-}
+
 
 class Eth extends React.Component {
     // constructor() {
