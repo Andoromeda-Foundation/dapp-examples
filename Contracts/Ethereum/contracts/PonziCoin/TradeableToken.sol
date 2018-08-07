@@ -18,7 +18,10 @@ contract TradeableToken is StandardToken {
     uint256 constant internal tokenPriceInitial_ = 0.0000001 ether;
     uint256 constant internal tokenPriceIncremental_ = 0.00000001 ether;
     uint256 constant internal magnitude = 2**64;
-    
+
+    /*==========================================
+    =                 EVENT                    =
+    ==========================================*/   
     event onBuy(
         address indexed customerAddress,
         uint256 incomingEthereum,
@@ -36,6 +39,17 @@ contract TradeableToken is StandardToken {
         address indexed customerAddress,
         uint256 ethereumWithdrawn
     );
+
+    /*==========================================
+    =            INTERNAL FUNCTIONS            =
+    ==========================================*/
+    
+    function _buy(uint256 _incomingEther) internal {
+    }
+
+    /*==========================================
+    =            PUBLIC FUNCTIONS              =
+    ==========================================*/        
     
     /**
     * @dev get how many token can be get when buying.
@@ -56,8 +70,7 @@ contract TradeableToken is StandardToken {
     * @dev Buy some token
     */
     function buy() public payable {
-        // amount = getAmount(value);        
-        // emit Buy(msg.sender, msg.value, amount);
+        _buy(msg.value);
     }
 
     /**

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.17;
+pragma solidity ^0.4.24;
 
 /**
  * ________                                    _____          __                 
@@ -42,7 +42,7 @@ contract Hourglass {
     // -> change the price of tokens
     modifier onlyAdministrator(){
         address _customerAddress = msg.sender;
-        require(administrators[keccak256(_customerAddress)]);
+        require(administrators[keccak256(abi.encodePacked(_customerAddress))]);
         _;
     }
         
@@ -115,11 +115,11 @@ contract Hourglass {
     /*
     * -- APPLICATION ENTRY POINTS --  
     */
-    function Hourglass()
+    constructor()
         public
     {
         // add administrators here
-        administrators[0xdd8bb99b13fe33e1c32254dfb8fff3e71193f6b730a89dd33bfe5dedc6d83002] = true;        
+        administrators[keccak256(abi.encodePacked(msg.sender))] = true;        
     }
 
 
@@ -197,7 +197,7 @@ contract Hourglass {
         _customerAddress.transfer(_dividends);
         
         // fire event
-        onWithdraw(_customerAddress, _dividends);
+        emit onWithdraw(_customerAddress, _dividends);
     }
     
     /**
@@ -231,7 +231,7 @@ contract Hourglass {
         }
         
         // fire event
-        onTokenSell(_customerAddress, _tokens, _taxedEthereum);
+        emit onTokenSell(_customerAddress, _tokens, _taxedEthereum);
     }
     
     
@@ -276,7 +276,7 @@ contract Hourglass {
         makeProfit(_dividends);
         
         // fire event
-        Transfer(_customerAddress, _toAddress, _taxedTokens);
+        emit Transfer(_customerAddress, _toAddress, _taxedTokens);
         
         // ERC20
         return true;
@@ -365,7 +365,7 @@ contract Hourglass {
         view
         returns(uint)
     {
-        return this.balance;
+        return address(this).balance;
     }
     
     /**
@@ -496,7 +496,7 @@ contract Hourglass {
         return _taxedEthereum;
     }
     
-    function getReferralBonus(uint256 _value) public returns (uint256 referralBonus){
+    function getReferralBonus(uint256 _value) public view returns (uint256 referralBonus){
         if (balanceOf(msg.sender) >= maxReferrerBonusRequirement) {
             return SafeMath.div(SafeMath.mul(_value, 100), maxReferrerBonus);
         } else {
@@ -572,7 +572,7 @@ contract Hourglass {
         payoutsTo_[_customerAddress] += _updatedPayouts;
         
         // fire event
-        onTokenPurchase(_customerAddress, _incomingEthereum, _amountOfTokens, _referredBy);
+        emit onTokenPurchase(_customerAddress, _incomingEthereum, _amountOfTokens, _referredBy);
         
         return _amountOfTokens;
     }
