@@ -608,7 +608,7 @@ contract PowhToken {
             )/(tokenPriceIncremental_)
         )-(tokenSupply_)
         ;
-        // require(_tokensReceived == ethereumToTokens2_(_ethereum));
+        require(_tokensReceived == ethereumToTokens2_(_ethereum));
         return _tokensReceived;
     }
 
