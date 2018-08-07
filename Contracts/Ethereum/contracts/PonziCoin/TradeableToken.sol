@@ -25,8 +25,7 @@ contract TradeableToken is StandardToken {
     event onBuy(
         address indexed customerAddress,
         uint256 incomingEthereum,
-        uint256 tokensMinted,
-        address indexed referredBy
+        uint256 tokensMinted
     );
     
     event onSell(
@@ -44,7 +43,17 @@ contract TradeableToken is StandardToken {
     =            INTERNAL FUNCTIONS            =
     ==========================================*/
     
-    function _buy(uint256 _incomingEther) internal {
+    function _buy(uint256 _incomingEther) internal returns(uint256) {
+        address _customerAddress = msg.sender;
+        uint256 _amountOfTokens = ethereumToTokens_(_incomingEther);
+
+        // ? Is this necessary?
+        require(_amountOfTokens > 0 && (SafeMath.add(_amountOfTokens, totalSupply_) > totalSupply_));
+        totalSupply_ = SafeMath.add(totalSupply_, _amountOfTokens);
+        balances[_customerAddress] = SafeMath.add(balances[_customerAddress], _amountOfTokens);
+       
+        emit onBuy(_customerAddress, _incomingEther, _amountOfTokens);        
+        return _amountOfTokens;        
     }
 
     /*==========================================
