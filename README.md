@@ -25,8 +25,22 @@ yarn start # Developer Mode
 
 ## Get Start
 - Counter
-- Ponzi Coin
 - Hot Potato
+- Ponzi Coin
+
+## Truffle Test
+
+## FAQ
+### How to write unittest for my smart contract?
+https://truffleframework.com/docs/getting_started/javascript-tests#using-async-await
+
+### How to verify my smart contract code deployed with Truffle which contain an import contract or a library?
+https://stackoverflow.com/questions/50137954/verify-smart-contract-code-deployed-with-truffle
+
+### How to deploy my smart contract to mainnet or testnet with Truffle Directly?
+truffle-flattener contracts/PowhToken.sol &> build/target.sol
+https://truffleframework.com/docs/advanced/configuration
+
 
 ## Reference
 - ['Yarn'](https://yarnpkg.com/zh-Hans/)

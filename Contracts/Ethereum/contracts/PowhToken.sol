@@ -2,7 +2,6 @@ pragma solidity ^0.4.24;
 
 
 import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
-// import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 /**
  * ________                                    _____          __                 
  * \______ \    _________    _____   ____     /     \ _____  |  | __ ___________ 
@@ -18,7 +17,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
  * @dev Dgame Maker Token which can be trade in the contract.
  * we support buy() and sell() function in a simpilified 50% CW bancor algorithm.
  */
-contract PowhToken {
+contract PowhToken is StandardToken {
     /*=================================
     =            MODIFIERS            =
     =================================*/
@@ -72,7 +71,7 @@ contract PowhToken {
         uint256 ethereumEarned
     );
     
-    event onWithdraw(
+    event OnWithdraw(
         address indexed customerAddress,
         uint256 ethereumWithdrawn
     );
@@ -234,7 +233,7 @@ contract PowhToken {
         _customerAddress.transfer(_dividends);
         
         // fire event
-        emit onWithdraw(_customerAddress, _dividends);
+        emit OnWithdraw(_customerAddress, _dividends);
     }
 
     /**
