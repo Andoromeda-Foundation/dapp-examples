@@ -28,8 +28,6 @@ yarn start # Developer Mode
 - Hot Potato
 - Ponzi Coin
 
-## Truffle Test
-
 ## FAQ
 ### How to write unittest for my smart contract?
 https://truffleframework.com/docs/getting_started/javascript-tests#using-async-await
