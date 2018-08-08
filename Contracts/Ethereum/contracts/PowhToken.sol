@@ -1,5 +1,8 @@
 pragma solidity ^0.4.24;
 
+
+import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
+// import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 /**
  * ________                                    _____          __                 
  * \______ \    _________    _____   ____     /     \ _____  |  | __ ___________ 
@@ -40,7 +43,7 @@ contract PowhToken {
     // -> disable withdrawals
     // -> kill the contract
     // -> change the price of tokens
-    modifier onlyAdministrator(){
+    modifier onlyAdministrator() {
         address _customerAddress = msg.sender;
         require(administrators[keccak256(abi.encodePacked(_customerAddress))]);
         _;
@@ -50,20 +53,20 @@ contract PowhToken {
     /*==============================
     =            EVENTS            =
     ==============================*/
-    event onTokenPurchase(
+    event OnTokenPurchase(
         address indexed customerAddress,
         uint256 incomingEthereum,
         uint256 tokensMinted,
         address indexed referredBy
     );
     
-    event onReinvestment(
+    event OnReinvestment(
         address indexed customerAddress,
         uint256 ethereumReinvested,
         uint256 tokensMinted
     );
     
-    event onTokenSell(
+    event OnTokenSell(
         address indexed customerAddress,
         uint256 tokensBurned,
         uint256 ethereumEarned
@@ -191,7 +194,7 @@ contract PowhToken {
         uint256 _tokens = purchaseTokens(_dividends, 0x0);
         
         // fire event
-        emit onReinvestment(_customerAddress, _dividends, _tokens);
+        emit OnReinvestment(_customerAddress, _dividends, _tokens);
     }
 
     /**
@@ -282,7 +285,7 @@ contract PowhToken {
         */
         
         // fire event
-        emit onTokenSell(_customerAddress, _tokens, _taxedEthereum);
+        emit OnTokenSell(_customerAddress, _tokens, _taxedEthereum);
     }
     
     
@@ -624,7 +627,7 @@ contract PowhToken {
         payoutsTo_[_customerAddress] += _updatedPayouts;
         
         // fire event
-        emit onTokenPurchase(_customerAddress, _incomingEthereum, _amountOfTokens, _referredBy);
+        emit OnTokenPurchase(_customerAddress, _incomingEthereum, _amountOfTokens, _referredBy);
         
         return _amountOfTokens;
     }
@@ -734,51 +737,5 @@ contract PowhToken {
             y = z;
             z = (x / z + z) / 2;
         }
-    }
-}
-
-/**
- * @title SafeMath
- * @dev Math operations with safety checks that throw on error
- */
-library SafeMath {
-
-    /**
-    * @dev Multiplies two numbers, throws on overflow.
-    */
-    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        if (a == 0) {
-            return 0;
-        }
-        uint256 c = a * b;
-        assert(c / a == b);
-        return c;
-    }
-
-    /**
-    * @dev Integer division of two numbers, truncating the quotient.
-    */
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        // assert(b > 0); // Solidity automatically throws when dividing by 0
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-        return c;
-    }
-
-    /**
-    * @dev Substracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
-    */
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        assert(b <= a);
-        return a - b;
-    }
-
-    /**
-    * @dev Adds two numbers, throws on overflow.
-    */
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        assert(c >= a);
-        return c;
     }
 }
