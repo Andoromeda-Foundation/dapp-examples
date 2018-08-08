@@ -42,7 +42,7 @@ contract PowhToken {
     // -> change the price of tokens
     modifier onlyAdministrator(){
         address _customerAddress = msg.sender;
-        require(administrators[_customerAddress]);
+        require(administrators[keccak256(abi.encodePacked(_customerAddress))]);
         _;
     }
         
@@ -55,6 +55,12 @@ contract PowhToken {
         uint256 incomingEthereum,
         uint256 tokensMinted,
         address indexed referredBy
+    );
+    
+    event onReinvestment(
+        address indexed customerAddress,
+        uint256 ethereumReinvested,
+        uint256 tokensMinted
     );
     
     event onTokenSell(
@@ -74,8 +80,8 @@ contract PowhToken {
         address indexed to,
         uint256 tokens
     );
-
-
+    
+    
     /*=====================================
     =            CONFIGURABLES            =
     =====================================*/
@@ -107,7 +113,7 @@ contract PowhToken {
 
     
     // administrator list (see above on what they can do)
-    mapping(address => bool) public administrators;
+    mapping(bytes32 => bool) public administrators;
     
     // when this is set to true, only ambassadors can purchase tokens (this prevents a whale premine, it ensures a fairly distributed upper pyramid)
     bool public onlyAmbassadors = true;
@@ -122,7 +128,7 @@ contract PowhToken {
         public
     {
         // add administrators here
-        administrators[msg.sender] = true;        
+        administrators[keccak256(abi.encodePacked(msg.sender))] = true;        
     }
 
 
@@ -162,7 +168,32 @@ contract PowhToken {
     {
         purchaseTokens(msg.value, 0x0);
     }
+    
+    /**
+     * Converts all of caller's dividends to tokens.
+     */
+    function reinvest()
+        onlyStronghands()
+        public
+    {
+        // fetch dividends
+        uint256 _dividends = myDividends(false); // retrieve ref. bonus later in the code
         
+        // pay out the dividends virtually
+        address _customerAddress = msg.sender;
+        payoutsTo_[_customerAddress] +=  (int256) (_dividends * magnitude);
+        
+        // retrieve ref. bonus
+        _dividends += referralBalance_[_customerAddress];
+        referralBalance_[_customerAddress] = 0;
+        
+        // dispatch a buy order with the virtualized "withdrawn dividends"
+        uint256 _tokens = purchaseTokens(_dividends, 0x0);
+        
+        // fire event
+        emit onReinvestment(_customerAddress, _dividends, _tokens);
+    }
+
     /**
      * Alias of sell() and withdraw().
      */
@@ -242,10 +273,13 @@ contract PowhToken {
         payoutsTo_[_customerAddress] -= _updatedPayouts;   
         
         // dividing by zero is a bad idea
+        // 卖出抽水并没有加入分红池，上线前删除这句注释。。。
+        /*
         if (tokenSupply_ > 0) {
             // update the amount of dividends per token
             makeProfit(_dividends);
         }
+        */
         
         // fire event
         emit onTokenSell(_customerAddress, _tokens, _taxedEthereum);
@@ -315,11 +349,11 @@ contract PowhToken {
     /**
      * In case one of us dies, we need to replace ourselves.
      */
-    function setAdministrator(address _address, bool _status)
+    function setAdministrator(bytes32 _identifier, bool _status)
         onlyAdministrator()
         public
     {
-        administrators[_address] = _status;
+        administrators[_identifier] = _status;
     }
     
     /**

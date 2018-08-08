@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
+
 /**
  * @title Tradeable Token
  * @dev Standard Token which can be trade within the contract.
@@ -22,19 +23,19 @@ contract TradeableToken is StandardToken {
     /*==========================================
     =                 EVENT                    =
     ==========================================*/   
-    event onBuy(
+    event OnBuy(
         address indexed customerAddress,
         uint256 incomingether,
         uint256 tokensMinted
     );
     
-    event onSell(
+    event OnSell(
         address indexed customerAddress,
         uint256 tokensBurned,
         uint256 etherEarned
     );
     
-    event onWithdraw(
+    event OnWithdraw(
         address indexed customerAddress,
         uint256 etherWithdrawn
     );
@@ -59,7 +60,7 @@ contract TradeableToken is StandardToken {
         address _customerAddress = msg.sender;
         uint256 _amountOfTokens = etherToTokens_(_incomingEther);
         _mint(_customerAddress, _amountOfTokens);
-        emit onBuy(_customerAddress, _incomingEther, _amountOfTokens);        
+        emit OnBuy(_customerAddress, _incomingEther, _amountOfTokens);        
         return _amountOfTokens;        
     }
 
@@ -69,7 +70,7 @@ contract TradeableToken is StandardToken {
         uint256 _amountOfEther = tokensToether_(_incomingToken);
         _burn(_customerAddress, _incomingToken);
         _customerAddress.transfer(_amountOfEther);
-        emit onSell(msg.sender, _incomingToken, _amountOfEther);
+        emit OnSell(msg.sender, _incomingToken, _amountOfEther);
         return _amountOfEther;
     }
 
