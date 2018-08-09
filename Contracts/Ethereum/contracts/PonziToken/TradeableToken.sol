@@ -1,9 +1,6 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-
-
 /**
  * @title Tradeable Token
  * @dev Standard Token which can be trade within the contract.
@@ -11,14 +8,9 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
  */
 contract TradeableToken is StandardToken {
 
-    // Token price
-    string public name = "Dgame Maker";
-    string public symbol = "DGM";
-    uint8 constant public decimals = 18;
-    uint8 constant internal dividendFee_ = 10;
-    uint256 constant internal tokenPriceInitial_ = 0.0000001 ether;
-    uint256 constant internal tokenPriceIncremental_ = 0.00000001 ether;
-    uint256 constant internal magnitude = 2**64;
+    uint256 public tokenPriceInitial_ = 0.0000001 ether;
+    uint256 public tokenPriceIncremental_ = 0.00000001 ether;
+    uint256 constant public OFFSET = 2**64;
 
     /*==========================================
     =                 EVENT                    =
@@ -43,7 +35,6 @@ contract TradeableToken is StandardToken {
     /*==========================================
     =            INTERNAL FUNCTIONS            =
     ==========================================*/
-
     function _mint(address _customerAddress, uint256 _amount) internal {
         require(_amount > 0 && (SafeMath.add(_amount, totalSupply_) > totalSupply_));        
         totalSupply_ = SafeMath.add(totalSupply_, _amount);
@@ -182,8 +173,7 @@ contract TradeableToken is StandardToken {
 
     /**
     * @dev be aware, this two function didn't have consistency.
-    */    
-    
+    */        
     function tokensToether_(uint256 _tokens)
         internal
         view
