@@ -1,20 +1,10 @@
 import React from "react";
-// import NasId from "../api/nasid";
+
 import Web3 from 'web3'; 
 import { Button , Col} from "antd";
 import MyCounterAbi from "../api/MycounterAbi";
-// import intl from "react-intl-universal";
-// import getcontract from "../api/counterbackend.js";
-// import NasId from "../api/nasid";
-// import contractoption from "../api/contractoption.js"
-// import "nasa.js";
-// import { get, inc } from "../api/contract/eth/counter.js";
-
-// const contract = contractoption.nebulas_nub.address;
-
 
 const backgroundImg = 'https://i.loli.net/2018/07/16/5b4c4a832a920.jpg'
-// const contract = 'n1vhZgBFYt7AE6nP3VFap9c67VPqn1eFoTi'
 const contractAddr = 'https://explorer.nebulas.io/#/testnet/address/n1vhZgBFYt7AE6nP3VFap9c67VPqn1eFoTi'
 const buttonStyle = {
     margin: "0.5rem"
@@ -33,74 +23,66 @@ const number = {
     height: '150px',
     backgroundColor: 'darksalmon'
 }
-//  let web3;
- 
+
+
+// window.addEventListener('load', 
+//   function () {
+//     if (typeof web3 !== 'undefined') {        
+//         window.web3 = new Web3(window.web3.currentProvider)
+//         if (window.web3.currentProvider.isMetaMask === true) {
+//             window.web3.eth.getAccounts((error, accounts) => {
+//                 if (accounts.length == 0) {
+//                     alert("there is no active accounts in MetaMask")
+//         
+//                 }
+//                 else {
+//                     alert("It's ok")
+//                     // It's ok
+//                 }
+//             });
+//         } else {
+//             alert("Another web3 provider")
+//           
+//         }
+//     } else {
+//         
+//     }    
+// });
 function startApp(web3) {
     var ContractAddress = "0x36b308910158f7f7aB78A29D2E3704F12139f680";
-   var counter = new web3.eth.Contract(MyCounterAbi, ContractAddress);
+    var counter = new web3.eth.Contract(MyCounterAbi, ContractAddress);
+    return counter;
   }
-  function counter() {
-    return counter.methods.myMethod(123).send()
-  }
-
-
-function BuyEvent(e) {
-    if (typeof Web3 !== 'undefined') {
-        var web3 = new Web3(Web3.currentProvider);
-    } else {
-        alert("aaa");
-    }
-    startApp(web3);
-    counter();
+  
+async function getMyAccounts(web3 ,c) {
+    const accounts = await web3.eth.getAccounts();
+    console.log(accounts[0]);
+    var meAddress = accounts[0]
+    console.log(meAddress);
+    await c.methods.inc().send({
+        from:meAddress
+    })
 }
-    // var v = parseFloat(prompt("请输入买入值"));
-    // if (v) {
-//        inc();
-    // }    
-    /*
-    var args = []
-    var option = {}
-    window.Nasa.call(contract, "inc", args, option)
-        .then((payId) => {
-            setTimeout(() => {
-            }, 5000)
-        })
-        .catch((e) => {
-            let msg = e.message
-            if (msg === window.Nasa.error.TX_REJECTED_BY_USER) {
-                msg = intl.get("homepage.tx_rejected_msg");
-            }
-            alert(msg)
-        })
-        */
+  function BuyEvent() {
+    if (typeof Web3 !== 'undefined') {        
+      var web3 =  window.web3 = new Web3(window.web3.currentProvider)
+        console.log(web3);
+    } else {
+        alert("It's no")
+    }    
+    const c = startApp(web3);
+    console.log(c);
+   getMyAccounts(web3,c)
+    // counter(c);
+    
+}
+    
 
 
 class Eth extends React.Component {
-    // constructor() {
-    //     super();    
-    //     this.state = {
-    //         counter: null
-    //     };
-    // }
+  
 
-    // async fetchDataFromNebulas() {
-    //     const counter = (await window.Nasa.query(contract, "get", [])).toString()
-    //     return { counter }
-    // }
-
-    // async componentDidMount() {
-    //     const {
-    //         counter
-    //     } = await this.fetchDataFromNebulas()
-    //     this.setState({
-    //         counter
-    //     })
-    // }    
-
-    render() {
-        // const {
-        //     counter
-        // } = this.state        
+    render() {      
         return (
             <div className="index-page" style={{ marginTop: "-64px" }}>
                 <div className="banner" style={bannerStyle}>
