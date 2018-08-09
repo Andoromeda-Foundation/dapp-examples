@@ -8,7 +8,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
  */
 contract TradeableToken is StandardToken {
 
-    uint256 public tokenPriceInitial_ = 0.0000001 ether; // per wei
+    uint256 public tokenPriceInitial_ =     0.0000001 ether; // per wei
     uint256 public tokenPriceIncremental_ = 0.00000001 ether; // per wei
     uint256 public depositPool_ = 0 ether;    
     uint256 constant public OFFSET = 2**64; 
@@ -68,6 +68,39 @@ contract TradeableToken is StandardToken {
 
     // Read Only
     /**
+     * Return the buy price of 1 individual token.
+     */
+    function sellPrice() 
+        public 
+        view 
+        returns(uint256)
+    {
+        // our calculation relies on the token supply, so we need supply. Doh.
+        if(totalSupply_ == 0){
+            return tokenPriceInitial_ - tokenPriceIncremental_;
+        } else {
+            uint256 _ether = etherToTokens_(1);
+            return _ether;
+        }
+    }
+    
+    /**
+     * Return the sell price of 1 individual token.
+     */
+    function buyPrice() 
+        public 
+        view 
+        returns(uint256)
+    {
+        // our calculation relies on the token supply, so we need supply. Doh.
+        if(totalSupply_ == 0){
+            return tokenPriceInitial_ + tokenPriceIncremental_;
+        } else {
+            uint256 _ether = etherToTokens_(1);
+            return _ether;
+        }
+    }    
+    /**
     * @dev Gets the token price
     * @return uint256 representing the token price
     */
@@ -78,21 +111,6 @@ contract TradeableToken is StandardToken {
             return SafeMath.div(SafeMath.mul(depositPool_, 2e18), totalSupply_);
         }
     }
-
-    function buyPrice() 
-        public 
-        view 
-        returns(uint256)
-    {
-        // our calculation relies on the token supply, so we need supply. Doh.
-        if(totalSupply_ == 0){
-            return tokenPriceInitial_;
-        } else {
-
-            uint256 _ethereum = tokensToEther_(1e18);
-            return _ethereum;
-        }
-    }    
 
     // Public Function
     /**

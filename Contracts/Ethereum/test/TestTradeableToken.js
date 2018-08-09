@@ -43,12 +43,22 @@ contract('TradeableToken', function(accounts) {
         let A = await TradeableToken.deployed();
         let B = await TradeableToken2.deployed();
         
+
+        let p0 = await A.buyPrice.call();          
+        let p1 = await A.sellPrice.call();  
+        console.log(p0, p1);      
+
         await A.buy({from: accounts[0], value: 1});
         await B.buy({from: accounts[1], value: 1});
-        let p0 = await A.buyPrice.call();          
-        let p1 = await A.getPrice.call();  
+        p0 = await A.buyPrice.call();          
+        p1 = await A.sellPrice.call();  
         console.log(p0, p1);      
-/*
+        await A.buy({from: accounts[0], value: 1000000000000});
+        await B.buy({from: accounts[1], value: 1000000000000});
+        p0 = await A.buyPrice.call();          
+        p1 = await A.sellPrice.call();  
+        console.log(p0, p1);     
+
         await A.buy({from: accounts[0], value: 1});
         await B.buy({from: accounts[1], value: 1});        
        // let b = await B.balanceOf.call(accounts[1]);  
@@ -57,7 +67,7 @@ contract('TradeableToken', function(accounts) {
         let b1 = await B.balanceOf.call(accounts[1]);  
         console.log(b0, b1);
         //b0 = adjust(b0, b1);
-        assert.equal(b0, b1, "Amount should be almost equal");     */      
+        assert.equal(b0, b1, "Amount should be almost equal");       
     });
    
     /*
