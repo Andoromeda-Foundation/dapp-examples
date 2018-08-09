@@ -8,9 +8,12 @@ import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
  */
 contract TradeableToken is StandardToken {
 
-    uint256 public tokenPriceInitial_ = 0.0000001 ether;
-    uint256 public tokenPriceIncremental_ = 0.00000001 ether;
-    uint256 constant public OFFSET = 2**64;
+    uint256 public tokenPriceInitial_ = 0.0000001 ether; // per wei
+    uint256 public tokenPriceIncremental_ = 0.00000001 ether; // per wei
+    uint256 public depositPool_ = 0 ether;    
+    uint256 constant public OFFSET = 2**64; 
+    
+    // 
 
     // Event
     event OnBuy(
@@ -45,6 +48,7 @@ contract TradeableToken is StandardToken {
     
     function _buy(uint256 _incomingEther) internal returns(uint256) {
         address _customerAddress = msg.sender;
+        depositPool_ = SafeMath.add(depositPool_, _incomingEther);        
         uint256 _amountOfTokens = etherToTokens_(_incomingEther);
         _mint(_customerAddress, _amountOfTokens);
         emit OnBuy(_customerAddress, _incomingEther, _amountOfTokens);        
@@ -56,10 +60,39 @@ contract TradeableToken is StandardToken {
         require(_incomingToken <= balances[_customerAddress]);
         uint256 _amountOfEther = tokensToEther_(_incomingToken);
         _burn(_customerAddress, _incomingToken);
+        depositPool_ = SafeMath.sub(depositPool_, _amountOfEther);                
         _customerAddress.transfer(_amountOfEther);
         emit OnSell(msg.sender, _incomingToken, _amountOfEther);
         return _amountOfEther;
     }
+
+    // Read Only
+    /**
+    * @dev Gets the token price
+    * @return uint256 representing the token price
+    */
+    function getPrice() public view returns (uint256) {
+        if(totalSupply_ == 0){
+            return tokenPriceInitial_;
+        } else {
+            return SafeMath.div(SafeMath.mul(depositPool_, 2e18), totalSupply_);
+        }
+    }
+
+    function buyPrice() 
+        public 
+        view 
+        returns(uint256)
+    {
+        // our calculation relies on the token supply, so we need supply. Doh.
+        if(totalSupply_ == 0){
+            return tokenPriceInitial_;
+        } else {
+
+            uint256 _ethereum = tokensToEther_(1e18);
+            return _ethereum;
+        }
+    }    
 
     // Public Function
     /**
@@ -82,14 +115,6 @@ contract TradeableToken is StandardToken {
     function() public payable {
         _buy(msg.value);
     }    
-
-    /**
-    * @dev Gets the token price
-    * @return uint256 representing the token price
-    */
-    function getPrice() public pure returns (uint256) {
-        return 0;
-    }
 
     /**
     * @dev calculate how many token will be minted when sending amount of ether.
@@ -135,7 +160,7 @@ contract TradeableToken is StandardToken {
         view
         returns(uint256)
     {
-        uint256 _tokenPriceInitial = tokenPriceInitial_ * 1e18;
+        uint256 _tokenPrice = getPrice() * 1e18;
         uint256 _tokensReceived = 
          (
             (
@@ -143,11 +168,11 @@ contract TradeableToken is StandardToken {
                 SafeMath.sub(
                     (sqrt
                         (
-                            (_tokenPriceInitial**2)
+                            (_tokenPrice**2)
                             +
                             (2*(tokenPriceIncremental_ * 1e18)*(_ether * 1e18))
                         )
-                    ), _tokenPriceInitial
+                    ), _tokenPrice
                 )
             )/(tokenPriceIncremental_)
         )
