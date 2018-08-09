@@ -12,9 +12,7 @@ contract TradeableToken is StandardToken {
     uint256 public tokenPriceIncremental_ = 0.00000001 ether;
     uint256 constant public OFFSET = 2**64;
 
-    /*==========================================
-    =                 EVENT                    =
-    ==========================================*/   
+    // Event
     event OnBuy(
         address indexed customerAddress,
         uint256 incomingether,
@@ -32,9 +30,7 @@ contract TradeableToken is StandardToken {
         uint256 etherWithdrawn
     );
 
-    /*==========================================
-    =            INTERNAL FUNCTIONS            =
-    ==========================================*/
+    // Internal Function
     function _mint(address _customerAddress, uint256 _amount) internal {
         require(_amount > 0 && (SafeMath.add(_amount, totalSupply_) > totalSupply_));        
         totalSupply_ = SafeMath.add(totalSupply_, _amount);
@@ -58,32 +54,14 @@ contract TradeableToken is StandardToken {
     function _sell(uint256 _incomingToken) internal returns(uint256) {
         address _customerAddress = msg.sender;
         require(_incomingToken <= balances[_customerAddress]);
-        uint256 _amountOfEther = tokensToether_(_incomingToken);
+        uint256 _amountOfEther = tokensToEther_(_incomingToken);
         _burn(_customerAddress, _incomingToken);
         _customerAddress.transfer(_amountOfEther);
         emit OnSell(msg.sender, _incomingToken, _amountOfEther);
         return _amountOfEther;
     }
 
-    /*==========================================
-    =            PUBLIC FUNCTIONS              =
-    ==========================================*/        
-    
-    /**
-    * @dev get how many token can be get when buying.
-    * @return uint256 representing the token price
-    */
-    function getAmount(uint256 _value) public view returns(uint256 amount) {
-    }
-
-    /**
-    * @dev get how many ether can be get when selling.
-    * @return uint256 representing the token price
-    */
-    function getValue(uint256 _amount) public view returns(uint256 value) {
-        return _amount;
-    }    
-
+    // Public Function
     /**
     * @dev Buy some token
     */
@@ -102,7 +80,7 @@ contract TradeableToken is StandardToken {
     * @dev Gets the token price
     * @return uint256 representing the token price
     */
-    function getPrice() external view returns (uint256) {
+    function getPrice() public pure returns (uint256) {
         return 0;
     }
 
@@ -115,7 +93,7 @@ contract TradeableToken is StandardToken {
     function etherToTokens_(uint256 _ether)
         public
         view
-        returns(uint256)
+        returns(uint256 _tokens)
     {
         uint256 _tokenPriceInitial = tokenPriceInitial_ * 1e18;
         uint256 _tokensReceived = 
@@ -172,12 +150,13 @@ contract TradeableToken is StandardToken {
     }    
 
     /**
-    * @dev be aware, this two function didn't have consistency.
-    */        
-    function tokensToether_(uint256 _tokens)
+    * @dev be aware, due to precision issue this two function didn't have consistency with each other.
+    * @return uint256 representing the ether which will be release.
+    */
+    function tokensToEther_(uint256 _tokens)
         internal
         view
-        returns(uint256)
+        returns(uint256 _ether)
     {
 
         uint256 tokens_ = (_tokens + 1e18);
@@ -198,7 +177,10 @@ contract TradeableToken is StandardToken {
         return _etherReceived;
     }
        
-    // 
+    /**
+    * @dev calculate sqrt() via Newton's method.
+    * https://en.wikipedia.org/wiki/Fast_inverse_square_root#Newton's_method
+    */
     function sqrt(uint x) internal pure returns (uint y) {
         uint z = (x + 1) / 2;
         y = x;

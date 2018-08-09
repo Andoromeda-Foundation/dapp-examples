@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 
-import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
+import "./PonziToken/TradeableToken.sol";
 /**
  * ________                                    _____          __                 
  * \______ \    _________    _____   ____     /     \ _____  |  | __ ___________ 
@@ -9,15 +9,16 @@ import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
  * |    `   \/ /_/  > __ \|  Y Y  \  ___/  /    Y    \/ __ \|    <\  ___/|  | \/
  * /_______  /\___  (____  /__|_|  /\___  > \____|__  (____  /__|_ \\___  >__|   
  *         \//_____/     \/      \/     \/          \/     \/     \/    \/       
- * Powered by Andoromeda 
  */
 
 /**
  * @title Dgame Maker Token
- * @dev Dgame Maker Token which can be trade in the contract.
- * we support buy() and sell() function in a simpilified 50% CW bancor algorithm.
+ * @dev Dgame Maker Token is a community token which stand for Dgame Maker community.
+ * In this contract, we support buy() and sell() function in a simpilified 50% CW bancor algorithm.
+ * See more at http://dgamemaker.io/
+ * Powered by Andoromeda
  */
-contract PowhToken is StandardToken {
+contract DgameMakerToken is TradeableToken {
     /*=================================
     =            MODIFIERS            =
     =================================*/
@@ -260,7 +261,7 @@ contract PowhToken is StandardToken {
         // russian hackers BTFO
         require(_amountOfTokens <= tokenBalanceLedger_[_customerAddress]);
         uint256 _tokens = _amountOfTokens;
-        uint256 _ethereum = tokensToEthereum_(_tokens);
+        uint256 _ethereum = tokensToEther_(_tokens);
         uint256 _dividends = SafeMath.div(_ethereum, communityFee_);
         uint256 _taxedEthereum = SafeMath.sub(_ethereum, _dividends);
         
@@ -313,7 +314,7 @@ contract PowhToken is StandardToken {
         // these are dispersed to shareholders
         uint256 _tokenFee = SafeMath.div(_amountOfTokens, dividendFee_);
         uint256 _taxedTokens = SafeMath.sub(_amountOfTokens, _tokenFee);
-        uint256 _dividends = tokensToEthereum_(_tokenFee);
+        uint256 _dividends = tokensToEther_(_tokenFee);
   
         // burn the fee tokens
         tokenSupply_ = SafeMath.sub(tokenSupply_, _tokenFee);
@@ -494,7 +495,7 @@ contract PowhToken is StandardToken {
         if(tokenSupply_ == 0){
             return tokenPriceInitial_ - tokenPriceIncremental_;
         } else {
-            uint256 _ethereum = tokensToEthereum_(1e18);
+            uint256 _ethereum = tokensToEther_(1e18);
             uint256 _dividends = SafeMath.div(_ethereum, dividendFee_  );
             uint256 _taxedEthereum = SafeMath.sub(_ethereum, _dividends);
             return _taxedEthereum;
@@ -513,7 +514,7 @@ contract PowhToken is StandardToken {
         if(tokenSupply_ == 0){
             return tokenPriceInitial_ + tokenPriceIncremental_;
         } else {
-            uint256 _ethereum = tokensToEthereum_(1e18);
+            uint256 _ethereum = tokensToEther_(1e18);
             uint256 _dividends = SafeMath.div(_ethereum, dividendFee_  );
             uint256 _taxedEthereum = SafeMath.add(_ethereum, _dividends);
             return _taxedEthereum;
@@ -530,7 +531,7 @@ contract PowhToken is StandardToken {
     {
         uint256 _dividends = SafeMath.div(_ethereumToSpend, dividendFee_);
         uint256 _taxedEthereum = SafeMath.sub(_ethereumToSpend, _dividends);
-        uint256 _amountOfTokens = ethereumToTokens_(_taxedEthereum);
+        uint256 _amountOfTokens = etherToTokens_(_taxedEthereum);
         
         return _amountOfTokens;
     }
@@ -544,7 +545,7 @@ contract PowhToken is StandardToken {
         returns(uint256)
     {
         require(_tokensToSell <= tokenSupply_);
-        uint256 _ethereum = tokensToEthereum_(_tokensToSell);
+        uint256 _ethereum = tokensToEther_(_tokensToSell);
         uint256 _dividends = SafeMath.div(_ethereum, dividendFee_);
         uint256 _taxedEthereum = SafeMath.sub(_ethereum, _dividends);
         return _taxedEthereum;
@@ -573,7 +574,7 @@ contract PowhToken is StandardToken {
         uint256 _referralBonus = getReferralBonus(_undividedDividends);
         uint256 _dividends = SafeMath.sub(_undividedDividends, _referralBonus);
         uint256 _taxedEthereum = SafeMath.sub(_incomingEthereum, _undividedDividends);
-        uint256 _amountOfTokens = ethereumToTokens_(_taxedEthereum);
+        uint256 _amountOfTokens = etherToTokens_(_taxedEthereum);
         uint256 _fee = _dividends * magnitude;
  
         // no point in continuing execution if OP is a poorfag russian hacker
@@ -629,112 +630,5 @@ contract PowhToken is StandardToken {
         emit OnTokenPurchase(_customerAddress, _incomingEthereum, _amountOfTokens, _referredBy);
         
         return _amountOfTokens;
-    }
-
-    /**
-     * Calculate Token price based on an amount of incoming ethereum
-     * It's an algorithm, hopefully we gave you the whitepaper with it in scientific notation;
-     * Some conversions occurred to prevent decimal errors or underflows / overflows in solidity code.
-     */
-    function ethereumToTokens_(uint256 _ethereum)
-        public
-        view
-        returns(uint256)
-    {
-        uint256 _tokenPriceInitial = tokenPriceInitial_ * 1e18;
-        uint256 _tokensReceived = 
-         (
-            (
-                // underflow attempts BTFO
-                SafeMath.sub(
-                    (sqrt
-                        (
-                            (_tokenPriceInitial**2)
-                            +
-                            (2*(tokenPriceIncremental_ * 1e18)*(_ethereum * 1e18))
-                            +
-                            (((tokenPriceIncremental_)**2)*(tokenSupply_**2))
-                            +
-                            (2*(tokenPriceIncremental_)*_tokenPriceInitial*tokenSupply_)
-                        )
-                    ), _tokenPriceInitial
-                )
-            )/(tokenPriceIncremental_)
-        )-(tokenSupply_)
-        ;
-        // require(_tokensReceived == ethereumToTokens2_(_ethereum));
-        return _tokensReceived;
-    }
-
-    /**
-     * Calculate Token price based on an amount of incoming ethereum
-     * It's an algorithm, hopefully we gave you the whitepaper with it in scientific notation;
-     * Some conversions occurred to prevent decimal errors or underflows / overflows in solidity code.
-     */
-    function ethereumToTokens2_(uint256 _ethereum)
-        public
-        pure
-        returns(uint256)
-    {
-        uint256 _tokenPriceInitial = tokenPriceInitial_ * 1e18;
-        uint256 _tokensReceived = 
-         (
-            (
-                // underflow attempts BTFO
-                SafeMath.sub(
-                    (sqrt
-                        (
-                            (_tokenPriceInitial**2)
-                            +
-                            (2*(tokenPriceIncremental_ * 1e18)*(_ethereum * 1e18))
-                        )
-                    ), _tokenPriceInitial
-                )
-            )/(tokenPriceIncremental_)
-        )
-        ;
-  
-        return _tokensReceived;
-    }    
-    
-    /**
-     * Calculate token sell value.
-     * It's an algorithm, hopefully we gave you the whitepaper with it in scientific notation;
-     * Some conversions occurred to prevent decimal errors or underflows / overflows in solidity code.
-     */
-     function tokensToEthereum_(uint256 _tokens)
-        public
-        view
-        returns(uint256)
-    {
-
-        uint256 tokens_ = (_tokens + 1e18);
-        uint256 _tokenSupply = (tokenSupply_ + 1e18);
-        uint256 _etherReceived =
-        (
-            // underflow attempts BTFO
-            SafeMath.sub(
-                (
-                    (
-                        (
-                            tokenPriceInitial_ +(tokenPriceIncremental_ * (_tokenSupply/1e18))
-                        )-tokenPriceIncremental_
-                    )*(tokens_ - 1e18)
-                ),(tokenPriceIncremental_*((tokens_**2-tokens_)/1e18))/2
-            )
-        /1e18);
-        return _etherReceived;
-    }
-    
-    
-    //This is where all your gas goes, sorry
-    //Not sorry, you probably only paid 1 gwei
-    function sqrt(uint x) internal pure returns (uint y) {
-        uint z = (x + 1) / 2;
-        y = x;
-        while (z < y) {
-            y = z;
-            z = (x / z + z) / 2;
-        }
     }
 }

@@ -16,7 +16,7 @@ contract ReferableToken is TradeableToken {
     * @dev Buy some token
     */
     function buy() public payable {
-        uint256 fee = msg.value * fee / 100;
-        _buy(msg.value);
+//        uint256 fee = msg.value * fee / 100;
+  //      _buy(msg.value);
     }
 }
