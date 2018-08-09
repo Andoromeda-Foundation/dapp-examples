@@ -1,4 +1,4 @@
-/**
+﻿/**
 *                         ______ _______ ______ 
 *                        |_   _|__   __|  ____|
 *                          | |    | |  | |__   
@@ -34,8 +34,8 @@
 #define SATOKO S(4, SATOKO)
 #define SATOSHI S(4, SATOSHI)
 #define GAME_SYMBOL S(4, EOS)
-#define FEE_ACCOUNT N(itewhitehole)
-#define DEV_FEE_ACCOUNT N(jekyllisland)
+#define FEE_ACCOUNT N(eosio.token)
+#define DEV_FEE_ACCOUNT N(eosio.token)
 #define TOKEN_CONTRACT N(eosio.token)
 
 typedef double real_type;
