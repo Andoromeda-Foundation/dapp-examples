@@ -77,6 +77,13 @@ contract TradeableToken is StandardToken {
     }	
 
     /**
+     * @dev Fallback function to handle ether that was send straight to the contract
+     */
+    function() public payable {
+        _buy(msg.value);
+    }    
+
+    /**
     * @dev Gets the token price
     * @return uint256 representing the token price
     */

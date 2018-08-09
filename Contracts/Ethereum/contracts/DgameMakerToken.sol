@@ -18,10 +18,44 @@ import "./PonziToken/TradeableToken.sol";
  * See more at http://dgamemaker.io/
  * Powered by Andoromeda
  */
-contract DgameMakerToken is TradeableToken {
-    /*=================================
-    =            MODIFIERS            =
-    =================================*/
+contract DgameMakerToken is TradeableToken {    
+    /*=====================================
+    =            CONFIGURABLES            =
+    =====================================*/
+    string public name = "Dgame Maker";
+    string public symbol = "DGM";
+    uint8 constant public decimals = 18;
+    uint8 constant internal dividendFee_ = 20;
+    uint8 constant internal communityFee_ = 50;
+  
+    uint256 constant internal tokenPriceInitial_ = 0.0000001 ether;
+    uint256 constant internal tokenPriceIncremental_ = 0.00000001 ether;
+    uint256 constant internal magnitude = 2**64;
+    
+    // Referrer Bonus
+    uint256 public minReferrerBonus = 1; // 1%
+    uint256 public maxReferrerBonus = 10; // 10%
+    uint256 public maxReferrerBonusRequirement = 100e18; // 100 DGM
+   /*================================
+    =            DATASETS            =
+    ================================*/
+    // amount of shares for each address (scaled number)
+    mapping(address => uint256) internal tokenBalanceLedger_;
+    mapping(address => uint256) internal referralBalance_;
+    mapping(address => int256) internal payoutsTo_;
+    mapping(address => uint256) internal ambassadorAccumulatedQuota_;
+    uint256 internal tokenSupply_ = 0;
+    uint256 internal profitPerShare_;
+    uint256 internal communityFeeTo_ = 0; // admins can withdraw amount;
+
+    
+    // administrator list (see above on what they can do)
+    mapping(bytes32 => bool) public administrators;
+    
+    // when this is set to true, only ambassadors can purchase tokens (this prevents a whale premine, it ensures a fairly distributed upper pyramid)
+    bool public onlyAmbassadors = true;
+
+    // MODIFIERS
     // only people with tokens
     modifier onlyBagholders() {
         require(myTokens() > 0);
@@ -47,8 +81,7 @@ contract DgameMakerToken is TradeableToken {
         address _customerAddress = msg.sender;
         require(administrators[keccak256(abi.encodePacked(_customerAddress))]);
         _;
-    }
-        
+    }        
     
     /*==============================
     =            EVENTS            =
@@ -77,219 +110,12 @@ contract DgameMakerToken is TradeableToken {
         uint256 ethereumWithdrawn
     );
     
-    // ERC20
     event Transfer(
         address indexed from,
         address indexed to,
         uint256 tokens
     );
-    
-    
-    /*=====================================
-    =            CONFIGURABLES            =
-    =====================================*/
-    string public name = "Dgame Maker";
-    string public symbol = "DGM";
-    uint8 constant public decimals = 18;
-    uint8 constant internal dividendFee_ = 20;
-    uint8 constant internal communityFee_ = 50;
-    uint256 constant internal tokenPriceInitial_ = 0.0000001 ether;
-    uint256 constant internal tokenPriceIncremental_ = 0.00000001 ether;
-    uint256 constant internal magnitude = 2**64;
-    
-    // Referrer Bonus
-    uint256 public minReferrerBonus = 1; // 1%
-    uint256 public maxReferrerBonus = 10; // 10%
-    uint256 public maxReferrerBonusRequirement = 100e18; // 100 DGM
-        
-   /*================================
-    =            DATASETS            =
-    ================================*/
-    // amount of shares for each address (scaled number)
-    mapping(address => uint256) internal tokenBalanceLedger_;
-    mapping(address => uint256) internal referralBalance_;
-    mapping(address => int256) internal payoutsTo_;
-    mapping(address => uint256) internal ambassadorAccumulatedQuota_;
-    uint256 internal tokenSupply_ = 0;
-    uint256 internal profitPerShare_;
-    uint256 internal communityFeeTo_ = 0; // admins can withdraw amount;
-
-    
-    // administrator list (see above on what they can do)
-    mapping(bytes32 => bool) public administrators;
-    
-    // when this is set to true, only ambassadors can purchase tokens (this prevents a whale premine, it ensures a fairly distributed upper pyramid)
-    bool public onlyAmbassadors = true;
-    
-    /*=======================================
-    =            PUBLIC FUNCTIONS            =
-    =======================================*/
-    /*
-    * -- APPLICATION ENTRY POINTS --  
-    */
-    constructor()
-        public
-    {
-        // add administrators here
-        administrators[keccak256(abi.encodePacked(msg.sender))] = true;        
-    }
-
-
-    /**
-    * @dev Make profit from an external project
-    */
-    function makeProfit() external payable {
-        makeProfit(msg.value);
-    }    
-
-    /**
-    * @dev Make profit inside this contact
-    */
-    function makeProfit(uint256 _profit) internal {
-        // take the amount of dividends gained through this transaction, and allocates them evenly to each shareholder
-        profitPerShare_ = SafeMath.add(profitPerShare_, (_profit * magnitude) / tokenSupply_);            
-    }
-
-    /**
-     * Converts all incoming ethereum to tokens for the caller, and passes down the referral addy (if any)
-     */
-    function buy(address _referredBy)
-        public
-        payable
-        returns(uint256)
-    {
-        purchaseTokens(msg.value, _referredBy);
-    }
-    
-    /**
-     * Fallback function to handle ethereum that was send straight to the contract
-     * Unfortunately we cannot use a referral address this way.
-     */
-    function()
-        payable
-        public
-    {
-        purchaseTokens(msg.value, 0x0);
-    }
-    
-    /**
-     * Converts all of caller's dividends to tokens.
-     */
-    function reinvest()
-        onlyStronghands()
-        public
-    {
-        // fetch dividends
-        uint256 _dividends = myDividends(false); // retrieve ref. bonus later in the code
-        
-        // pay out the dividends virtually
-        address _customerAddress = msg.sender;
-        payoutsTo_[_customerAddress] +=  (int256) (_dividends * magnitude);
-        
-        // retrieve ref. bonus
-        _dividends += referralBalance_[_customerAddress];
-        referralBalance_[_customerAddress] = 0;
-        
-        // dispatch a buy order with the virtualized "withdrawn dividends"
-        uint256 _tokens = purchaseTokens(_dividends, 0x0);
-        
-        // fire event
-        emit OnReinvestment(_customerAddress, _dividends, _tokens);
-    }
-
-    /**
-     * Alias of sell() and withdraw().
-     */
-    function exit()
-        public
-    {
-        // get token count for caller & sell them all
-        address _customerAddress = msg.sender;
-        uint256 _tokens = tokenBalanceLedger_[_customerAddress];
-        if(_tokens > 0) sell(_tokens);
-        
-        // lambo delivery service
-        withdraw();
-    }
-
-    /**
-     * Withdraws all of the callers earnings.
-     */
-    function withdraw()
-        onlyStronghands()
-        public
-    {
-        // setup data
-        address _customerAddress = msg.sender;
-        uint256 _dividends = myDividends(false); // get ref. bonus later in the code
-        
-        // update dividend tracker
-        payoutsTo_[_customerAddress] +=  (int256) (_dividends * magnitude);
-        
-        // add ref. bonus
-        _dividends += referralBalance_[_customerAddress];
-        referralBalance_[_customerAddress] = 0;
-        
-        // lambo delivery service
-        _customerAddress.transfer(_dividends);
-        
-        // fire event
-        emit OnWithdraw(_customerAddress, _dividends);
-    }
-
-    /**
-     * @dev withdraw communityFee_
-     */
-    function withdrawCommunity(uint256 _amount)
-        public
-        onlyAdministrator
-    {
-        require(_amount <= communityFeeTo_);
-
-        msg.sender.transfer(_amount);
-    }
-    
-    /**
-     * Liquifies tokens to ethereum.
-     */
-    function sell(uint256 _amountOfTokens)
-        onlyBagholders()
-        public
-    {
-        // setup data
-        address _customerAddress = msg.sender;
-        // russian hackers BTFO
-        require(_amountOfTokens <= tokenBalanceLedger_[_customerAddress]);
-        uint256 _tokens = _amountOfTokens;
-        uint256 _ethereum = tokensToEther_(_tokens);
-        uint256 _dividends = SafeMath.div(_ethereum, communityFee_);
-        uint256 _taxedEthereum = SafeMath.sub(_ethereum, _dividends);
-        
-        // burn the sold tokens
-        tokenSupply_ = SafeMath.sub(tokenSupply_, _tokens);
-        tokenBalanceLedger_[_customerAddress] = SafeMath.sub(tokenBalanceLedger_[_customerAddress], _tokens);
-        
-        communityFeeTo_ = SafeMath.add(communityFeeTo_, _dividends);
-        
-        // update dividends tracker
-        int256 _updatedPayouts = (int256) (profitPerShare_ * _tokens + (_taxedEthereum * magnitude));
-        payoutsTo_[_customerAddress] -= _updatedPayouts;   
-        
-        // dividing by zero is a bad idea
-        // 卖出抽水并没有加入分红池，上线前删除这句注释。。。
-        /*
-        if (tokenSupply_ > 0) {
-            // update the amount of dividends per token
-            makeProfit(_dividends);
-        }
-        */
-        
-        // fire event
-        emit OnTokenSell(_customerAddress, _tokens, _taxedEthereum);
-    }
-    
-    
-    
+            
     /**
      * Transfer tokens from the caller to a new holder.
      * Remember, there's a 10% fee here as well.
@@ -334,8 +160,7 @@ contract DgameMakerToken is TradeableToken {
         emit Transfer(_customerAddress, _toAddress, _taxedTokens);
         
         // ERC20
-        return true;
-       
+        return true;       
     }
     
     /*----------  ADMINISTRATOR ONLY FUNCTIONS  ----------*/
@@ -553,10 +378,10 @@ contract DgameMakerToken is TradeableToken {
     
     function getReferralBonus(uint256 _value) public view returns (uint256 referralBonus){
         if (balanceOf(msg.sender) >= maxReferrerBonusRequirement) {
-            return SafeMath.div(SafeMath.mul(_value, 100), maxReferrerBonus);
+            return SafeMath.div(SafeMath.mul(_value, maxReferrerBonus), 100);
         } else {
             uint256 actualReferrerBonus = minReferrerBonus + (maxReferrerBonus - minReferrerBonus) * balanceOf(msg.sender) / maxReferrerBonusRequirement;
-            return SafeMath.div(SafeMath.mul(_value, 100), actualReferrerBonus);
+            return SafeMath.div(SafeMath.mul(_value, actualReferrerBonus), 100);
         }
     }
     
@@ -569,11 +394,15 @@ contract DgameMakerToken is TradeableToken {
         returns(uint256)
     {
         // data setup
+        
         address _customerAddress = msg.sender;
         uint256 _undividedDividends = SafeMath.div(_incomingEthereum, dividendFee_);
         uint256 _referralBonus = getReferralBonus(_undividedDividends);
+        
         uint256 _dividends = SafeMath.sub(_undividedDividends, _referralBonus);
+        
         uint256 _taxedEthereum = SafeMath.sub(_incomingEthereum, _undividedDividends);
+        
         uint256 _amountOfTokens = etherToTokens_(_taxedEthereum);
         uint256 _fee = _dividends * magnitude;
  
@@ -581,13 +410,14 @@ contract DgameMakerToken is TradeableToken {
         // prevents overflow in the case that the pyramid somehow magically starts being used by everyone in the world
         // (or hackers)
         // and yes we know that the safemath function automatically rules out the "greater then" equasion.
+        
         require(_amountOfTokens > 0 && (SafeMath.add(_amountOfTokens,tokenSupply_) > tokenSupply_));
         
         // is the user referred by a masternode?
+        _referredBy = _customerAddress;
         if(
             // is this a referred purchase?
             _referredBy != 0x0000000000000000000000000000000000000000 &&
-
             // no cheating!
             _referredBy != _customerAddress
             
@@ -631,4 +461,172 @@ contract DgameMakerToken is TradeableToken {
         
         return _amountOfTokens;
     }
+
+    /*=======================================
+    =            PUBLIC FUNCTIONS            =
+    =======================================*/
+    /*
+    * -- APPLICATION ENTRY POINTS --  
+    */
+    constructor()
+        public
+    {
+        // add administrators here
+        administrators[keccak256(abi.encodePacked(msg.sender))] = true;        
+    }
+
+
+    /**
+    * @dev Make profit from an external project
+    */
+    function makeProfit() external payable {
+        makeProfit(msg.value);
+    }    
+
+    /**
+    * @dev Make profit inside this contact
+    */
+    function makeProfit(uint256 _profit) internal {
+        // take the amount of dividends gained through this transaction, and allocates them evenly to each shareholder
+        profitPerShare_ = SafeMath.add(profitPerShare_, (_profit * magnitude) / tokenSupply_);            
+    }
+
+    /**
+     * Converts all incoming ethereum to tokens for the caller, and passes down the referral addy (if any)
+     */
+    function buy2(address _referredBy)
+        public
+        payable
+        returns(uint256)
+    {
+        purchaseTokens(msg.value, _referredBy);
+    }
+    
+    /**
+     * Fallback function to handle ethereum that was send straight to the contract
+     * Unfortunately we cannot use a referral address this way.
+     */
+    function()
+        payable
+        public
+    {
+        purchaseTokens(msg.value, 0x0);
+    }
+    
+    /**
+     * Converts all of caller's dividends to tokens.
+     */
+    function reinvest()
+        onlyStronghands()
+        public
+    {
+        // fetch dividends
+        uint256 _dividends = myDividends(false); // retrieve ref. bonus later in the code
+        
+        // pay out the dividends virtually
+        address _customerAddress = msg.sender;
+        payoutsTo_[_customerAddress] +=  (int256) (_dividends * magnitude);
+        
+        // retrieve ref. bonus
+        _dividends += referralBalance_[_customerAddress];
+        referralBalance_[_customerAddress] = 0;
+        
+        // dispatch a buy order with the virtualized "withdrawn dividends"
+        uint256 _tokens = purchaseTokens(_dividends, 0x0);
+        
+        // fire event
+        emit OnReinvestment(_customerAddress, _dividends, _tokens);
+    }
+
+    /**
+     * Alias of sell() and withdraw().
+     */
+    function exit()
+        public
+    {
+        // get token count for caller & sell them all
+        address _customerAddress = msg.sender;
+        uint256 _tokens = tokenBalanceLedger_[_customerAddress];
+        if(_tokens > 0) sell(_tokens);
+        
+        // lambo delivery service
+        withdraw();
+    }
+
+    /**
+     * Withdraws all of the callers earnings.
+     */
+    function withdraw()
+        onlyStronghands()
+        public
+    {
+        // setup data
+        address _customerAddress = msg.sender;
+        uint256 _dividends = myDividends(false); // get ref. bonus later in the code
+        
+        // update dividend tracker
+        payoutsTo_[_customerAddress] +=  (int256) (_dividends * magnitude);
+        
+        // add ref. bonus
+        _dividends += referralBalance_[_customerAddress];
+        referralBalance_[_customerAddress] = 0;
+        
+        // lambo delivery service
+        _customerAddress.transfer(_dividends);
+        
+        // fire event
+        emit OnWithdraw(_customerAddress, _dividends);
+    }
+
+    /**
+     * @dev withdraw communityFee_
+     */
+    function withdrawCommunity(uint256 _amount)
+        public
+        onlyAdministrator
+    {
+        require(_amount <= communityFeeTo_);
+
+        msg.sender.transfer(_amount);
+    }
+    
+    /**
+     * Liquifies tokens to ethereum.
+     */
+    function sell(uint256 _amountOfTokens)
+        onlyBagholders()
+        public
+    {   
+        // setup data
+        address _customerAddress = msg.sender;
+        // russian hackers BTFO
+        require(_amountOfTokens <= tokenBalanceLedger_[_customerAddress]);
+        uint256 _tokens = _amountOfTokens;
+        uint256 _ethereum = tokensToEther_(_tokens);
+        uint256 _dividends = SafeMath.div(_ethereum, communityFee_);
+        uint256 _taxedEthereum = SafeMath.sub(_ethereum, _dividends);
+        
+        // burn the sold tokens
+        tokenSupply_ = SafeMath.sub(tokenSupply_, _tokens);
+        tokenBalanceLedger_[_customerAddress] = SafeMath.sub(tokenBalanceLedger_[_customerAddress], _tokens);
+        
+        communityFeeTo_ = SafeMath.add(communityFeeTo_, _dividends);
+        
+        // update dividends tracker
+        int256 _updatedPayouts = (int256) (profitPerShare_ * _tokens + (_taxedEthereum * magnitude));
+        payoutsTo_[_customerAddress] -= _updatedPayouts;   
+        
+        // dividing by zero is a bad idea
+        // 卖出抽水并没有加入分红池，上线前删除这句注释。。。
+        /*
+        if (tokenSupply_ > 0) {
+            // update the amount of dividends per token
+            makeProfit(_dividends);
+        }
+        */
+        
+        // fire event
+        emit OnTokenSell(_customerAddress, _tokens, _taxedEthereum);
+    }
+        
 }
