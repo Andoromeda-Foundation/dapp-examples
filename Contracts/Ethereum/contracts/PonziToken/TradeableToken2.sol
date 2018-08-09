@@ -8,10 +8,12 @@ import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
  */
 contract TradeableToken2 is StandardToken {
 
-    uint256 public tokenPriceInitial_ = 0.0000001 ether;
-    uint256 public tokenPriceIncremental_ = 0.00000001 ether;
+    uint256 public tokenPriceInitial_ =     0.0000001 ether; // per wei
+    uint256 public tokenPriceIncremental_ = 0.00000001 ether; // per wei
     uint256 public depositPool_ = 0 ether;    
-    uint256 constant public OFFSET = 2**64;
+    uint256 constant public OFFSET = 2**64; 
+    
+    // 
 
     // Event
     event OnBuy(
@@ -66,6 +68,39 @@ contract TradeableToken2 is StandardToken {
 
     // Read Only
     /**
+     * Return the buy price of 1 individual token.
+     */
+    function sellPrice() 
+        public 
+        view 
+        returns(uint256)
+    {
+        // our calculation relies on the token supply, so we need supply. Doh.
+        if(totalSupply_ == 0){
+            return tokenPriceInitial_ - tokenPriceIncremental_;
+        } else {
+            uint256 _ether = tokensToEther_(1e18);
+            return _ether;
+        }
+    }
+    
+    /**
+     * Return the sell price of 1 individual token.
+     */
+    function buyPrice() 
+        public 
+        view 
+        returns(uint256)
+    {
+        // our calculation relies on the token supply, so we need supply. Doh.
+        if(totalSupply_ == 0){
+            return tokenPriceInitial_ + tokenPriceIncremental_;
+        } else {
+            uint256 _ether = tokensToEther_(1e18);
+            return _ether;
+        }
+    }    
+    /**
     * @dev Gets the token price
     * @return uint256 representing the token price
     */
@@ -105,7 +140,7 @@ contract TradeableToken2 is StandardToken {
     * https://storage.googleapis.com/website-bancor/2018/04/01ba8253-bancor_protocol_whitepaper_en.pdf
     * @return uint256 representing the amount of token will be minted.
     */
-    function etherToTokens2_(uint256 _ether)
+    function etherToTokens_(uint256 _ether)
         public
         view
         returns(uint256 _tokens)
@@ -138,7 +173,7 @@ contract TradeableToken2 is StandardToken {
     /**
      * @dev This should be a better implementation.
      */
-    function etherToTokens_(uint256 _ether)
+    function etherToTokens2_(uint256 _ether)
         public
         view
         returns(uint256)

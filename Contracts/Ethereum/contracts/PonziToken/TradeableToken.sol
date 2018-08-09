@@ -79,7 +79,7 @@ contract TradeableToken is StandardToken {
         if(totalSupply_ == 0){
             return tokenPriceInitial_ - tokenPriceIncremental_;
         } else {
-            uint256 _ether = etherToTokens_(1);
+            uint256 _ether = tokensToEther_(1e18);
             return _ether;
         }
     }
@@ -96,7 +96,7 @@ contract TradeableToken is StandardToken {
         if(totalSupply_ == 0){
             return tokenPriceInitial_ + tokenPriceIncremental_;
         } else {
-            uint256 _ether = etherToTokens_(1);
+            uint256 _ether = tokensToEther_(1e18);
             return _ether;
         }
     }    

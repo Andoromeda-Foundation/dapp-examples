@@ -53,14 +53,14 @@ contract('TradeableToken', function(accounts) {
         p0 = await A.buyPrice.call();          
         p1 = await A.sellPrice.call();  
         console.log(p0, p1);      
-        await A.buy({from: accounts[0], value: 1000000000000});
-        await B.buy({from: accounts[1], value: 1000000000000});
+        await A.buy({from: accounts[0], value: 1e19});
+        await B.buy({from: accounts[1], value: 1e19});
         p0 = await A.buyPrice.call();          
         p1 = await A.sellPrice.call();  
         console.log(p0, p1);     
 
-        await A.buy({from: accounts[0], value: 1});
-        await B.buy({from: accounts[1], value: 1});        
+        await A.buy({from: accounts[0], value: 1e18});
+        await B.buy({from: accounts[1], value: 1e18});        
        // let b = await B.balanceOf.call(accounts[1]);  
 //        await B.buy({from: accounts[1], value: 500});        
         let b0 = await A.balanceOf.call(accounts[0]);
