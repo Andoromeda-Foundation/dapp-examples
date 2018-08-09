@@ -6,7 +6,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
  * @dev Standard Token which can be trade within the contract.
  * we support buy() and sell() function in a simpilified bancor algorithm which CW = 50%.
  */
-contract TradeableToken is StandardToken {
+contract TradeableToken2 is StandardToken {
 
     uint256 public tokenPriceInitial_ = 0.0000001 ether;
     uint256 public tokenPriceIncremental_ = 0.00000001 ether;
@@ -97,7 +97,7 @@ contract TradeableToken is StandardToken {
     * https://storage.googleapis.com/website-bancor/2018/04/01ba8253-bancor_protocol_whitepaper_en.pdf
     * @return uint256 representing the amount of token will be minted.
     */
-    function etherToTokens_(uint256 _ether)
+    function etherToTokens2_(uint256 _ether)
         public
         view
         returns(uint256 _tokens)
@@ -123,14 +123,14 @@ contract TradeableToken is StandardToken {
             )/(tokenPriceIncremental_)
         )-(totalSupply_)
         ;
-       // require(_tokensReceived == etherToTokens2_(_ether));
+     //   require(_tokensReceived == etherToTokens2_(_ether));
         return _tokensReceived;
     }
 
     /**
      * @dev This should be a better implementation.
      */
-    function etherToTokens2_(uint256 _ether)
+    function etherToTokens_(uint256 _ether)
         public
         view
         returns(uint256)

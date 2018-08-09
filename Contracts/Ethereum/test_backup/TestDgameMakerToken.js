@@ -18,11 +18,11 @@ contract('DgameMakerToken', function(accounts) {
         let B = await DgameMakerToken.deployed();
 //        let t = await A.buyPrice.call();
 //        console.log(t);
-        await A.buy2("0x0", {from: accounts[0], value: 400});
-        await A.buy2("0x0", {from: accounts[0], value: 600});        
-        await B.buy2("0x0", {from: accounts[1], value: 400});
+        await A.buy2("0x0", {from: accounts[0], value: 4000000});
+        await A.buy2("0x0", {from: accounts[0], value: 6000000});        
+        await B.buy2("0x0", {from: accounts[1], value: 4000000});
         let b = await B.balanceOf.call(accounts[1]);  
-        await B.buy2("0x0", {from: accounts[1], value: 600});        
+        await B.buy2("0x0", {from: accounts[1], value: 6000000});        
         let b0 = await A.balanceOf.call(accounts[0]);
         let b1 = await B.balanceOf.call(accounts[1]);  
         console.log(b, b0, b1);

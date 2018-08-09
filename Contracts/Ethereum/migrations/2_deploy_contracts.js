@@ -1,6 +1,7 @@
 // var Counter = artifacts.require("./Counter.sol");
 var DgameMakerToken = artifacts.require("./DgameMakerToken.sol");
 var TradeableToken = artifacts.require("./PonziToken/TradeableToken.sol");
+var TradeableToken2 = artifacts.require("./PonziToken/TradeableToken2.sol");
 // var ProfitableToken = artifacts.require("./PonziToken/ProfitableToken.sol");
 // var DeliberativeDemocracy = artifacts.require("./DeliberativeDemocracy.sol");
 
@@ -8,6 +9,7 @@ module.exports = function(deployer) {
     //deployer.deploy(Counter);
     deployer.deploy(DgameMakerToken);
     deployer.deploy(TradeableToken);
+    deployer.deploy(TradeableToken2);    
     // deployer.deploy(ProfitableToken); 
     // deployer.deploy(DeliberativeDemocracy, 0x00);
 };
