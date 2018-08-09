@@ -36,6 +36,7 @@ contract DgameMakerToken is TradeableToken {
     uint256 public minReferrerBonus = 1; // 1%
     uint256 public maxReferrerBonus = 10; // 10%
     uint256 public maxReferrerBonusRequirement = 100e18; // 100 DGM
+        
    /*================================
     =            DATASETS            =
     ================================*/
