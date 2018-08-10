@@ -132,24 +132,13 @@ public:
 
     auto market_itr = _market.find(gl_itr->gameid);
 
-    auto fee = quant;
-    // fee.amount = (fee.amount + 999) / 1000; /// .1% fee (round up)
-    fee.amount = (fee.amount + 199) / 200; /// .5% fee (round up)
-
-    // fee.amount cannot be 0 since that is only possible if quant.amount is 0 which is not allowed by the assert above.
-    // If quant.amount == 1, then fee.amount == 1,
-    // otherwise if quant.amount > 1, then 0 < fee.amount < quant.amount.
-
-    auto quant_after_fee = quant;
-    quant_after_fee.amount -= fee.amount;
-
     // quant_after_fee.amount should be > 0 if quant.amount > 1.
     // If quant.amount == 1, then quant_after_fee.amount == 0 and the next inline transfer will fail causing the buy action to fail.
 
     int64_t bytes_out;
 
     _market.modify(market_itr, 0, [&](auto &es) {
-      bytes_out = es.convert(quant_after_fee, SATOKO).amount;
+      bytes_out = es.convert(quant, SATOKO).amount;
     });
 
     eosio_assert(bytes_out > 0, "must reserve a positive amount");
