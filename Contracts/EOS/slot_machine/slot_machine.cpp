@@ -1,14 +1,27 @@
-#include <eosiolib/currency.hpp>
+#include <utility>
+#include <vector>
+#include <string>
+#include <eosiolib/eosio.hpp>
 #include <eosiolib/asset.hpp>
+#include <eosiolib/contract.hpp>
 #include <eosiolib/crypto.h>
 
-using namespace eosio;
-using namespace std;
 using eosio::key256;
+using eosio::indexed_by;
+using eosio::const_mem_fun;
+using eosio::asset;
+using eosio::permission_level;
+using eosio::action;
+using eosio::print;
+using eosio::name;
 
 typedef double real_type;
 
-#define GAME_SYMBOL S(4, "CREDITS")
+using namespace eosio;
+using namespace std;
+
+#define GAME_SYMBOL S(4, CREDITS)
+#define CORE_SYMBOL S(4, SYS)
 
 class elot : public contract {
   public:
@@ -16,6 +29,7 @@ class elot : public contract {
   elot(account_name self)
       : contract(self),
         offers(_self, _self),      
+        players(_self, _self),
         global(_self, _self) {
     // Create a new global if not exists
     auto gl_itr = global.begin();
@@ -26,19 +40,35 @@ class elot : public contract {
   void buy(account_name account, asset eos) {
     require_auth(account);
     eosio_assert(eos.amount > 0, "must purchase a positive amount");
+    eosio_assert(eos.symbol == CORE_SYMBOL, "only core token allowed" );    
+
+    auto p = players.find(account);
+    if (p == players.end()) { // Player already exist
+      p = players.emplace(_self, [&](auto& player){
+        player.account = account;
+      });    
+    }
+    players.modify(p, 0, [&](auto &player) {
+      player.credits += eos.amount * 1000;
+    });
   }
 
   void sell(account_name account, int64_t credits) {
+    require_auth(account);
+    eosio_assert(credits > 0, "must sell a positive amount");  
   }
   
-  void bet(const account_name player, const asset& bet, const checksum256& seed) {
-    eosio_assert( bet.symbol == GAME_SYMBOL, "only core token allowed" );
-    eosio_assert( bet.is_valid(), "invalid bet" );
-    eosio_assert( bet.amount > 0, "must bet positive quantity" );    
+  void bet(const account_name account, const uint64_t bet, const checksum256& seed) {
+    require_auth(account);    
+    auto p = players.find(account);
+    eosio_assert(p->credits >= bet, "must have enouth credits");    
+    players.modify(p, 0, [&](auto &player) {
+      player.credits -= bet;
+    });    
     auto itr = offers.emplace(_self, [&](auto& offer){
       offer.id         = offers.available_primary_key();
       offer.bet        = bet;
-      offer.owner      = player;
+      offer.owner      = account;
       offer.seed       = seed;
     });    
   }
@@ -53,11 +83,9 @@ class elot : public contract {
   }
 
   void withdraw(const account_name host, const asset& credits) {
-
   }
 
   private:
-
   // @abi table global i64
   struct global {
     uint64_t id = 0;
@@ -70,11 +98,22 @@ class elot : public contract {
   typedef eosio::multi_index<N(global), global> global_index;
   global_index global;  
 
+  // @abi table player i64
+  struct player {
+    account_name account;
+    uint64_t credits;
+
+    uint64_t primary_key() const { return account; }
+    EOSLIB_SERIALIZE(player, (account)(credits))
+  };
+  typedef eosio::multi_index<N(player), player> player_index;
+  player_index players;
+
   //@abi table offer i64
   struct offer {
       uint64_t          id;
       account_name      owner;
-      asset             bet;
+      uint64_t          bet;
       checksum256       seed;
 
       uint64_t primary_key()const { return id; }
