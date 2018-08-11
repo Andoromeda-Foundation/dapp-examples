@@ -70,18 +70,25 @@ async function aaa(c) {
       alert(funGet)
       return JSON.parse(funGet);
 }
-  function BuyEvent() {
+function bbb(){
     if (typeof Web3 !== 'undefined') {        
       var web3 =  window.web3 = new Web3(window.web3.currentProvider)
         console.log(web3);
     } else {
         alert("It's no")
-    }    
-    const c = startApp(web3);
-    console.log(c);
-    getMyAccounts(web3,c)
+    } 
+    return web3;  
+}
+const web3 = bbb()
+const c = startApp(web3);
+window.addEventListener('load', 
+  function () {
+     console.log(c);  
     aaa(c)
-    
+});
+
+  function BuyEvent() {
+    getMyAccounts(web3,c)
 }
 
 
@@ -89,7 +96,7 @@ async function aaa(c) {
 class Eth extends React.Component {
   
 
-    render() {      
+render() {      
         return (
             <div className="index-page" style={{ marginTop: "-64px" }}>
                 <div className="banner" style={bannerStyle}>
