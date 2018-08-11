@@ -43,7 +43,7 @@ const colStyle = {
     padding: '0 10px'
 }
 const K = new BigNumber(NasTool.fromNasToWei(0.000000001).toString())
-
+        
 // const titleStyle = {
 //     opacity: 1, transform: `translate(0px, 0px)`,
 //     fontSize: `68px`,
