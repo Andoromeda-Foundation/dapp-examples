@@ -22,6 +22,7 @@ using namespace std;
 
 #define GAME_SYMBOL S(4, CREDITS)
 #define CORE_SYMBOL S(4, SYS)
+#define TOKEN_CONTRACT N(eosio.token)
 
 class elot : public contract {
   public:
@@ -36,6 +37,18 @@ class elot : public contract {
     if (gl_itr == global.end()) {
     };
   }
+
+  void transfer(account_name from, account_name to, asset quantity, string memo) { // I cannot understand this...
+    if (from == _self || to != _self) {
+      return;
+    }
+    eosio_assert(quantity.is_valid(), "Invalid token transfer");
+    eosio_assert(quantity.amount > 0, "Quantity must be positive");
+    // only accepts GAME_SYMBOL for buy
+    if (quantity.symbol == GAME_SYMBOL) {
+      buy(from, quantity);
+    }
+  }  
 
   void buy(account_name account, asset eos) {
     require_auth(account);
@@ -56,6 +69,17 @@ class elot : public contract {
   void sell(account_name account, int64_t credits) {
     require_auth(account);
     eosio_assert(credits > 0, "must sell a positive amount");  
+    require_auth(account);    
+    auto p = players.find(account);
+    eosio_assert(p->credits >= credits, "must have enouth credits");    
+    players.modify(p, 0, [&](auto &player) {
+      player.credits -= credits;
+    });
+    action(
+        permission_level{_self, N(active)},
+        N(eosio.token), N(transfer),
+        make_tuple(_self, account, asset(credits / 1000, CORE_SYMBOL), string("I'll be back.")))
+        .send();     
   }
   
   void bet(const account_name account, const uint64_t bet, const checksum256& seed) {
@@ -64,13 +88,7 @@ class elot : public contract {
     eosio_assert(p->credits >= bet, "must have enouth credits");    
     players.modify(p, 0, [&](auto &player) {
       player.credits -= bet;
-    });    
-    auto itr = offers.emplace(_self, [&](auto& offer){
-      offer.id         = offers.available_primary_key();
-      offer.bet        = bet;
-      offer.owner      = account;
-      offer.seed       = seed;
-    });    
+    });
   }
 
   void reveal(const account_name host, const checksum256& seed) {
@@ -82,7 +100,18 @@ class elot : public contract {
     }
   }
 
-  void withdraw(const account_name host, const asset& credits) {
+  // In ponzi we trust.
+  void withdraw(const account_name host) {
+    action(
+        permission_level{_self, N(active)},
+        N(eosio.token), N(transfer),
+        make_tuple(_self, account, asset(credits / 1000, CORE_SYMBOL), string("I'll be back.")))
+        .send();       
+  }
+
+  uint64_t get_credits(account_name acount) const {
+    const auto& p = players.get(account);
+    return p.credits;
   }
 
   private:
@@ -149,7 +178,7 @@ class elot : public contract {
   }
 
 // generate .wasm and .wast file
-// EOSIO_ABI_PRO(elot, (sell)(destroy)(claim))
+// EOSIO_ABI_PRO(elot, (buy)(sell)(bet)(reveal)(withdraw))
 
 // generate .abi file
-// EOSIO_ABI(elot, (buy)(sell)(bet)(reveal)(withdraw))
+EOSIO_ABI(elot, (buy)(sell)(bet)(reveal)(withdraw))
