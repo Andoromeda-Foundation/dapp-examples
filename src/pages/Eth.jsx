@@ -3,7 +3,6 @@ import React from "react";
 import Web3 from 'web3'; 
 import { Button , Col} from "antd";
 import MyCounterAbi from "../api/MycounterAbi";
-import { get } from "react-intl-universal";
 
 const backgroundImg = 'https://i.loli.net/2018/07/16/5b4c4a832a920.jpg'
 const contractAddr = 'https://explorer.nebulas.io/#/testnet/address/n1vhZgBFYt7AE6nP3VFap9c67VPqn1eFoTi'
@@ -56,6 +55,9 @@ function startApp(web3) {
 async function getMyAccounts(web3 ,c) {
     const accounts = await web3.eth.getAccounts();
     var meAddress = accounts[0]
+    if (!window.web3) {
+        throw Error('NO_METAMASK');
+      }
     console.log(meAddress);
     await c.methods.inc().send({
         from:meAddress
@@ -81,11 +83,8 @@ function bbb(){
 }
 const web3 = bbb()
 const c = startApp(web3);
-window.addEventListener('load', 
-  function () {
-     console.log(c);  
-    aaa(c)
-});
+aaa(c)
+
 
   function BuyEvent() {
     getMyAccounts(web3,c)
