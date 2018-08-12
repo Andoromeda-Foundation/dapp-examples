@@ -89,6 +89,12 @@ class elot : public contract {
     players.modify(p, 0, [&](auto &player) {
       player.credits -= bet;
     });
+    auto o = offers.emplace(_self, [&](auto& offer) {
+      offer.id = offers.available_primary_key();
+      offer.account = account;
+      offer.bet = bet;
+      offer.seed = seed;
+    });     
   }
 
   void reveal(const account_name host, const checksum256& seed) {
@@ -102,11 +108,11 @@ class elot : public contract {
 
   // In ponzi we trust.
   void withdraw(const account_name host) {
-    action(
+/*    action(
         permission_level{_self, N(active)},
         N(eosio.token), N(transfer),
         make_tuple(_self, account, asset(credits / 1000, CORE_SYMBOL), string("I'll be back.")))
-        .send();       
+        .send();       */
   }
 
   uint64_t get_credits(account_name acount) const {
