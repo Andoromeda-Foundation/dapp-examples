@@ -38,6 +38,13 @@ class elot : public contract {
     };
   }
 
+  void init(const checksum256& hash) {
+    global.emplace(_self, [&](auto& g) {
+      g.id = 0;
+      g.hash = hash;
+    });  
+  }
+
   void transfer(account_name from, account_name to, asset quantity, string memo) { // I cannot understand this...
     if (from == _self || to != _self) {
       return;
@@ -124,8 +131,7 @@ class elot : public contract {
   // @abi table global i64
   struct global {
     uint64_t id = 0;
-    uint64_t status; // 0: idle, 1: active
-    checksum256 hash; // hash of the game seed
+    checksum256 hash; // hash of the game seed, 0 when idle.
 
     uint64_t primary_key() const { return id; }
     EOSLIB_SERIALIZE(global, (id)(status)(hash))

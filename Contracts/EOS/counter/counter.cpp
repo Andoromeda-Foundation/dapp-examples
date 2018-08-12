@@ -5,16 +5,16 @@ using namespace eosio;
 class counter_contract : public eosio::contract {
   public:
     counter_contract(account_name self):eosio::contract(self),todos(_self, _self) {
-
+        todos.emplace(self, [&](auto& new_todo) {
+            new_todo.id = 0;
+            new_todo.counter = 1;
+        });
     }
     using eosio::contract::contract;
 
     // @abi action
     void init(account_name self) {
-        todos.emplace(self, [&](auto& new_todo) {
-            new_todo.id = 0;
-            new_todo.counter = 1;
-        });
+
     }
 
     // @abi action
