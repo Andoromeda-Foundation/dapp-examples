@@ -27,10 +27,11 @@ contract RandomCoin {
     }
 
     mapping (address => ActiveBet) activeBets;
-    function settleBet(address gambler) public returns(uint256 dice){
+    
+    function settleBet(address gambler) public view returns(uint256){
         ActiveBet storage bet = activeBets[msg.sender];
 
-        require (bet.amount != 0);
+        // require (bet.amount != 0);
         require (block.number > bet.placeBlockNumber + BLOCK_DELAY);
         require (block.number <= bet.placeBlockNumber + BET_EXPIRATION_BLOCKS);
 
