@@ -104,6 +104,7 @@ class elot : public contract {
     });     
   }
 
+
   void reveal(const account_name host, const checksum256& seed) {
     assert_sha256( (char *)&seed, sizeof(seed), (const checksum256 *)& global.begin()->hash );
     auto n = offers.available_primary_key();
@@ -163,10 +164,28 @@ class elot : public contract {
   typedef eosio::multi_index< N(offer), offer> offer_index;  
   offer_index offers;
 
-  void deal_with(const offer& itr) {
-    offers.erase(itr);
+  const int p[8] = {25,50,1200,1000,4000,20000,50000,23725};
+  const float b[8] = {100, 50, 20, 10, 5, 2, 0.1, 0.01};
+
+  float get_bonus(const checksum256& seed) {
+    seed %= 100000;
+    int i = 0;
+    while (seed > p[i]) {
+      seed -= p[i];      
+      ++i;
+    }
+    return b[i];
   }
 
+  void deal_with(const offer& itr, const checksum256& seed) {
+    seed ^= itr->seed;
+    auto p = players.find(itr_owner);
+    eosio_assert(p != players.end(), "player is not exist.");
+    players.modify(p, 0, [&](auto &player) {
+      player.credits += int(get_bonus(seed) * itr->bet);
+    });
+    offers.erase(itr);
+  }
 };
 
 #define EOSIO_ABI_PRO(TYPE, MEMBERS)                                                                                                              \
