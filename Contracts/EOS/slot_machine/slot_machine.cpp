@@ -38,6 +38,7 @@ class elot : public contract {
     };
   }
 
+  // @abi action
   void init(const checksum256& hash) {
     global.emplace(_self, [&](auto& g) {
       g.id = 0;
@@ -45,6 +46,7 @@ class elot : public contract {
     });  
   }
 
+  // @abi action
   void transfer(account_name from, account_name to, asset quantity, string memo) { // I cannot understand this...
     if (from == _self || to != _self) {
       return;
@@ -57,6 +59,7 @@ class elot : public contract {
     }
   }  
 
+  // @abi action
   void buy(account_name account, asset eos) {
     require_auth(account);
     eosio_assert(eos.amount > 0, "must purchase a positive amount");
@@ -73,6 +76,7 @@ class elot : public contract {
     });
   }
 
+  // @abi action
   void sell(account_name account, int64_t credits) {
     require_auth(account);
     eosio_assert(credits > 0, "must sell a positive amount");  
@@ -88,7 +92,8 @@ class elot : public contract {
         make_tuple(_self, account, asset(credits / 1000, CORE_SYMBOL), string("I'll be back.")))
         .send();     
   }
-  
+
+  // @abi action  
   void bet(const account_name account, const uint64_t bet, const checksum256& seed) {
     require_auth(account);    
     auto p = players.find(account);
@@ -104,8 +109,10 @@ class elot : public contract {
     });     
   }
 
-
+  // @abi action
   void reveal(const account_name host, const checksum256& seed) {
+    require_auth(host);
+    eosio_assert(host == _self, "...");     
     assert_sha256( (char *)&seed, sizeof(seed), (const checksum256 *)& global.begin()->hash );
     auto n = offers.available_primary_key();
     for (int i = 0; i < n; ++i) {
@@ -115,14 +122,18 @@ class elot : public contract {
   }
 
   // In ponzi we trust.
-  void withdraw(const account_name host) {
-/*    action(
-        permission_level{_self, N(active)},
-        N(eosio.token), N(transfer),
-        make_tuple(_self, account, asset(credits / 1000, CORE_SYMBOL), string("I'll be back.")))
-        .send();       */
+  // @abi action  
+  void withdraw(const account_name host, uint64_t value) {
+    require_auth(host);
+    eosio_assert(host == _self, "..."); 
+    action(
+      permission_level{_self, N(active)},
+      N(eosio.token), N(transfer),
+      make_tuple(_self, account, asset(value, CORE_SYMBOL), string("I'll be back."))
+    ).send();      
   }
 
+  // @abi action
   uint64_t get_credits(account_name acount) const {
     const auto& p = players.get(account);
     return p.credits;
@@ -186,7 +197,7 @@ class elot : public contract {
     });
     offers.erase(itr);
   }
-};
+}
 
 #define EOSIO_ABI_PRO(TYPE, MEMBERS)                                                                                                              \
   extern "C" {                                                                                                                                    \
