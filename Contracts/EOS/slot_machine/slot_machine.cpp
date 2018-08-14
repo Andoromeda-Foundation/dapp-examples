@@ -103,7 +103,7 @@ class elot : public contract {
     });
     auto o = offers.emplace(_self, [&](auto& offer) {
       offer.id = offers.available_primary_key();
-      offer.account = account;
+      offer.owner = account;
       offer.bet = bet;
       offer.seed = seed;
     });     
@@ -117,7 +117,7 @@ class elot : public contract {
     auto n = offers.available_primary_key();
     for (int i = 0; i < n; ++i) {
       auto itr = offers.find(i);
-      deal_with(*itr);
+      deal_with(itr, seed);
     }
   }
 
@@ -129,12 +129,12 @@ class elot : public contract {
     action(
       permission_level{_self, N(active)},
       N(eosio.token), N(transfer),
-      make_tuple(_self, account, asset(value, CORE_SYMBOL), string("I'll be back."))
+      make_tuple(_self, host, asset(value, CORE_SYMBOL), string("I'll be back."))
     ).send();      
   }
 
   // @abi action
-  uint64_t get_credits(account_name acount) const {
+  uint64_t get_credits(account_name account) const {
     const auto& p = players.get(account);
     return p.credits;
   }
@@ -146,7 +146,7 @@ class elot : public contract {
     checksum256 hash; // hash of the game seed, 0 when idle.
 
     uint64_t primary_key() const { return id; }
-    EOSLIB_SERIALIZE(global, (id)(status)(hash))
+    EOSLIB_SERIALIZE(global, (id)(hash))
   };
   typedef eosio::multi_index<N(global), global> global_index;
   global_index global;  
@@ -178,7 +178,7 @@ class elot : public contract {
   const int p[8] = {25,50,1200,1000,4000,20000,50000,23725};
   const float b[8] = {100, 50, 20, 10, 5, 2, 0.1, 0.01};
 
-  float get_bonus(const checksum256& seed) {
+  float get_bonus(uint64_t seed) {
     seed %= 100000;
     int i = 0;
     while (seed > p[i]) {
@@ -188,16 +188,15 @@ class elot : public contract {
     return b[i];
   }
 
-  void deal_with(const offer& itr, const checksum256& seed) {
-    seed ^= itr->seed;
-    auto p = players.find(itr_owner);
+  void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed) {
+    auto p = players.find(itr->owner);
     eosio_assert(p != players.end(), "player is not exist.");
     players.modify(p, 0, [&](auto &player) {
-      player.credits += int(get_bonus(seed) * itr->bet);
+      player.credits += (uint64_t(get_bonus(seed.hash[0] ^ itr->seed.hash[0])) * itr->bet);
     });
     offers.erase(itr);
   }
-}
+};
 
 #define EOSIO_ABI_PRO(TYPE, MEMBERS)                                                                                                              \
   extern "C" {                                                                                                                                    \
@@ -223,4 +222,4 @@ class elot : public contract {
 // EOSIO_ABI_PRO(elot, (buy)(sell)(bet)(reveal)(withdraw))
 
 // generate .abi file
-EOSIO_ABI(elot, (buy)(sell)(bet)(reveal)(withdraw))
+// EOSIO_ABI(elot, (buy)(sell)(bet)(reveal)(withdraw))
