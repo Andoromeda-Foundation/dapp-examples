@@ -1,4 +1,4 @@
-/**
+﻿/**
 *                         ______ _______ ______ 
 *                        |_   _|__   __|  ____|
 *                          | |    | |  | |__   
@@ -132,19 +132,63 @@ public:
 
     auto market_itr = _market.find(gl_itr->gameid);
 
+    auto fee = quant;
+    // fee.amount = (fee.amount + 999) / 1000; /// .1% fee (round up)
+    fee.amount = (fee.amount + 199) / 200; /// .5% fee (round up)
+
+    // fee.amount cannot be 0 since that is only possible if quant.amount is 0 which is not allowed by the assert above.
+    // If quant.amount == 1, then fee.amount == 1,
+    // otherwise if quant.amount > 1, then 0 < fee.amount < quant.amount.
+
+    auto quant_after_fee = quant;
+    quant_after_fee.amount -= fee.amount;
+
     // quant_after_fee.amount should be > 0 if quant.amount > 1.
     // If quant.amount == 1, then quant_after_fee.amount == 0 and the next inline transfer will fail causing the buy action to fail.
+
+    if (fee.amount > 0)
+    {
+
+      auto dev_fee = fee;
+      dev_fee.amount = fee.amount * 30 / 100;
+      fee.amount -= dev_fee.amount;
+
+      action(
+          permission_level{_self, N(active)},
+          TOKEN_CONTRACT, N(transfer),
+          make_tuple(_self, FEE_ACCOUNT, fee, string("buy fee")))
+          .send();
+
+      if (dev_fee.amount > 0)
+      {
+        action(
+            permission_level{_self, N(active)},
+            TOKEN_CONTRACT, N(transfer),
+            make_tuple(_self, DEV_FEE_ACCOUNT, dev_fee, string("dev fee")))
+            .send();
+      }
+    }
 
     int64_t bytes_out;
 
     _market.modify(market_itr, 0, [&](auto &es) {
-      bytes_out = es.convert(quant, SATOKO).amount;
+      bytes_out = es.convert(quant_after_fee, SATOKO).amount;
     });
 
     eosio_assert(bytes_out > 0, "must reserve a positive amount");
 
     // burn 1 %
     int64_t burn = bytes_out / 100;
+
+    auto game_itr = _games.find(gl_itr->gameid);
+
+    _games.modify(game_itr, 0, [&](auto &game) {
+      game.counter++;
+      game.total_burn += burn;
+      game.total_alive -= burn;
+      game.total_reserved += bytes_out;
+      game.quote_balance += quant_after_fee;
+    });
 
     user_resources_table userres(_self, account);
 
@@ -164,6 +208,8 @@ public:
         res.hodl += bytes_out;
       });
     }
+    trigger_air_drop(account, quant_after_fee);
+    trigger_game_over(account, quant_after_fee);
   }
 
   void sell(account_name account, int64_t bytes)
@@ -704,7 +750,7 @@ private:
   }
 
 // generate .wasm and .wast file
-// EOSIO_ABI_PRO(itegame, (transfer)(sell)(destroy)(claim))
+EOSIO_ABI_PRO(itegame, (transfer)(sell)(destroy)(claim))
 
 // generate .abi file
-EOSIO_ABI(itegame, (transfer)(buy)(sell)(destroy)(claim))
+// EOSIO_ABI(itegame, (transfer)(sell)(destroy)(claim))
