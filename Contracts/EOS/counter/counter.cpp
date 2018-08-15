@@ -8,7 +8,6 @@ class counter_contract : public eosio::contract {
     }
     using eosio::contract::contract;
 
-    // @abi action
     void init(account_name self) {
         eosio_assert(self == _self, "only contract itself."); 	          
         todos.emplace(self, [&](auto& new_todo) {
@@ -17,7 +16,6 @@ class counter_contract : public eosio::contract {
         });
     }
 
-    // @abi action
     void add(account_name author) {
         auto itr = todos.find(0);
         eosio_assert(itr != todos.end(), "No found");
