@@ -3,33 +3,32 @@
 using namespace eosio;
 
 class counter_contract : public eosio::contract {
-  public:
+    public:
     counter_contract(account_name self):eosio::contract(self),todos(_self, _self) {
-        todos.emplace(self, [&](auto& new_todo) {
-            new_todo.id = 0;
-            new_todo.counter = 1;
-        });
     }
     using eosio::contract::contract;
 
     // @abi action
     void init(account_name self) {
-
+        eosio_assert(self == _self, "only contract itself."); 	          
+        todos.emplace(self, [&](auto& new_todo) {
+            new_todo.id = 0;
+            new_todo.counter = 1;
+        });
     }
 
     // @abi action
     void add(account_name author) {
         auto itr = todos.find(0);
         eosio_assert(itr != todos.end(), "No found");
-        auto k = itr->counter;
         todos.modify(itr, author, [&](auto& new_todo) {
             new_todo.id = 0;
-            new_todo.counter = k + 1;
+            new_todo.counter += 1;
         });
         eosio::print("Now counter is ", itr->counter);
     }
 
-  private:
+    private:
   // @abi table todos i64
     struct todo {
         uint64_t id;

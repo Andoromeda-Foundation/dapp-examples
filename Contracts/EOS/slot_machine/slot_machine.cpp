@@ -24,29 +24,24 @@ using namespace std;
 #define CORE_SYMBOL S(4, SYS)
 #define TOKEN_CONTRACT N(eosio.token)
 
-class elot : public contract {
-  public:
+class slot_machine : public contract {
+  	public:
 
-  elot(account_name self)
-      : contract(self),
+  	slot_machine(account_name self)
+		: contract(self),
         offers(_self, _self),      
         players(_self, _self),
         global(_self, _self) {
-    // Create a new global if not exists
-    auto gl_itr = global.begin();
-    if (gl_itr == global.end()) {
-    };
-  }
+  	}
 
-  // @abi action
-  void init(const checksum256& hash) {
+  void init(account_name self, const checksum256& hash) {
+    eosio_assert(self == _self, "only contract itself."); 	  
     global.emplace(_self, [&](auto& g) {
       g.id = 0;
       g.hash = hash;
     });  
   }
 
-  // @abi action
   void transfer(account_name from, account_name to, asset quantity, string memo) { // I cannot understand this...
     if (from == _self || to != _self) {
       return;
@@ -59,7 +54,6 @@ class elot : public contract {
     }
   }  
 
-  // @abi action
   void buy(account_name account, asset eos) {
     require_auth(account);
     eosio_assert(eos.amount > 0, "must purchase a positive amount");
@@ -76,7 +70,6 @@ class elot : public contract {
     });
   }
 
-  // @abi action
   void sell(account_name account, int64_t credits) {
     require_auth(account);
     eosio_assert(credits > 0, "must sell a positive amount");  
@@ -93,7 +86,6 @@ class elot : public contract {
         .send();     
   }
 
-  // @abi action  
   void bet(const account_name account, const uint64_t bet, const checksum256& seed) {
     require_auth(account);    
     auto p = players.find(account);
@@ -109,8 +101,7 @@ class elot : public contract {
     });     
   }
 
-  // @abi action
-  void reveal(const account_name host, const checksum256& seed) {
+  void reveal(const account_name host, const checksum256& seed, const checksum256& hash) {
     require_auth(host);
     eosio_assert(host == _self, "...");     
     assert_sha256( (char *)&seed, sizeof(seed), (const checksum256 *)& global.begin()->hash );
@@ -119,10 +110,13 @@ class elot : public contract {
       auto itr = offers.find(i);
       deal_with(itr, seed);
     }
+    auto itr = global.find(0);      
+    global.modify(itr, 0, [&](auto &g) {
+      g.hash = hash;
+    });
   }
 
   // In ponzi we trust.
-  // @abi action  
   void withdraw(const account_name host, uint64_t value) {
     require_auth(host);
     eosio_assert(host == _self, "..."); 
@@ -133,7 +127,6 @@ class elot : public contract {
     ).send();      
   }
 
-  // @abi action
   uint64_t get_credits(account_name account) const {
     const auto& p = players.get(account);
     return p.credits;
@@ -162,7 +155,7 @@ class elot : public contract {
   typedef eosio::multi_index<N(player), player> player_index;
   player_index players;
 
-  //@abi table offer i64
+  // @abi table offer i64
   struct offer {
       uint64_t          id;
       account_name      owner;
@@ -222,4 +215,4 @@ class elot : public contract {
 // EOSIO_ABI_PRO(elot, (buy)(sell)(bet)(reveal)(withdraw))
 
 // generate .abi file
-// EOSIO_ABI(elot, (buy)(sell)(bet)(reveal)(withdraw))
+EOSIO_ABI(slot_machine, (transfer)(init)(buy)(sell)(bet)(reveal)(withdraw))
