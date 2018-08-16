@@ -20,7 +20,6 @@ typedef double real_type;
 using namespace eosio;
 using namespace std;
 
-#define GAME_SYMBOL S(4, CREDITS)
 #define CORE_SYMBOL S(4, SYS)
 #define TOKEN_CONTRACT N(eosio.token)
 
@@ -48,13 +47,13 @@ class slot_machine : public contract {
     }
     eosio_assert(quantity.is_valid(), "Invalid token transfer");
     eosio_assert(quantity.amount > 0, "Quantity must be positive");
-    // only accepts GAME_SYMBOL for buy
-    if (quantity.symbol == GAME_SYMBOL) {
-      buy(from, quantity);
+    // only accepts CORE_SYMBOL for buy
+    if (quantity.symbol == CORE_SYMBOL) {
+      _transfer(from, quantity);
     }
   }  
 
-  void buy(account_name account, asset eos) {
+  void _transfer(account_name account, asset eos) {
     require_auth(account);
     eosio_assert(eos.amount > 0, "must purchase a positive amount");
     eosio_assert(eos.symbol == CORE_SYMBOL, "only core token allowed" );    
@@ -200,7 +199,7 @@ class slot_machine : public contract {
     {                                                                                                                                             \
       eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account");                                        \
     }                                                                                                                                             \
-    if ((code == TOKEN_CONTRACT && action == N(transfer)) || (code == self && (action == N(sell) || action == N(destroy) || action == N(claim)))) \
+    if ((code == TOKEN_CONTRACT && action == N(transfer)) || (code == self && (action != N(transfer) ))) \
     {                                                                                                                                             \
       TYPE thiscontract(self);                                                                                                                    \
       switch (action)                                                                                                                             \
@@ -212,7 +211,7 @@ class slot_machine : public contract {
   }
 
 // generate .wasm and .wast file
-// EOSIO_ABI_PRO(elot, (buy)(sell)(bet)(reveal)(withdraw))
+// EOSIO_ABI_PRO(slot_machine, (transfer)(init)(sell)(bet)(reveal)(withdraw))
 
 // generate .abi file
-EOSIO_ABI(slot_machine, (transfer)(init)(buy)(sell)(bet)(reveal)(withdraw))
+EOSIO_ABI(slot_machine, (transfer)(init)(sell)(bet)(reveal)(withdraw))
