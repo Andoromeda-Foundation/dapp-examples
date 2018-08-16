@@ -35,28 +35,41 @@ class slot_machine : public contract {
 
   void init(account_name self, const checksum256& hash) {
     eosio_assert(self == _self, "only contract itself."); 	  
-    global.emplace(_self, [&](auto& g) {
-      g.id = 0;
-      g.hash = hash;
-    });  
+
+    auto g = global.find(0);
+    if (g == global.end()) {
+      global.emplace(_self, [&](auto& g){
+        g.id = 0;
+        g.hash = hash;
+      });        
+    } else {
+      global.modify(g, 0, [&](auto& g) {      
+        g.hash = hash;
+      });   
+    }
   }
 
   void transfer(account_name from, account_name to, asset quantity, string memo) { // I cannot understand this...
+    eosio::print("Now counter is ", quantity.amount);        
     if (from == _self || to != _self) {
       return;
     }
+    eosio::print("Now counter is ", quantity.amount);      
     eosio_assert(quantity.is_valid(), "Invalid token transfer");
     eosio_assert(quantity.amount > 0, "Quantity must be positive");
-    // only accepts CORE_SYMBOL for buy
+    eosio::print("Now counter is ", quantity.amount);          // only accepts CORE_SYMBOL for buy
     if (quantity.symbol == CORE_SYMBOL) {
       _transfer(from, quantity);
     }
   }  
 
   void _transfer(account_name account, asset eos) {
+    eosio::print("Now counter is ", eos.amount);    
     require_auth(account);
+    eosio::print("Now counter is ", eos.amount);        
     eosio_assert(eos.amount > 0, "must purchase a positive amount");
     eosio_assert(eos.symbol == CORE_SYMBOL, "only core token allowed" );    
+    eosio::print("Now counter is ", eos.amount);    
 
     auto p = players.find(account);
     if (p == players.end()) { // Player already exist
@@ -67,6 +80,7 @@ class slot_machine : public contract {
     players.modify(p, 0, [&](auto &player) {
       player.credits += eos.amount * 1000;
     });
+    eosio::print("Now counter is: ", p->credits);        
   }
 
   void sell(account_name account, int64_t credits) {
@@ -86,8 +100,11 @@ class slot_machine : public contract {
   }
 
   void bet(const account_name account, const uint64_t bet, const checksum256& seed) {
+    eosio::print("????\n");     
     require_auth(account);    
     auto p = players.find(account);
+    eosio::print("Now credits is: ", p->credits); 
+
     eosio_assert(p->credits >= bet, "must have enouth credits");    
     players.modify(p, 0, [&](auto &player) {
       player.credits -= bet;
@@ -211,7 +228,7 @@ class slot_machine : public contract {
   }
 
 // generate .wasm and .wast file
-// EOSIO_ABI_PRO(slot_machine, (transfer)(init)(sell)(bet)(reveal)(withdraw))
+EOSIO_ABI_PRO(slot_machine, (transfer)(init)(sell)(bet)(reveal)(withdraw))
 
 // generate .abi file
-EOSIO_ABI(slot_machine, (transfer)(init)(sell)(bet)(reveal)(withdraw))
+// EOSIO_ABI(slot_machine, (transfer)(init)(sell)(bet)(reveal)(withdraw))
