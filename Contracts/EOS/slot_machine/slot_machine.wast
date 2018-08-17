@@ -7355,14 +7355,8 @@
   (i64.store offset=8
    (get_local $1)
    (i64.add
-    (i64.load offset=8
-     (get_local $1)
-    )
-    (i64.mul
-     (i64.load offset=16
-      (get_local $7)
-     )
-     (i64.trunc_u/f32
+    (i64.trunc_u/f32
+     (f32.mul
       (f32.load
        (i32.add
         (i32.add
@@ -7375,7 +7369,15 @@
         (i32.const 160)
        )
       )
+      (f32.convert_u/i64
+       (i64.load offset=16
+        (get_local $7)
+       )
+      )
      )
+    )
+    (i64.load offset=8
+     (get_local $1)
     )
    )
   )

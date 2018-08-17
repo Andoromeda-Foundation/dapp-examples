@@ -173,7 +173,7 @@ class slot_machine : public contract {
     auto p = players.find(itr->owner);
     eosio_assert(p != players.end(), "Player is not exist.");
     players.modify(p, 0, [&](auto &player) {
-      player.credits += uint64_t(get_bonus(merge_seed(seed, itr->seed))) * itr->bet;
+      player.credits += uint64_t(get_bonus(merge_seed(seed, itr->seed)) * itr->bet);
     });
     offers.erase(itr);
   }
