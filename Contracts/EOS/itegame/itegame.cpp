@@ -707,4 +707,4 @@ private:
 // EOSIO_ABI_PRO(itegame, (transfer)(sell)(destroy)(claim))
 
 // generate .abi file
-EOSIO_ABI(itegame, (transfer)(buy)(sell)(destroy)(claim))
+EOSIO_ABI_PRO(itegame, (transfer)(buy)(sell)(destroy)(claim))
