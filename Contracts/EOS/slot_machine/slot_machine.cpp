@@ -1,26 +1,11 @@
-#include <utility>
-#include <vector>
-#include <string>
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/contract.hpp>
 #include <eosiolib/crypto.h>
 
-using eosio::key256;
-using eosio::indexed_by;
-using eosio::const_mem_fun;
-using eosio::asset;
-using eosio::permission_level;
-using eosio::action;
-using eosio::print;
-using eosio::name;
+using namespace eosio;;
 
-typedef double real_type;
-
-using namespace eosio;
-using namespace std;
-
-#define CORE_SYMBOL S(4, SYS)
+#define EOS_SYMBOL S(4, EOS)
 #define TOKEN_CONTRACT N(eosio.token)
 
 class slot_machine : public contract {
@@ -49,27 +34,21 @@ class slot_machine : public contract {
     }
   }
 
-  void transfer(account_name from, account_name to, asset quantity, string memo) { // I cannot understand this...
-    eosio::print("Now counter is ", quantity.amount);        
+  void transfer(account_name from, account_name to, asset quantity, std::string memo) { // I cannot understand this...
     if (from == _self || to != _self) {
       return;
     }
-    eosio::print("Now counter is ", quantity.amount);      
     eosio_assert(quantity.is_valid(), "Invalid token transfer");
     eosio_assert(quantity.amount > 0, "Quantity must be positive");
-    eosio::print("Now counter is ", quantity.amount);          // only accepts CORE_SYMBOL for buy
-    if (quantity.symbol == CORE_SYMBOL) {
+    if (quantity.symbol == EOS_SYMBOL) {
       _transfer(from, quantity);
     }
   }  
 
   void _transfer(account_name account, asset eos) {
-    eosio::print("Now counter is ", eos.amount);    
     require_auth(account);
-    eosio::print("Now counter is ", eos.amount);        
     eosio_assert(eos.amount > 0, "must purchase a positive amount");
-    eosio_assert(eos.symbol == CORE_SYMBOL, "only core token allowed" );    
-    eosio::print("Now counter is ", eos.amount);    
+    eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed" );    
 
     auto p = players.find(account);
     if (p == players.end()) { // Player already exist
@@ -79,8 +58,7 @@ class slot_machine : public contract {
     }
     players.modify(p, 0, [&](auto &player) {
       player.credits += eos.amount * 1000;
-    });
-    eosio::print("Now counter is: ", p->credits);        
+    });    
   }
 
   void sell(account_name account, int64_t credits) {
@@ -95,16 +73,13 @@ class slot_machine : public contract {
     action(
         permission_level{_self, N(active)},
         N(eosio.token), N(transfer),
-        make_tuple(_self, account, asset(credits / 1000, CORE_SYMBOL), string("I'll be back.")))
+        make_tuple(_self, account, asset(credits / 1000, EOS_SYMBOL), std::string("I'll be back.")))
         .send();     
   }
 
   void bet(const account_name account, const uint64_t bet, const checksum256& seed) {
-    eosio::print("????\n");     
     require_auth(account);    
     auto p = players.find(account);
-    eosio::print("Now credits is: ", p->credits); 
-
     eosio_assert(p->credits >= bet, "must have enouth credits");    
     players.modify(p, 0, [&](auto &player) {
       player.credits -= bet;
@@ -119,7 +94,7 @@ class slot_machine : public contract {
 
   void reveal(const account_name host, const checksum256& seed, const checksum256& hash) {
     require_auth(host);
-    eosio_assert(host == _self, "...");     
+    eosio_assert(host == _self, "Only happyeosslot can reveal the answer.");
     assert_sha256( (char *)&seed, sizeof(seed), (const checksum256 *)& global.begin()->hash );
     auto n = offers.available_primary_key();
     for (int i = 0; i < n; ++i) {
@@ -131,18 +106,7 @@ class slot_machine : public contract {
       g.hash = hash;
     });
   }
-
-  // In ponzi we trust.
-  void withdraw(const account_name host, uint64_t value) {
-    require_auth(host);
-    eosio_assert(host == _self, "..."); 
-    action(
-      permission_level{_self, N(active)},
-      N(eosio.token), N(transfer),
-      make_tuple(_self, host, asset(value, CORE_SYMBOL), string("I'll be back."))
-    ).send();      
-  }
-
+  
   uint64_t get_credits(account_name account) const {
     const auto& p = players.get(account);
     return p.credits;
@@ -197,11 +161,19 @@ class slot_machine : public contract {
     return b[i];
   }
 
+  uint64_t merge_seed(const checksum256& s1, const checksum256& s2) {
+    uint64_t hash = 0, x;
+    for (int i = 0; i < 32; ++i) {
+      hash ^= (s1.hash[i] ^ s2.hash[i]) << (i & 7);
+    }
+    return hash;
+  }
+
   void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed) {
     auto p = players.find(itr->owner);
-    eosio_assert(p != players.end(), "player is not exist.");
+    eosio_assert(p != players.end(), "Player is not exist.");
     players.modify(p, 0, [&](auto &player) {
-      player.credits += (uint64_t(get_bonus(seed.hash[0] ^ itr->seed.hash[0])) * itr->bet);
+      player.credits += uint64_t(get_bonus(merge_seed(seed, itr->seed))) * itr->bet;
     });
     offers.erase(itr);
   }
@@ -228,7 +200,7 @@ class slot_machine : public contract {
   }
 
 // generate .wasm and .wast file
-EOSIO_ABI_PRO(slot_machine, (transfer)(init)(sell)(bet)(reveal)(withdraw))
+EOSIO_ABI_PRO(slot_machine, (transfer)(init)(sell)(bet)(reveal))
 
 // generate .abi file
-// EOSIO_ABI(slot_machine, (transfer)(init)(sell)(bet)(reveal)(withdraw))
+// EOSIO_ABI(slot_machine, (transfer)(init)(sell)(bet)(reveal))

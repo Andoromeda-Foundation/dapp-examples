@@ -19,6 +19,9 @@
         "system_error": "cpp",
         "type_traits": "cpp",
         "utility": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "__bit_reference": "cpp",
+        "__string": "cpp",
+        "algorithm": "cpp"
     }
 }
