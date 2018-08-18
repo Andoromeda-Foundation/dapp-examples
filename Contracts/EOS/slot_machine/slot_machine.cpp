@@ -164,7 +164,7 @@ class slot_machine : public contract {
   uint64_t merge_seed(const checksum256& s1, const checksum256& s2) {
     uint64_t hash = 0, x;
     for (int i = 0; i < 32; ++i) {
-      hash ^= (s1.hash[i] ^ s2.hash[i]) << (i & 7);
+      hash ^= (s1.hash[i] ^ s2.hash[i]) << ((i & 7) << 3);
     }
     return hash;
   }
