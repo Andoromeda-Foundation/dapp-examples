@@ -33,17 +33,20 @@ class charger : public contract {
 
       auto o = offers.emplace(_self, [&](auto& offer) {
         offer.id = offers.available_primary_key();
+        offer.timestamp = current_time();
         offer.memo = memo;
       }); 
     }
 
-    void clear(account_name self) {
+    void clear(account_name self, uint64_t time) {
       require_auth(self);
       eosio_assert(self == _self, "Only happyeosslot can reveal the answer.");
 
       auto n = offers.available_primary_key();
-      for (int i = 0; i < n; ++i) {
-        auto itr = offers.find(i);
+      while (true) {
+        auto itr = offers.begin();
+        if (itr == offers.end()) break;
+        if (itr->timestamp > time) break;
         deal_with(itr);
       }
     }
@@ -53,6 +56,7 @@ class charger : public contract {
     // @abi table offer i64
     struct offer {
         uint64_t id;
+        uint64_t timestamp;
         std::string memo;
 
         uint64_t primary_key()const { return id; }
