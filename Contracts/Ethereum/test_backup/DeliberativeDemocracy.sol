@@ -1,45 +1,61 @@
 pragma solidity ^0.4.24;
 
+import "./Pausable.sol";
 
-contract DeliberativeDemocracy {
+contract DeliberativeDemocracy is Pausable  {
 
     struct Proposal {
         address advocate; // 发起人
-        uint256 act;
+        uint256 act; 
         uint256 startTime;
         uint256 endTime;
     }
 
     address public clientContractAddress;
 
-    mapping(address => uint256) public unused_balance; // 未使用的投票
-    mapping(address => uint256) public used_balance; // 使用的投票  
+    // 既然一token一票，某一个时刻只能投一个节点，那就直接用balances[]
+    // mapping(address => uint256) public unused_balance; // 未使用的投票
+    // mapping(address => uint256) public used_balance; // 使用的投票  
+    mapping(address => bool) public isUsed; // 用户是否已经投票
     mapping(address => address) public candidate; // 我的候选人
     mapping(address => uint256) public ticket; // 得票数
     mapping(address => uint256) public lastVoteTime; // 上次投票时间
+    address[21] mps;
 
     mapping(uint256 => address) public senate; // 议会 
-    mapping(uint256 => Proposal) public proposals; // 提案
+    mapping(address => bool) public isMP;
+    // mapping(uint256 => Proposal) public proposals; // 提案
+    Proposal[] proposals;
 
     constructor(address client) public {
         clientContractAddress = client;
     }
 
-    function setClientAddress(address _client) public {
-        if (clientContractAddress == 0x00) clientContractAddress = _client;
+    function setClientAddress(address _client) public onlyAdmins {
+        clientContractAddress = _client;
     }
- 
+
     function revote() public {
-        ticket[candidate[msg.sender]] -= used_balance[msg.sender];
-        unused_balance[msg.sender] += used_balance[msg.sender];
+        if(isUsed[msg.sender]) {
+            Client _client = Client(clientContractAddress);
+
+            ticket[candidate[msg.sender]] -= _client.balanceOf(msg.sender);
+            isUsed[msg.sender] = false;   
+        }
     }
 
     function vote(address _candidate) public {
+        require(isMP[_candidate]);
         revote();
         candidate[msg.sender] = _candidate;
-        ticket[_candidate] += unused_balance[msg.sender];
-        used_balance[msg.sender] = unused_balance[msg.sender];
-        unused_balance[msg.sender] = 0;
+
+        Client _client = Client(clientContractAddress);
+        ticket[_candidate] += _client.balanceOf(msg.sender);
+
+        isUsed[msg.sender] = true;
+
+        // 维护21个议员
+        
     }
 
     /*
@@ -59,6 +75,9 @@ contract DeliberativeDemocracy {
 
     }
     */
+    function run() public {
+        isMP[msg.sender] = true;
+    }
 
     function execute(string method, uint256 para) public returns(bool){
         bytes4 methodId = bytes4(keccak256(method));
@@ -81,52 +100,7 @@ contract DeliberativeDemocracy {
 }
 
 interface Client {
-    function transferFrom(address _from, address _to, uint256 _value) external;  
-    function transfer(address _to, uint256 _value) external;
-}
-
-/**
- * @title SafeMath
- * @dev Math operations with safety checks that throw on error
- */
-library SafeMath {
-
-    /**
-    * @dev Multiplies two numbers, throws on overflow.
-    */
-    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        if (a == 0) {
-            return 0;
-        }
-        uint256 c = a * b;
-        assert(c / a == b);
-        return c;
-    }
-
-    /**
-    * @dev Integer division of two numbers, truncating the quotient.
-    */
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        // assert(b > 0); // Solidity automatically throws when dividing by 0
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-        return c;
-    }
-
-    /**
-    * @dev Substracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
-    */
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        assert(b <= a);
-        return a - b;
-    }
-
-    /**
-    * @dev Adds two numbers, throws on overflow.
-    */
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        assert(c >= a);
-        return c;
-    }
+    function transferFrom(address _from, address _to, uint256 _value) external returns(bool);  
+    function transfer(address _to, uint256 _value) external returns(bool);
+    function balanceOf(address _owner) external view returns (uint256);
 }
