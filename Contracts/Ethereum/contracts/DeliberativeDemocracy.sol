@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
+import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract DeliberativeDemocracy is Pausable  {
+contract DeliberativeDemocracy is Ownable  {
 
     struct Proposal {
         address advocate; // 发起人
@@ -31,8 +31,7 @@ contract DeliberativeDemocracy is Pausable  {
         clientContractAddress = client;
     }
 
-    // function setClientAddress(address _client) public onlyAdmins {
-    function setClientAddress(address _client) public {               
+    function setClientAddress(address _client) public onlyOwner {
         clientContractAddress = _client;
     }
 
@@ -81,13 +80,14 @@ contract DeliberativeDemocracy is Pausable  {
     }
 
     function execute(string method, uint256 para) public returns(bool){
-        bytes4 methodId = bytes4(keccak256(method));
+        bytes4 methodId = bytes4(keccak256(abi.encodePacked(method)));
         return clientContractAddress.call(methodId, para);
         //if (!clientContractAddress.call(method, para)) {
         //    revert();
         //}
     }
-
+    
+    /*
     function withdraw() public {
        // Issuer issuer = Issuer(IssuerContractAddress);
        // issuer.transfer(msg.sender, unused_balance[msg.sender]);
@@ -98,6 +98,7 @@ contract DeliberativeDemocracy is Pausable  {
        // issuer.transferFrom(msg.sender, address(this), _value);
        // unused_balance[msg.sender] += _value;        
     }
+    */
 }
 
 interface Client {
