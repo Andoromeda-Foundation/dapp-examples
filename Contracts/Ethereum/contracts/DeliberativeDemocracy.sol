@@ -11,6 +11,11 @@ contract DeliberativeDemocracy is Ownable  {
         uint256 endTime;
     }
 
+    struct Node {
+        address member;
+        uint256 tickets;
+    }
+
     address public clientContractAddress;
 
     // 既然一token一票，某一个时刻只能投一个节点，那就直接用balances[]
@@ -19,11 +24,13 @@ contract DeliberativeDemocracy is Ownable  {
     mapping(address => bool) public isUsed; // 用户是否已经投票
     mapping(address => address) public candidate; // 我的候选人
     mapping(address => uint256) public ticket; // 得票数
+    mapping(address => bool) public isMember; // 是否是议员
     mapping(address => uint256) public lastVoteTime; // 上次投票时间
-    address[21] mps;
+    Node[21] public nodes; // 议员地址
+    uint256 public minVotesIndex; // 当前节点最小票数对应的节点号
 
-    mapping(uint256 => address) public senate; // 议会 
-    mapping(address => bool) public isMP;
+
+    // mapping(uint256 => address) public senate; // 议会 
     // mapping(uint256 => Proposal) public proposals; // 提案
     Proposal[] proposals;
 
@@ -45,7 +52,6 @@ contract DeliberativeDemocracy is Ownable  {
     }
 
     function vote(address _candidate) public {
-        require(isMP[_candidate]);
         revote();
         candidate[msg.sender] = _candidate;
 
@@ -54,8 +60,6 @@ contract DeliberativeDemocracy is Ownable  {
 
         isUsed[msg.sender] = true;
 
-        // 维护21个议员
-        
     }
 
     /*
@@ -75,8 +79,16 @@ contract DeliberativeDemocracy is Ownable  {
 
     }
     */
+
+    // 
     function run() public {
         isMP[msg.sender] = true;
+        // 维护21个议员
+
+        for(uint8 i = 0; i < 21; i++) {
+
+        }
+
     }
 
     function execute(string method, uint256 para) public returns(bool){
