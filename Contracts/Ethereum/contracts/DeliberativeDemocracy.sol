@@ -1,6 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 
 contract DeliberativeDemocracy is Ownable  {
 
@@ -124,6 +125,7 @@ contract DeliberativeDemocracy is Ownable  {
 
                     isMember[msg.sender] = false;
                     emit RunOut(i, msg.sender, ticket[msg.sender]);
+                    break;
                 }
             }
         }
