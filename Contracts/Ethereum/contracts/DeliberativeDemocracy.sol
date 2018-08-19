@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "./Pausable.sol";
+import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 
 contract DeliberativeDemocracy is Pausable  {
 
@@ -31,7 +31,8 @@ contract DeliberativeDemocracy is Pausable  {
         clientContractAddress = client;
     }
 
-    function setClientAddress(address _client) public onlyAdmins {
+    // function setClientAddress(address _client) public onlyAdmins {
+    function setClientAddress(address _client) public {               
         clientContractAddress = _client;
     }
 
