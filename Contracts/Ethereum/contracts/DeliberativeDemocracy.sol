@@ -18,6 +18,10 @@ contract DeliberativeDemocracy is Ownable  {
 
     address public clientContractAddress;
 
+    event Run(uint256 indexed _index, address indexed _member, uint256 indexed _tickets);
+    event RunOut(uint256 indexed _index, address indexed _member, uint256 indexed _tickets);
+
+
     // 既然一token一票，某一个时刻只能投一个节点，那就直接用balances[]
     // mapping(address => uint256) public unused_balance; // 未使用的投票
     // mapping(address => uint256) public used_balance; // 使用的投票  
@@ -45,7 +49,6 @@ contract DeliberativeDemocracy is Ownable  {
     function revote() public {
         if(isUsed[msg.sender]) {
             Client _client = Client(clientContractAddress);
-
             ticket[candidate[msg.sender]] -= _client.balanceOf(msg.sender);
             isUsed[msg.sender] = false;   
         }
@@ -59,7 +62,6 @@ contract DeliberativeDemocracy is Ownable  {
         ticket[_candidate] += _client.balanceOf(msg.sender);
 
         isUsed[msg.sender] = true;
-
     }
 
     /*
@@ -80,15 +82,51 @@ contract DeliberativeDemocracy is Ownable  {
     }
     */
 
-    // 
+    // 参选议员 
+    // 用户在参选议员前就可以接受投票
+    // 如果参选没选上，他仍然可以继续参选
     function run() public {
-        isMP[msg.sender] = true;
+        require(!isMember[msg.sender]);
+
         // 维护21个议员
+        if (ticket[msg.sender] > nodes[minVotesIndex].tickets) {
+            Node memory _node = Node(msg.sender, ticket[msg.sender]);
+            nodes[minVotesIndex] = _node;
 
-        for(uint8 i = 0; i < 21; i++) {
+            uint256 _minTickets = nodes[0].tickets;
+            uint256 _index = 0;
+            for(uint256 i = 0; i < 21; i++) {
+                if(nodes[i].tickets < _minTickets) {
+                    _minTickets = nodes[i].tickets;
+                    _index = i;
+                }
+            }
+            
+            minVotesIndex = _index;
 
+            isMember[msg.sender] = true;
+            emit Run(minVotesIndex, msg.sender, ticket[msg.sender]);
         }
+    }
 
+    // 退选议员
+    // 退选议员，那么他所在那个位置的议员空掉，此时只有２０个议员(如果之前为２１)
+    // 此时任何有票的人参选就可以选为议员。
+    function runOut() public {
+        require(isMember[msg.sender]);
+
+        if (ticket[msg.sender] >= nodes[minVotesIndex].tickets) {
+            for(uint256 i = 0; i < 21; i++) {
+                if(nodes[i].member == msg.sender) {
+                    nodes[i].member = 0x0;
+                    nodes[i].tickets = 0;
+                    minVotesIndex = i;
+
+                    isMember[msg.sender] = false;
+                    emit RunOut(i, msg.sender, ticket[msg.sender]);
+                }
+            }
+        }
     }
 
     function execute(string method, uint256 para) public returns(bool){
