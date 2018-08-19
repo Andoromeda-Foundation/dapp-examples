@@ -1,120 +1,291 @@
-/**
- *  @file
- *  @copyright defined in eos/LICENSE.txt
- */
 
-#include <../eosio.token/eosio.token.hpp>
+#include <eosiolib/currency.hpp>
+#include <math.h>
+#include <string>
 
-namespace eosio {
+#define EOS S(4, EOS)
+#define TOKEN_CONTRACT N(eosio.token)
 
-void token::create( account_name issuer,
-                    asset        maximum_supply )
+using namespace eosio;
+using namespace std;
+
+
+typedef double real_type;
+
+using namespace eosio;
+using namespace std;
+
+class pomelo : public contract
 {
-    require_auth( _self );
+public:
+  pomelo(account_name self)
+      : contract(self),
+      trades(_self, _self)
+  {
+  }
 
-    auto sym = maximum_supply.symbol;
-    eosio_assert( sym.is_valid(), "invalid symbol name" );
-    eosio_assert( maximum_supply.is_valid(), "invalid supply");
-    eosio_assert( maximum_supply.amount > 0, "max-supply must be positive");
+  void cancell_all(account_name account)
+  {
+      auto status_index = trades.get_index<N(status)>();
+      for (auto itr = status_index.lower_bound("selling"); itr != status_index.end(); ++itr) {
+        /*if (itr -> account == account) {
+          auto quant = itr -> asset;
+          action( // 退还代币
+            permission_level{_self, N(active)},
+            TOKEN_CONTRACT, N(transfer),
+            make_tuple(_self, account, quant, string("back")))
+            .send();
+          status_index.erase(itr);
+        }*/
+      }
+      
+      /*
+      for (auto itr = status_index.lower_bound("buying"); itr != status_index.end(); ++itr) {
+        if (itr -> account == account) {
+          asset quant;
+          quant.symbol = EOS;
+          quant.amount = itr -> total_eos;
+          action( // 退还EOS
+            permission_level{_self, N(active)},
+            TOKEN_CONTRACT, N(transfer),
+            make_tuple(_self, account, quant, string("back")))
+            .send();
+          status_index.erase(itr);
+        }
+      }*/
+  }
 
-    stats statstable( _self, sym.name() );
-    auto existing = statstable.find( sym.name() );
-    eosio_assert( existing == statstable.end(), "token with symbol already exists" );
+  void buy(account_name account, asset quant, uint64_t total_eos)
+  {/*
+    require_auth(account);
+    eosio_assert(quant.symbol != EOS, "Must buy non-EOS currency");
+    eosio_assert(total_eos > 0, "");
 
-    statstable.emplace( _self, [&]( auto& s ) {
-       s.supply.symbol = maximum_supply.symbol;
-       s.max_supply    = maximum_supply;
-       s.issuer        = issuer;
-    });
-}
+    action(
+      permission_level{_self, N(active)},
+      TOKEN_CONTRACT, N(transfer),
+      make_tuple(account, _self, quant, string("transfer"))) // 由合约账号代为管理用于购买代币的EOS
+      .send();
+      trade t;
+      t.account = account;
+      t.asset = quant;
+      t.status = "buying";
+      t.total_eos = total_eos;
+      do_trade(t);*/
+  }
 
+  void sell(account_name account, asset quant, uint64_t total_eos)
+  {/*
+    require_auth(account);
+    eosio_assert(quant.symbol != EOS, "Must sale non-EOS currency");
+    eosio_assert(total_eos > 0, "");
 
-void token::issue( account_name to, asset quantity, string memo )
-{
-    auto sym = quantity.symbol;
-    eosio_assert( sym.is_valid(), "invalid symbol name" );
-    eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+    action(
+      permission_level{_self, N(active)},
+      TOKEN_CONTRACT, N(transfer),
+      make_tuple(account, _self, quant, string("transfer"))) // 由合约账号代为管理欲出售的代币
+      .send();
+      trade t;
+      t.account = account;
+      t.asset = quant;
+      t.status = "selling";
+      t.total_eos = total_eos;
+      do_trade(t);*/
+  }
 
-    auto sym_name = sym.name();
-    stats statstable( _self, sym_name );
-    auto existing = statstable.find( sym_name );
-    eosio_assert( existing != statstable.end(), "token with symbol does not exist, create token before issue" );
-    const auto& st = *existing;
+private:
+    /// @abi table
+    struct trade {
+      //uint64_t id = 0;
+      uint64_t id;
+      uint64_t account;
+      asset asset;
+      uint64_t total_eos;
+      string status;
 
-    require_auth( st.issuer );
-    eosio_assert( quantity.is_valid(), "invalid quantity" );
-    eosio_assert( quantity.amount > 0, "must issue positive quantity" );
+      uint64_t primary_key() const { return id; }
+      string get_status() const { return status; }
+      EOSLIB_SERIALIZE(trade, (id)(account)(asset)(total_eos)(status))
+  
+    };
+    typedef eosio::multi_index<N(trade), trade, indexed_by<N(status), const_mem_fun<trade, string, &trade::get_status>>> trade_index;
+    trade_index trades;
 
-    eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
-    eosio_assert( quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
+    void do_trade(trade trade) {/*
+      auto status_index = trades.get_index<N(status)>();
+      if (trade.status == "buying") {
+        for (auto itr = status_index.lower_bound("selling"); itr != status_index.end() || trade.asset.amount > 0; ++itr) {
+          auto sell_unit = (double)itr -> total_eos / (double)itr -> asset.amount;
+          auto buy_unit = (double)trade.total_eos / (double)trade.asset.amount;
+          if (sell_unit > buy_unit) {
+            continue;
+          }
 
-    statstable.modify( st, 0, [&]( auto& s ) {
-       s.supply += quantity;
-    });
+          auto trade_amount = itr -> asset.amount - trade.asset.amount; // 计算出售者资源是否足够
+          if (trade_amount >= 0) { // 出售者的资源比购买者欲购买数量多
+            status_index.modify(itr, 0, [&] (auto& t) {
+              t.asset.amount = trade_amount;
+              t.total_eos -= trade_amount * sell_unit; // 将出售的资源标记售出，剩余部分继续售卖
+            });
+            trade.asset.amount = 0; // 购买的订单减少相应的数额
+            trade.total_eos -= trade_amount * sell_unit; // 计算余额，稍后退还给购买者
+            asset a;
+            a.symbol = EOS;
+            a.amount = sell_unit * trade_amount;
+            action( // 给出售者转账EOS
+              permission_level{_self, N(active)},
+              TOKEN_CONTRACT, N(transfer),
+              make_tuple(_self, itr -> account, a, string("sell")))
+              .send();
+            a.symbol = trade.asset.symbol;
+            a.amount = trade_amount;
+            action( // 给购买者转账代币
+              permission_level{_self, N(active)},
+              TOKEN_CONTRACT, N(transfer),
+              make_tuple(_self, trade.account, a, string("buy")))
+              .send();
+          } 
+          else { // 出售者的资源不足完成本笔购买订单
+            asset a, b;
+            a.symbol = EOS;
+            a.amount = itr -> total_eos;
+            b = itr -> asset;
+            status_index.modify(itr, 0, [&] (auto& t) {
+              t.asset.amount = 0;
+              t.total_eos = 0; // 销售单完成
+              t.status = "finished";
+            });
+            action( // 给出售者转账EOS
+              permission_level{_self, N(active)},
+              TOKEN_CONTRACT, N(transfer),
+              make_tuple(_self, itr -> account, a, string("sell")))
+              .send();
+            action( // 给购买者转账代币
+              permission_level{_self, N(active)},
+              TOKEN_CONTRACT, N(transfer),
+              make_tuple(_self, trade.account, b, string("buy")))
+              .send();
+            trade.asset.amount -= b.amount; // 本单剩余购买数量减少
+            trade.total_eos -= a.amount;
+          }
+        }
+        if (trade.asset.amount == 0) { // 判断本购买单是否完成
+          if (trade.total_eos > 0) { // 购买用的EOS还有剩余将退还
+            asset a;
+            a.symbol = EOS;
+            a.amount = trade.total_eos;
+            action( // 给购买者转账代币
+              permission_level{_self, N(active)},
+              TOKEN_CONTRACT, N(transfer),
+              make_tuple(_self, trade.account, a, string("back")))
+              .send();
+          }
+        }
+        else { // 在table中记录为未完成的购买订单，将在有新售卖单发生时尝试继续完成。
+          trades.emplace(trade.account, [&] (auto& t) {
+            t.asset.symbol = trade.asset.symbol;
+            t.asset.amount = trade.asset.amount;
+            t.total_eos = trade.total_eos; // 销售单完成
+            t.status = "buying";
+          });
+        }
+      }
+      else if (trade.status == "selling") {
+        for (auto itr = status_index.lower_bound("buying"); itr != status_index.end() || trade.asset.amount > 0; ++itr) {
+          auto buy_unit = (double)itr -> total_eos / (double)itr -> asset.amount;
+          auto sell_unit = (double)trade.total_eos / (double)trade.asset.amount;
+          if (sell_unit > buy_unit) {
+            continue;
+          }
 
-    add_balance( st.issuer, quantity, st.issuer );
+          auto trade_amount = trade.asset.amount - itr -> asset.amount; // 计算出售者资源是否足够
+          if (trade_amount >= 0) { // 出售者的资源比购买者欲购买数量多
+            trade.asset.amount -= trade_amount;
+            trade.total_eos -= trade_amount * sell_unit;
 
-    if( to != st.issuer ) {
-       SEND_INLINE_ACTION( *this, transfer, {st.issuer,N(active)}, {st.issuer, to, quantity, memo} );
+            status_index.modify(itr, 0, [&] (auto& t) {
+              t.asset.amount = 0; // 购买的订单减少相应的数额
+              t.total_eos -= trade_amount * sell_unit; // 计算余额，稍后退还给购买者
+            });
+            asset a;
+            a.symbol = EOS;
+            a.amount = sell_unit * trade_amount;
+            action( // 给出售者转账EOS
+              permission_level{_self, N(active)},
+              TOKEN_CONTRACT, N(transfer),
+              make_tuple(_self, trade.account, a, string("sell")))
+              .send();
+            a.symbol = trade.asset.symbol;
+            a.amount = trade_amount;
+            action( // 给购买者转账代币
+              permission_level{_self, N(active)},
+              TOKEN_CONTRACT, N(transfer),
+              make_tuple(_self, itr -> account, a, string("buy")))
+              .send();
+          } 
+          else { // 出售者的资源不足完成本笔购买订单
+            asset a, b;
+            a.symbol = EOS;
+            a.amount = trade.total_eos;
+            b = trade.asset;
+            trade.status = "finished";
+            trade.total_eos = 0;
+            trade.asset.amount = 0;
+            
+            action( // 给出售者转账EOS
+              permission_level{_self, N(active)},
+              TOKEN_CONTRACT, N(transfer),
+              make_tuple(_self, trade. account, a, string("sell")))
+              .send();
+            action( // 给购买者转账代币
+              permission_level{_self, N(active)},
+              TOKEN_CONTRACT, N(transfer),
+              make_tuple(_self, itr -> account, b, string("buy")))
+              .send();
+              
+            status_index.modify(itr, 0, [&] (auto& t) {
+              t.asset.amount -= b.amount;
+              t.total_eos -= a.amount;
+            });
+          }
+        }
+        if (trade.asset.amount > 0) { // 判断本购买单是否完成
+          trades.emplace(trade.account, [&] (auto& t) {
+            t.asset.symbol = trade.asset.symbol;
+            t.asset.amount = trade.asset.amount;
+            t.total_eos = trade.total_eos;
+            t.status = "selling";
+          });
+        }
+      }
+      else {
+        eosio_assert(false, "Invalid trade status");
+      }*/
     }
-}
+};
 
-void token::transfer( account_name from,
-                      account_name to,
-                      asset        quantity,
-                      string       memo )
-{
-    eosio_assert( from != to, "cannot transfer to self" );
-    require_auth( from );
-    eosio_assert( is_account( to ), "to account does not exist");
-    auto sym = quantity.symbol.name();
-    stats statstable( _self, sym );
-    const auto& st = statstable.get( sym );
+#define EOSIO_ABI_PRO(TYPE, MEMBERS)                                                                                                              \
+  extern "C" {                                                                                                                                    \
+  void apply(uint64_t receiver, uint64_t code, uint64_t action)                                                                                   \
+  {                                                                                                                                               \
+    auto self = receiver;                                                                                                                         \
+    if (action == N(onerror))                                                                                                                     \
+    {                                                                                                                                             \
+      eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account");                                        \
+    }                                                                                                                                             \
+    if ((code == TOKEN_CONTRACT && action == N(transfer)) || (code == self && (action == N(sell) || action == N(destroy) || action == N(claim)))) \
+    {                                                                                                                                             \
+      TYPE thiscontract(self);                                                                                                                    \
+      switch (action)                                                                                                                             \
+      {                                                                                                                                           \
+        EOSIO_API(TYPE, MEMBERS)                                                                                                                  \
+      }                                                                                                                                           \
+    }                                                                                                                                             \
+  }                                                                                                                                               \
+  }
 
-    require_recipient( from );
-    require_recipient( to );
+// generate .wasm and .wast file
+// EOSIO_ABI_PRO(itegame, (transfer)(sell)(destroy)(claim))
 
-    eosio_assert( quantity.is_valid(), "invalid quantity" );
-    eosio_assert( quantity.amount > 0, "must transfer positive quantity" );
-    eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
-    eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
-
-
-    sub_balance( from, quantity );
-    add_balance( to, quantity, from );
-}
-
-void token::sub_balance( account_name owner, asset value ) {
-   accounts from_acnts( _self, owner );
-
-   const auto& from = from_acnts.get( value.symbol.name(), "no balance object found" );
-   eosio_assert( from.balance.amount >= value.amount, "overdrawn balance" );
-
-
-   if( from.balance.amount == value.amount ) {
-      from_acnts.erase( from );
-   } else {
-      from_acnts.modify( from, owner, [&]( auto& a ) {
-          a.balance -= value;
-      });
-   }
-}
-
-void token::add_balance( account_name owner, asset value, account_name ram_payer )
-{
-   accounts to_acnts( _self, owner );
-   auto to = to_acnts.find( value.symbol.name() );
-   if( to == to_acnts.end() ) {
-      to_acnts.emplace( ram_payer, [&]( auto& a ){
-        a.balance = value;
-      });
-   } else {
-      to_acnts.modify( to, 0, [&]( auto& a ) {
-        a.balance += value;
-      });
-   }
-}
-
-} /// namespace eosio
-
-EOSIO_ABI( eosio::token, (create)(issue)(transfer) )
+// generate .abi file
+EOSIO_ABI_PRO(pomelo, (cancell_all)(buy)(sell))
