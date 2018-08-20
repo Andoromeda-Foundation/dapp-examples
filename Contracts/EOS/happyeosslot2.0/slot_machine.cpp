@@ -111,7 +111,7 @@ class slot_machine : public contract {
         }
 
         void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed) {
-            uint64_t bonus = get_bonus(merge_seed(seed, itr->seed), itr.bet);
+            uint64_t bonus = get_bonus(merge_seed(seed, itr->seed), itr->bet);
             action(
                     permission_level{_self, N(active)},
                     N(eosio.token), N(transfer),
@@ -124,7 +124,7 @@ class slot_machine : public contract {
         checksum256 parse_memo(const std::string& memo) {
             checksum256 result;
             memset(&result, 0, sizeof(checksum256));
-            for (uint i = 0; i < memo.length(); i ++) {
+            for (int i = 0; i < memo.length(); i ++) {
                 result.hash[i & 31] ^= memo[i];
             }
             return result;
@@ -152,7 +152,7 @@ class slot_machine : public contract {
     }
 
 // generate .wasm and .wast file
-EOSIO_ABI_PRO(slot_machine, (transfer)(init)(bet)(reveal))
+EOSIO_ABI_PRO(slot_machine, (transfer)(init)(reveal))
 
     // generate .abi file
-    // EOSIO_ABI(slot_machine, (transfer)(init)(bet)(reveal))
+    // EOSIO_ABI(slot_machine, (transfer)(init)(reveal))
