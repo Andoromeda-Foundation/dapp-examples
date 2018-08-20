@@ -33,6 +33,7 @@ contract DeliberativeDemocracy is Ownable  {
     mapping(address => uint256) public lastVoteTime; // 上次投票时间
     Node[21] public nodes; // 议员地址
     uint256 public minVotesIndex; // 当前节点最小票数对应的节点号
+    uint256 public pledge;  // 一次提案需要质押的DGM数量
 
 
     // mapping(uint256 => address) public senate; // 议会 
@@ -41,6 +42,7 @@ contract DeliberativeDemocracy is Ownable  {
 
     constructor(address client) public {
         clientContractAddress = client;
+        pledge = 100 ether;        
     }
 
     function setClientAddress(address _client) public onlyOwner {
@@ -131,7 +133,7 @@ contract DeliberativeDemocracy is Ownable  {
         }
     }
 
-    function execute(string method, uint256 para) public returns(bool){
+    function execute(string method, uint256 para) internal returns(bool){
         bytes4 methodId = bytes4(keccak256(abi.encodePacked(method)));
         return clientContractAddress.call(methodId, para);
         //if (!clientContractAddress.call(method, para)) {
@@ -139,6 +141,19 @@ contract DeliberativeDemocracy is Ownable  {
         //}
     }
     
+    // 发起提案，
+
+    function proposal(string method, uint256 para, uint256 dl) public {
+        Client _client = Client(clientContractAddress);
+        require(_client.balanceOf(msg.sender) - _client.lockTokens(msg.sender) >= _client.lockAmount_());
+
+        _client.lockTokenAdd(msg.sender);
+
+        
+
+    }
+
+
     /*
     function withdraw() public {
        // Issuer issuer = Issuer(IssuerContractAddress);
@@ -156,5 +171,15 @@ contract DeliberativeDemocracy is Ownable  {
 interface Client {
     function transferFrom(address _from, address _to, uint256 _value) external returns(bool);  
     function transfer(address _to, uint256 _value) external returns(bool);
-    function balanceOf(address _owner) external view returns (uint256);
+    function balanceOf(address _owner) external view returns(uint256);
+    function lockTokens(address _addr) external view returns(uint256);
+    function lockAmount_() external view returns(uint256);
+    function lockTokenAdd(address _addr) external;
+    function lockTokenSub(address _addr) external;
+
+    function setDividendFee(uint256 _dividendFee) external;
+    function setCommunityFee(uint256 _communityFee) external;
+    function setIncremental(uint256 _incremental) external;
+    function setLockAmount(uint256 _amount) external;
+    function lock(uint256 _lastTime) external;   
 }
