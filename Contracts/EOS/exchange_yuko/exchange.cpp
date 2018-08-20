@@ -12,9 +12,6 @@ using namespace std;
 
 typedef double real_type;
 
-using namespace eosio;
-using namespace std;
-
 class pomelo : public contract
 {
 public:
@@ -27,8 +24,12 @@ public:
   void cancell_all(account_name account)
   {
       auto status_index = trades.get_index<N(status)>();
-      for (auto itr = status_index.lower_bound("selling"); itr != status_index.end(); ++itr) {
-        /*if (itr -> account == account) {
+      for (auto itr = status_index.lower_bound(1); itr != status_index.end(); ++itr) {
+        if (itr -> status != 1) { // 如果迭代器进入了比1大的状态则结束迭代
+          break;
+        }
+
+        if (itr -> account == account) {
           auto quant = itr -> asset;
           action( // 退还代币
             permission_level{_self, N(active)},
@@ -36,11 +37,13 @@ public:
             make_tuple(_self, account, quant, string("back")))
             .send();
           status_index.erase(itr);
-        }*/
+        }
       }
-      
-      /*
-      for (auto itr = status_index.lower_bound("buying"); itr != status_index.end(); ++itr) {
+      for (auto itr = status_index.lower_bound(0); itr != status_index.end(); ++itr) {
+        if (itr -> status != 0) { // 如果迭代器进入了比0大的状态则结束迭代
+          break;
+        }
+
         if (itr -> account == account) {
           asset quant;
           quant.symbol = EOS;
@@ -52,11 +55,11 @@ public:
             .send();
           status_index.erase(itr);
         }
-      }*/
+      }
   }
 
   void buy(account_name account, asset quant, uint64_t total_eos)
-  {/*
+  {
     require_auth(account);
     eosio_assert(quant.symbol != EOS, "Must buy non-EOS currency");
     eosio_assert(total_eos > 0, "");
@@ -69,13 +72,13 @@ public:
       trade t;
       t.account = account;
       t.asset = quant;
-      t.status = "buying";
+      t.status = 0;
       t.total_eos = total_eos;
-      do_trade(t);*/
+      do_trade(t);
   }
 
   void sell(account_name account, asset quant, uint64_t total_eos)
-  {/*
+  {
     require_auth(account);
     eosio_assert(quant.symbol != EOS, "Must sale non-EOS currency");
     eosio_assert(total_eos > 0, "");
@@ -88,33 +91,36 @@ public:
       trade t;
       t.account = account;
       t.asset = quant;
-      t.status = "selling";
+      t.status = 1;
       t.total_eos = total_eos;
-      do_trade(t);*/
+      do_trade(t);
   }
 
 private:
     /// @abi table
     struct trade {
-      //uint64_t id = 0;
-      uint64_t id;
+      uint64_t id = 0;
       uint64_t account;
       asset asset;
       uint64_t total_eos;
-      string status;
+      uint64_t status;
 
       uint64_t primary_key() const { return id; }
-      string get_status() const { return status; }
+      uint64_t by_status() const { return status; }
       EOSLIB_SERIALIZE(trade, (id)(account)(asset)(total_eos)(status))
   
     };
-    typedef eosio::multi_index<N(trade), trade, indexed_by<N(status), const_mem_fun<trade, string, &trade::get_status>>> trade_index;
+    typedef eosio::multi_index<N(trade), trade, indexed_by<N(status), const_mem_fun<trade, uint64_t, &trade::by_status>>> trade_index;
     trade_index trades;
 
-    void do_trade(trade trade) {/*
+    void do_trade(trade trade) {
       auto status_index = trades.get_index<N(status)>();
-      if (trade.status == "buying") {
-        for (auto itr = status_index.lower_bound("selling"); itr != status_index.end() || trade.asset.amount > 0; ++itr) {
+      if (trade.status == 0) {
+        for (auto itr = status_index.lower_bound(1); itr != status_index.end() || trade.asset.amount > 0; ++itr) {
+          if (itr -> status != 1) { // 如果迭代器进入了比1大的状态则结束迭代
+            break;
+          }
+
           auto sell_unit = (double)itr -> total_eos / (double)itr -> asset.amount;
           auto buy_unit = (double)trade.total_eos / (double)trade.asset.amount;
           if (sell_unit > buy_unit) {
@@ -153,7 +159,7 @@ private:
             status_index.modify(itr, 0, [&] (auto& t) {
               t.asset.amount = 0;
               t.total_eos = 0; // 销售单完成
-              t.status = "finished";
+              t.status = 2;
             });
             action( // 给出售者转账EOS
               permission_level{_self, N(active)},
@@ -186,12 +192,16 @@ private:
             t.asset.symbol = trade.asset.symbol;
             t.asset.amount = trade.asset.amount;
             t.total_eos = trade.total_eos; // 销售单完成
-            t.status = "buying";
+            t.status = 0;
           });
         }
       }
-      else if (trade.status == "selling") {
-        for (auto itr = status_index.lower_bound("buying"); itr != status_index.end() || trade.asset.amount > 0; ++itr) {
+      else if (trade.status == 1) {
+        for (auto itr = status_index.lower_bound(0); itr != status_index.end() || trade.asset.amount > 0; ++itr) {
+          if (itr -> status != 0) { // 如果迭代器进入了比0大的状态则结束迭代
+            break;
+          }
+
           auto buy_unit = (double)itr -> total_eos / (double)itr -> asset.amount;
           auto sell_unit = (double)trade.total_eos / (double)trade.asset.amount;
           if (sell_unit > buy_unit) {
@@ -228,7 +238,7 @@ private:
             a.symbol = EOS;
             a.amount = trade.total_eos;
             b = trade.asset;
-            trade.status = "finished";
+            trade.status = 2;
             trade.total_eos = 0;
             trade.asset.amount = 0;
             
@@ -254,13 +264,13 @@ private:
             t.asset.symbol = trade.asset.symbol;
             t.asset.amount = trade.asset.amount;
             t.total_eos = trade.total_eos;
-            t.status = "selling";
+            t.status = 1;
           });
         }
       }
       else {
         eosio_assert(false, "Invalid trade status");
-      }*/
+      }
     }
 };
 
