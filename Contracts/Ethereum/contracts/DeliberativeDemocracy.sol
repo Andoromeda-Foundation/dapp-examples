@@ -7,9 +7,12 @@ contract DeliberativeDemocracy is Ownable  {
 
     struct Proposal {
         address advocate; // 发起人
-        uint256 act; 
-        uint256 startTime;
-        uint256 endTime;
+        uint256 startTime; // 开始时间
+        uint256 endTime; //结束时间
+        string method; // 方法
+        uint256 para; // 参数
+        uint256 support; // 支持票
+        uint256 oppose; // 反对票
     }
 
     struct Node {
@@ -21,7 +24,9 @@ contract DeliberativeDemocracy is Ownable  {
 
     event Run(uint256 indexed _index, address indexed _member, uint256 indexed _tickets);
     event RunOut(uint256 indexed _index, address indexed _member, uint256 indexed _tickets);
-
+    event InitProposal(address indexed _addr, uint256 _startTime, uint256 _endTime, uint256 indexed _index);
+    event Examine(address indexed _addr, uint256 _index);
+    event JudgeResult(string method, uint256 para);
 
     // 既然一token一票，某一个时刻只能投一个节点，那就直接用balances[]
     // mapping(address => uint256) public unused_balance; // 未使用的投票
@@ -33,7 +38,6 @@ contract DeliberativeDemocracy is Ownable  {
     mapping(address => uint256) public lastVoteTime; // 上次投票时间
     Node[21] public nodes; // 议员地址
     uint256 public minVotesIndex; // 当前节点最小票数对应的节点号
-    uint256 public pledge;  // 一次提案需要质押的DGM数量
 
 
     // mapping(uint256 => address) public senate; // 议会 
@@ -42,7 +46,6 @@ contract DeliberativeDemocracy is Ownable  {
 
     constructor(address client) public {
         clientContractAddress = client;
-        pledge = 100 ether;        
     }
 
     function setClientAddress(address _client) public onlyOwner {
@@ -141,17 +144,65 @@ contract DeliberativeDemocracy is Ownable  {
         //}
     }
     
-    // 发起提案，
-
-    function proposal(string method, uint256 para, uint256 dl) public {
+    // 发起提案，其中方法名输入必须类似这样："onERC721Received(address,uint256,bytes)"不要双引号
+    // setDividendFee(uint256)
+    function proposal(string _method, uint256 _para, uint256 _startTime, uint256 _endTime)
+        public 
+    {
         Client _client = Client(clientContractAddress);
         require(_client.balanceOf(msg.sender) - _client.lockTokens(msg.sender) >= _client.lockAmount_());
 
         _client.lockTokenAdd(msg.sender);
 
+        require(_startTime >= now);
+        require(_endTime >= _startTime + 1 days);
         
+        Proposal memory _proposal = Proposal(msg.sender, _startTime, _endTime, _method, _para, uint256(0), uint256(0));
+        proposals.push(_proposal);
 
+        emit InitProposal(msg.sender, _startTime, _endTime, proposals.length);
     }
+
+    // 议员对第_index个提案进行投票
+    function examine(uint256 _index, bool _bool)
+        public
+    {
+        require(isMember[msg.sender]);
+        require(_index < proposals.length);
+        require(now >= proposals[_index].startTime);
+        require(now <= proposals[_index].endTime);
+
+        if (_bool) {
+            proposals[_index].support++;
+        } else {
+            proposals[_index].oppose++;
+        }
+
+        emit Examine(msg.sender, _index);
+    }
+
+    // 任何人可以在endTime后判定结果
+    function judge(uint256 _index) 
+        public
+    {
+        require(_index < proposals.length);
+        require(now > proposals[_index].endTime);
+
+        if(proposals[_index].support + proposals[_index].oppose >= 10 && 
+        proposals[_index].support > proposals[_index].oppose) 
+        {
+            string memory _method = proposals[_index].method;
+            uint256 _para = proposals[_index].para;
+            execute(_method, _para);
+
+            emit JudgeResult(_method, _para);
+        } else {
+            proposals[_index] = proposals[proposals.length - 1];
+            delete proposals[proposals.length - 1];
+            proposals.length--;
+        }
+    }
+
 
 
     /*
