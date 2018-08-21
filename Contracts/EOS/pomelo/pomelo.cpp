@@ -22,42 +22,13 @@ public:
   }
 
   /// @abi action
-  void cancel(account_name account)
+  void cancel(account_name account, uint64_t id)
   {
     require_auth(account);
-    auto status_index = trades.get_index<N(status)>();
-    for (auto itr = status_index.lower_bound(1); itr != status_index.end(); ++itr) {
-      if (itr -> status != 1) { // 如果迭代器进入了比1大的状态则结束迭代
-        break;
-      }
-
-      if (itr -> account == account) {
-        auto quant = itr -> asset;
-        action( // 退还代币
-          permission_level{_self, N(active)},
-          TOKEN_CONTRACT, N(transfer),
-          make_tuple(_self, account, quant, string("back")))
-          .send();
-        status_index.erase(itr);
-      }
-    }
-    for (auto itr = status_index.lower_bound(0); itr != status_index.end(); ++itr) {
-      if (itr -> status != 0) { // 如果迭代器进入了比0大的状态则结束迭代
-        break;
-      }
-
-      if (itr -> account == account) {
-        asset quant;
-        quant.symbol = EOS;
-        quant.amount = itr -> total_eos;
-        action( // 退还EOS
-          permission_level{_self, N(active)},
-          TOKEN_CONTRACT, N(transfer),
-          make_tuple(_self, account, quant, string("back")))
-          .send();
-        status_index.erase(itr);
-      }
-    }
+    auto itr = trades.find(id);
+    eosio_assert(itr -> account == account, "Account does not match");
+    eosio_assert(itr -> id == id, "Trade id is not found");
+    trades.erase(itr);
   }
 
   /// @abi action
