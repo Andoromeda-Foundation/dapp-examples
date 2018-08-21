@@ -21,43 +21,46 @@ public:
   {
   }
 
-  void cancell_all(account_name account)
+  /// @abi action
+  void cancel(account_name account)
   {
-      auto status_index = trades.get_index<N(status)>();
-      for (auto itr = status_index.lower_bound(1); itr != status_index.end(); ++itr) {
-        if (itr -> status != 1) { // 如果迭代器进入了比1大的状态则结束迭代
-          break;
-        }
-
-        if (itr -> account == account) {
-          auto quant = itr -> asset;
-          action( // 退还代币
-            permission_level{_self, N(active)},
-            TOKEN_CONTRACT, N(transfer),
-            make_tuple(_self, account, quant, string("back")))
-            .send();
-          status_index.erase(itr);
-        }
+    require_auth(account);
+    auto status_index = trades.get_index<N(status)>();
+    for (auto itr = status_index.lower_bound(1); itr != status_index.end(); ++itr) {
+      if (itr -> status != 1) { // 如果迭代器进入了比1大的状态则结束迭代
+        break;
       }
-      for (auto itr = status_index.lower_bound(0); itr != status_index.end(); ++itr) {
-        if (itr -> status != 0) { // 如果迭代器进入了比0大的状态则结束迭代
-          break;
-        }
 
-        if (itr -> account == account) {
-          asset quant;
-          quant.symbol = EOS;
-          quant.amount = itr -> total_eos;
-          action( // 退还EOS
-            permission_level{_self, N(active)},
-            TOKEN_CONTRACT, N(transfer),
-            make_tuple(_self, account, quant, string("back")))
-            .send();
-          status_index.erase(itr);
-        }
+      if (itr -> account == account) {
+        auto quant = itr -> asset;
+        action( // 退还代币
+          permission_level{_self, N(active)},
+          TOKEN_CONTRACT, N(transfer),
+          make_tuple(_self, account, quant, string("back")))
+          .send();
+        status_index.erase(itr);
       }
+    }
+    for (auto itr = status_index.lower_bound(0); itr != status_index.end(); ++itr) {
+      if (itr -> status != 0) { // 如果迭代器进入了比0大的状态则结束迭代
+        break;
+      }
+
+      if (itr -> account == account) {
+        asset quant;
+        quant.symbol = EOS;
+        quant.amount = itr -> total_eos;
+        action( // 退还EOS
+          permission_level{_self, N(active)},
+          TOKEN_CONTRACT, N(transfer),
+          make_tuple(_self, account, quant, string("back")))
+          .send();
+        status_index.erase(itr);
+      }
+    }
   }
 
+  /// @abi action
   void buy(account_name account, asset quant, uint64_t total_eos)
   {
     require_auth(account);
@@ -77,6 +80,7 @@ public:
       do_trade(t);
   }
 
+  /// @abi action
   void sell(account_name account, asset quant, uint64_t total_eos)
   {
     require_auth(account);
@@ -116,7 +120,7 @@ private:
     void do_trade(trade trade) {
       auto status_index = trades.get_index<N(status)>();
       if (trade.status == 0) {
-        for (auto itr = status_index.lower_bound(1); itr != status_index.end() || trade.asset.amount > 0; ++itr) {
+        for (auto itr = status_index.lower_bound(1); itr != status_index.end() && trade.asset.amount > 0; ++itr) {
           if (itr -> status != 1) { // 如果迭代器进入了比1大的状态则结束迭代
             break;
           }
@@ -197,7 +201,7 @@ private:
         }
       }
       else if (trade.status == 1) {
-        for (auto itr = status_index.lower_bound(0); itr != status_index.end() || trade.asset.amount > 0; ++itr) {
+        for (auto itr = status_index.lower_bound(0); itr != status_index.end() && trade.asset.amount > 0; ++itr) {
           if (itr -> status != 0) { // 如果迭代器进入了比0大的状态则结束迭代
             break;
           }
@@ -298,4 +302,4 @@ private:
 // EOSIO_ABI_PRO(itegame, (transfer)(sell)(destroy)(claim))
 
 // generate .abi file
-EOSIO_ABI_PRO(pomelo, (cancell_all)(buy)(sell))
+EOSIO_ABI(pomelo, (cancel)(buy)(sell))
