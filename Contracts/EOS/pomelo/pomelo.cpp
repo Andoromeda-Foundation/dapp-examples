@@ -103,8 +103,8 @@ public:
 private:
     /// @abi table
     struct trade {
-      uint64_t id = 0;
-      uint64_t account;
+      uint64_t id;
+      account_name account;
       asset asset;
       uint64_t total_eos;
       uint64_t status;
@@ -193,6 +193,8 @@ private:
         }
         else { // 在table中记录为未完成的购买订单，将在有新售卖单发生时尝试继续完成。
           trades.emplace(trade.account, [&] (auto& t) {
+            t.id = trades.available_primary_key();
+            t.account = trade.account;
             t.asset.symbol = trade.asset.symbol;
             t.asset.amount = trade.asset.amount;
             t.total_eos = trade.total_eos; // 销售单完成
@@ -265,6 +267,8 @@ private:
         }
         if (trade.asset.amount > 0) { // 判断本购买单是否完成
           trades.emplace(trade.account, [&] (auto& t) {
+            t.id = trades.available_primary_key();
+            t.account = trade.account;
             t.asset.symbol = trade.asset.symbol;
             t.asset.amount = trade.asset.amount;
             t.total_eos = trade.total_eos;
@@ -278,28 +282,4 @@ private:
     }
 };
 
-#define EOSIO_ABI_PRO(TYPE, MEMBERS)                                                                                                              \
-  extern "C" {                                                                                                                                    \
-  void apply(uint64_t receiver, uint64_t code, uint64_t action)                                                                                   \
-  {                                                                                                                                               \
-    auto self = receiver;                                                                                                                         \
-    if (action == N(onerror))                                                                                                                     \
-    {                                                                                                                                             \
-      eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account");                                        \
-    }                                                                                                                                             \
-    if ((code == TOKEN_CONTRACT && action == N(transfer)) || (code == self && (action == N(sell) || action == N(destroy) || action == N(claim)))) \
-    {                                                                                                                                             \
-      TYPE thiscontract(self);                                                                                                                    \
-      switch (action)                                                                                                                             \
-      {                                                                                                                                           \
-        EOSIO_API(TYPE, MEMBERS)                                                                                                                  \
-      }                                                                                                                                           \
-    }                                                                                                                                             \
-  }                                                                                                                                               \
-  }
-
-// generate .wasm and .wast file
-// EOSIO_ABI_PRO(itegame, (transfer)(sell)(destroy)(claim))
-
-// generate .abi file
 EOSIO_ABI(pomelo, (cancel)(buy)(sell))
