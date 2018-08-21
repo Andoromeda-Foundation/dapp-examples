@@ -68,7 +68,7 @@ public:
     eosio_assert(total_eos > 0, "");
 
     action(
-      permission_level{_self, N(active)},
+      permission_level{account, N(active)},
       TOKEN_CONTRACT, N(transfer),
       make_tuple(account, _self, quant, string("transfer"))) // 由合约账号代为管理用于购买代币的EOS
       .send();
@@ -88,7 +88,7 @@ public:
     eosio_assert(total_eos > 0, "");
 
     action(
-      permission_level{_self, N(active)},
+      permission_level{account, N(active)},
       TOKEN_CONTRACT, N(transfer),
       make_tuple(account, _self, quant, string("transfer"))) // 由合约账号代为管理欲出售的代币
       .send();
