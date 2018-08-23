@@ -124,11 +124,6 @@ class slot_machine : public contract {
     });
   }
   
-  uint64_t get_credits(account_name account) const {
-    const auto& p = players.get(account);
-    return p.credits;
-  }
-
   private:
   // @abi table global i64
   struct global {
@@ -179,20 +174,20 @@ class slot_machine : public contract {
   }
 
   uint64_t merge_seed(const checksum256& s1, const checksum256& s2) {
-    uint64_t hash = 0, x;
-    for (int i = 0; i < 32; ++i) {
-      hash ^= (s1.hash[i] ^ s2.hash[i]) << ((i & 7) << 3);
-    }
-    return hash;
+      uint64_t hash = 0, x;
+      for (int i = 0; i < 32; ++i) {
+          hash ^= (s1.hash[i] ^ s2.hash[i]) << ((i & 7) << 3);
+      }
+      return hash;
   }
 
   void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed) {
-    auto p = players.find(itr->owner);
-    eosio_assert(p != players.end(), "Player is not exist.");
-    players.modify(p, 0, [&](auto &player) {
-      player.credits += uint64_t(get_bonus(merge_seed(seed, itr->seed)) * itr->bet);
-    });
-    offers.erase(itr);
+      auto p = players.find(itr->owner);
+      eosio_assert(p != players.end(), "Player is not exist.");
+      players.modify(p, 0, [&](auto &player) {
+        player.credits += get_bonus(merge_seed(seed, itr->seed), itr->bet);
+      });
+      offers.erase(itr);
   }
 };
 
