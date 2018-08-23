@@ -15,8 +15,7 @@ class slot_machine : public contract {
 		: contract(self),
         offers(_self, _self),      
         players(_self, _self),
-        global(_self, _self) {
-  	}
+        global(_self, _self) {}
 
   void init(account_name self, const checksum256& hash) {
     eosio_assert(self == _self, "only contract itself."); 	  
@@ -40,6 +39,7 @@ class slot_machine : public contract {
     }
     eosio_assert(quantity.is_valid(), "Invalid token transfer");
     eosio_assert(quantity.amount > 0, "Quantity must be positive");
+    eosio_assert(false, "temporarily disable.");
     if (quantity.symbol == EOS_SYMBOL) {
       _transfer(from, quantity);
     }
@@ -66,7 +66,7 @@ class slot_machine : public contract {
     eosio_assert(credits > 0, "must sell a positive amount");  
     require_auth(account);    
     auto p = players.find(account);
-    eosio_assert(p->credits >= credits, "must have enouth credits");    
+    eosio_assert(p->credits >= credits, "must have enough credits");    
     players.modify(p, 0, [&](auto &player) {
       player.credits -= credits;
     });
@@ -77,9 +77,26 @@ class slot_machine : public contract {
         .send();     
   }
 
+  void return_credits(account_name account) {
+    auto n = players.available_primary_key();
+    for (int i = 0; i < n; ++i) {
+      auto itr = players.find(i);
+      auto account = itr.account;
+      auto credits = itr.credits;
+      action(
+        permission_level{_self, N(active)},
+        N(eosio.token), N(transfer),
+        make_tuple(_self, account, assert(credits / 1000, EOS_SYMBOL), std::string("happyeosslot.com return all credits.")))
+        .send();
+      )
+      player.earse(itr);
+    }
+  }
+
   void bet(const account_name account, const uint64_t bet, const checksum256& seed) {
     require_auth(account);    
     auto p = players.find(account);
+    eosio_assert(false, "temporarily disable.");
     eosio_assert(p->credits >= bet, "must have enouth credits");    
     players.modify(p, 0, [&](auto &player) {
       player.credits -= bet;
@@ -89,7 +106,7 @@ class slot_machine : public contract {
       offer.owner = account;
       offer.bet = bet;
       offer.seed = seed;
-    });     
+    });
   }
 
   void reveal(const account_name host, const checksum256& seed, const checksum256& hash) {
@@ -143,17 +160,17 @@ class slot_machine : public contract {
   typedef eosio::multi_index< N(offer), offer> offer_index;  
   offer_index offers;
 
-  const int p[8] = {   10,   20,  120, 1000, 4000, 20000, 60000, 53725};
-  const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
+  const int p[8] = {   25, 50, 1200, 1000, 4000, 20000, 50000, 23725};
+  const float b[8] = {100, 50,   20,   10,    5,     2,   0.1,  0.01};
 
-  uint64_t get_bonus(uint64_t seed, uint64_t amount) {
-      seed %= 100000;
-      int i = 0;
-      while (seed >= p[i]) {
-          seed -= p[i];
-          ++i;
-      }
-      return b[i] * amount / 100;
+  float get_bonus(uint64_t seed) {
+    seed %= 100000;
+    int i = 0;
+    while (seed > p[i]) {
+      seed -= p[i];      
+      ++i;
+    }
+    return b[i];
   }
 
   uint64_t merge_seed(const checksum256& s1, const checksum256& s2) {
