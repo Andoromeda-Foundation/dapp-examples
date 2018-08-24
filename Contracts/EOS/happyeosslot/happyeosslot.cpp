@@ -270,9 +270,7 @@ real_type happyeosslot::eop()const{
     return real_type(balance.amount) / get_deposit();
 }
 
-void happyeosslot::ontransfer(account_name from, account_name to, asset eos, std::string memo) {
-    eosio::print("on Transfer ");    
-        
+void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
     if (to != _self) {
         return;
     }
@@ -280,13 +278,23 @@ void happyeosslot::ontransfer(account_name from, account_name to, asset eos, std
     eosio_assert(eos.is_valid(), "Invalid token transfer");
     eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
     eosio_assert(eos.amount > 0, "must bet a positive amount");
-    
-    
-    if (eos.amount >= 0) {
+
+    auto position = memo.find("buy");
+    if (position != memo.npos) {
         buy(from, eos);
     } else {
-        const checksum256 seed = parse_memo(memo);        
-        bet(from, eos, seed);
+        position = memo.find("bet");
+        if (position != memo.npos) {
+            const checksum256 seed = parse_memo(memo); 
+            bet(from, eos, seed);
+        } else {
+            if (eos.amount >= 0) {
+                buy(from, eos);
+            } else {
+                const checksum256 seed = parse_memo(memo); 
+                bet(from, eos, seed);             
+            }
+        }
     }
 
     eosio::print("current balance: ", get_my_balance());   
@@ -324,9 +332,9 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
                 eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account"); \
             }                                                                                                        \
             if (code == TOKEN_CONTRACT && action == N(transfer)) {                                                   \
-                action = N(ontransfer);                                                                              \
+                action = N(onTransfer);                                                                              \
             }                                                                                                        \
-            if ((code == TOKEN_CONTRACT && action == N(ontransfer)) || code == self && action != N(ontransfer)) {                               \
+            if ((code == TOKEN_CONTRACT && action == N(onTransfer)) || code == self && action != N(onTransfer)) {                               \
                 TYPE thiscontract(self);                                                                             \
                 switch (action)                                                                                      \
                 {                                                                                                    \
@@ -336,7 +344,7 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-MY_EOSIO_ABI(happyeosslot, (create)(issue)(ontransfer)(transfer)(init)(sell)(reveal))
+MY_EOSIO_ABI(happyeosslot, (create)(issue)(onTransfer)(transfer)(init)(sell)(reveal))
 
 // generate .abi file
 // EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(init)(sell)(reveal))

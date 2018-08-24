@@ -208,7 +208,7 @@ public:
                     asset        quantity,
                     string       memo);  
                                      
-    void ontransfer(account_name from,
+    void onTransfer(account_name from,
                 account_name to,
                 asset        quantity,
                 string       memo);
