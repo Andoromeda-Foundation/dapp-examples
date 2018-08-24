@@ -211,11 +211,11 @@ public:
                                     offers(_self, _self),
                                     results(_self, _self) {}
 
-    /*void create( account_name issuer,
+    void create( account_name issuer,
                 asset        maximum_supply);
 
     void issue( account_name to, asset quantity, string memo );
-    void burn( account_name from, asset quantity );*/
+    void burn( account_name from, asset quantity );
                                      
     void onTransfer(account_name from,
                 account_name to,

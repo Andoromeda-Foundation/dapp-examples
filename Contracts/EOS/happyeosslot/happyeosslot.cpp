@@ -2,6 +2,7 @@
 
 #include "happyeosslot.hpp"
 
+// @abi action
 void token::create( account_name issuer,
                     asset        maximum_supply )
 {
@@ -22,7 +23,6 @@ void token::create( account_name issuer,
        s.issuer        = issuer;
     });
 }
-
 
 void token::burn( account_name from, asset quantity)
 {
@@ -52,6 +52,7 @@ void token::burn( account_name from, asset quantity)
     } */   
 }
 
+// @abi action
 void token::issue( account_name to, asset quantity, string memo )
 {
     auto sym = quantity.symbol;
@@ -82,6 +83,7 @@ void token::issue( account_name to, asset quantity, string memo )
     }
 }
 
+// @abi action
 void token::transfer( account_name from,
                       account_name to,
                       asset        quantity,
@@ -111,7 +113,6 @@ void token::sub_balance( account_name owner, asset value ) {
 
    const auto& from = from_acnts.get( value.symbol.name(), "no balance object found" );
    eosio_assert( from.balance.amount >= value.amount, "overdrawn balance" );
-
 
    if( from.balance.amount == value.amount ) {
       from_acnts.erase( from );
@@ -158,8 +159,14 @@ void tradeableToken::sell(const account_name account, asset hpy) {
     burn(account, hpy);
     asset eos(asset(delta, EOS_SYMBOL));
     // transfer eos
+    action(
+        permission_level{_self, N(active)},
+        N(eosio.token), N(transfer),
+        make_tuple(_self, account, eos, std::string("I'll be back.")))
+        .send();         
 }
 
+// @abi action
 void happyeosslot::init(account_name self, const checksum256 &hash) {
     eosio_assert(self == _self, "only contract itself.");
     auto g = global.find(0);
@@ -216,6 +223,7 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
     }
 }
 
+// @abi action
 void happyeosslot::reveal(const account_name host, const checksum256 &seed, const checksum256 &hash) {
     require_auth(host);
     eosio_assert(host == _self, "Only happyeosslot can reveal the answer.");
@@ -231,12 +239,12 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
     });
 }
 
-
 #define MY_EOSIO_ABI(TYPE, MEMBERS)                                                                                  \
     extern "C"                                                                                                       \
     {                                                                                                                \
         void apply(uint64_t receiver, uint64_t code, uint64_t action)                                                \
-        {                                                                                                            \
+        {                                              \
+                                                              \
             auto self = receiver;                                                                                    \
             if (action == N(onerror))                                                                                \
             {                                                                                                        \
@@ -262,5 +270,5 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
 MY_EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(init)(sell)(reveal))
 
 // generate .abi file
-// EOSIO_ABI(slot_machine, (transfer)(init)(reveal))
+// EOSIO_ABI(happyeosslot, (create)(init)(sell)(reveal))
 
