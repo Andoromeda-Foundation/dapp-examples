@@ -65,7 +65,7 @@ void token::_issue( account_name to, asset quantity, string memo )
     eosio_assert( existing != statstable.end(), "token with symbol does not exist, create token before issue" );
     const auto& st = *existing;
 
-    require_auth( st.issuer );
+    //require_auth( st.issuer );
     eosio_assert( quantity.is_valid(), "invalid quantity" );
     eosio_assert( quantity.amount > 0, "must issue positive quantity" );
 
@@ -138,15 +138,30 @@ void token::add_balance( account_name owner, asset value, account_name ram_payer
    }
 }
 
+const uint64_t init_quote_balance = 50 * 10000 * 10000ll; // 初始保证金 50 万 EOS。
+
 void tradeableToken::buy(const account_name account, asset eos) {
+    eosio::print("buy ");    
     auto market_itr = _market.begin();
+
+    if (market_itr == _market.end()) // to bbe remove
+    {
+      market_itr = _market.emplace(_self, [&](auto &m) {
+        m.supply.amount = 100000000000000ll;
+        m.supply.symbol = HPY_SYMBOL;
+        m.deposit.balance.amount = init_quote_balance;
+        m.deposit.balance.symbol = EOS_SYMBOL;
+      });
+    }
+
     int64_t delta;
     _market.modify(market_itr, 0, [&](auto &es) {
         delta = es.convert(eos, HPY_SYMBOL).amount;
     });
+    eosio::print("buy ", delta);    
     eosio_assert(delta > 0, "must reserve a positive amount");  
     asset hpy(asset(delta, HPY_SYMBOL));
-    _issue(account, hpy, "issue some new hpy");        
+    _issue(account, hpy, "issue some new hpy");
 }
 
 void tradeableToken::sell(const account_name account, asset hpy) {
@@ -163,7 +178,7 @@ void tradeableToken::sell(const account_name account, asset hpy) {
         permission_level{_self, N(active)},
         N(eosio.token), N(transfer),
         make_tuple(_self, account, eos, std::string("I'll be back.")))
-        .send();         
+        .send();       
 }
 
 
@@ -177,6 +192,7 @@ void happyeosslot::create( account_name issuer,
 // @abi action
 void happyeosslot::issue( account_name to, asset quantity, string memo )
 {
+    require_auth( _self );    
     _issue(to, quantity, memo);
 }
 
@@ -209,7 +225,7 @@ void happyeosslot::init(account_name self, const checksum256 &hash) {
 
 void happyeosslot::bet(const account_name account, asset bet, const checksum256& seed) {
     eosio::print("bet ", bet);
-
+    /*
     offers.emplace(_self, [&](auto &offer) {
         offer.id = offers.available_primary_key();
         offer.owner = account;
@@ -227,11 +243,12 @@ void happyeosslot::bet(const account_name account, asset bet, const checksum256&
         results.modify(p, 0, [&](auto& result) {
             result.roll_number = 0;
         });
-    }
+    } */
 }
 
 void happyeosslot::ontransfer(account_name from, account_name to, asset eos, std::string memo) {
     eosio::print("on Transfer ");    
+    
     if (to != _self) {
         return;
     }
@@ -239,7 +256,7 @@ void happyeosslot::ontransfer(account_name from, account_name to, asset eos, std
     eosio_assert(eos.is_valid(), "Invalid token transfer");
     eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
     eosio_assert(eos.amount > 0, "must bet a positive amount");
-
+    
     if (eos.amount >= 10) {
         buy(from, eos);
     } else {
