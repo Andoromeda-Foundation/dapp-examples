@@ -23,6 +23,15 @@
         "__bit_reference": "cpp",
         "__string": "cpp",
         "algorithm": "cpp",
-        "deque": "cpp"
+        "deque": "cpp",
+        "__functional_base": "cpp",
+        "atomic": "cpp",
+        "chrono": "cpp",
+        "functional": "cpp",
+        "iterator": "cpp",
+        "limits": "cpp",
+        "locale": "cpp",
+        "ratio": "cpp",
+        "tuple": "cpp"
     }
 }
