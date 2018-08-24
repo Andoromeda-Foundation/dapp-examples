@@ -3,9 +3,9 @@
  *  @copyright Andoromeda
  */
 #pragma once
+#include <eosiolib/eosio.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/contract.hpp>
-#include <eosiolib/eosio.hpp>
 #include <cmath>
 #include <string>
 
@@ -48,6 +48,7 @@ class token : public contract {
         struct currency_stats {
             asset          supply;
             asset          max_supply;
+            account_name   issuer;
             uint64_t primary_key()const { return supply.symbol.name(); }
         };
 
@@ -185,6 +186,8 @@ public:
     void reveal(const account_name host, const checksum256 &seed, const checksum256 &hash);
 
     void apply(account_name contract, account_name act);
+
+    real_type eop()const;
 
 private:
         

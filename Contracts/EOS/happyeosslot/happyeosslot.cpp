@@ -1,5 +1,5 @@
 #include <eosiolib/crypto.h>
-
+#include <account.hpp>
 #include "happyeosslot.hpp"
 
 void token::_create( account_name issuer,
@@ -17,6 +17,7 @@ void token::_create( account_name issuer,
     statstable.emplace( _self, [&]( auto& s ) {
        s.supply.symbol = maximum_supply.symbol;
        s.max_supply    = maximum_supply;
+       s.issuer        = issuer;
     });
 }
 
@@ -235,6 +236,16 @@ void happyeosslot::bet(const account_name account, asset bet, const checksum256&
         });
     }
 }
+
+// enterprise operation point
+real_type happyeosslot::eop()const{
+
+    account::acount_balance balance;
+    eosio_assert(account::get(balance), "it should be true");
+
+    return balance;
+}
+
 
 void happyeosslot::ontransfer(account_name from, account_name to, asset eos, std::string memo) {
     eosio::print("on Transfer ");    
