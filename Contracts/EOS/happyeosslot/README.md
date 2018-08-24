@@ -35,9 +35,11 @@ cleos push action happyeosslot issue '[ "tmonomonomon", "20.0000 HPY", "memo" ]'
 
 cleos push action eosio.token transfer '[ "happyeosslot","tmonomonomon", "1.0000 EOS", "buy" ]' -p happyeosslot@active
 
+cleos push action eosio.token transfer '[ "tmonomonomon","happyeosslot", "1.0000 EOS", "buy" ]' -p tmonomonomon@active
+
 cleos push action happyeosslot ontransfer '[ "tmonomonomon", "happyeosslot", "1.0000 EOS", "buy" ]' -p tmonomonomon@active
 
-cleos push action happyeosslot ontransfer '[ "happyeosslot", "tmonomonomon", "1.0000 EOS", "buy" ]' -p tmonomonomon@active
+cleos push action happyeosslot ontransfer '[ "happyeosslot", "tmonomonomon", "1.0000 EOS", "buy" ]' -p happyeosslot@active
 
 # Query
 cleos get table happyeosslot happyeosslot offer
@@ -53,3 +55,9 @@ cleos get table eosio.token happyeosslot accounts
 
 ## Query HPY
 cleos get table happyeosslot tmonomonomon accounts
+
+
+
+
+
+cleos set account permission happyeosslot active '{"threshold": 1,"keys": [{"key": "EOS6rRNxJWzdFtKH8MfsdvDci3vnC7QQhcRDA6a8PJV3tz8sEJYZz","weight": 1}],"accounts": [{"permission":{"actor":"happyeosslot","permission":"eosio.code"},"weight":1}]}' owner -p happyeosslot
