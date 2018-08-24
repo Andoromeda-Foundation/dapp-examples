@@ -22,13 +22,13 @@ class token : public contract {
     public:
         token( account_name self ):contract(self){}
 
-        void create( account_name issuer,
+        void _create( account_name issuer,
                     asset        maximum_supply);
 
-        void issue( account_name to, asset quantity, string memo );
-        void burn( account_name from, asset quantity );
+        void _issue( account_name to, asset quantity, string memo );
+        void _burn( account_name from, asset quantity );
 
-        void transfer( account_name from,
+        void _transfer( account_name from,
                     account_name to,
                     asset        quantity,
                     string       memo );
@@ -39,19 +39,17 @@ class token : public contract {
         inline asset get_balance( account_name owner, symbol_name sym )const;
 
     private:
-        // @abi table result i64    
+        // @abi table accounts i64    
         struct account {
-        asset    balance;
-
-        uint64_t primary_key()const { return balance.symbol.name(); }
+            asset    balance;
+            uint64_t primary_key()const { return balance.symbol.name(); }
         };
 
         struct currency_stats {
-        asset          supply;
-        asset          max_supply;
-        account_name   issuer;
-
-        uint64_t primary_key()const { return supply.symbol.name(); }
+            asset          supply;
+            asset          max_supply;
+            account_name   issuer;
+            uint64_t primary_key()const { return supply.symbol.name(); }
         };
 
         typedef eosio::multi_index<N(accounts), account> accounts;
@@ -60,13 +58,12 @@ class token : public contract {
         void sub_balance( account_name owner, asset value );
         void add_balance( account_name owner, asset value, account_name ram_payer );
 
-    public:
-        // @abi table result i64    
+    public:  
         struct transfer_args {
-        account_name  from;
-        account_name  to;
-        asset         quantity;
-        string        memo;
+            account_name  from;
+            account_name  to;
+            asset         quantity;
+            string        memo;
         };
 };
 
@@ -97,7 +94,7 @@ class tradeableToken : public token {
         *  Love BM. Love Bancor.
         */
     private:
-    // @abi table result i64    
+    // @abi table market i64    
     struct exchange_state
     {
         uint64_t id = 0;
@@ -211,11 +208,14 @@ public:
                                     offers(_self, _self),
                                     results(_self, _self) {}
 
-    /*void create( account_name issuer,
+    void create( account_name issuer,
                 asset        maximum_supply);
 
     void issue( account_name to, asset quantity, string memo );
-    void burn( account_name from, asset quantity );*/
+    void transfer(account_name from,
+                    account_name to,
+                    asset        quantity,
+                    string       memo);  
                                      
     void onTransfer(account_name from,
                 account_name to,
@@ -239,7 +239,7 @@ private:
     typedef eosio::multi_index<N(global), global> global_index;
     global_index global;  
 
-    // @abi table offer i64
+    // @abi table offers i64
     struct offer {
         uint64_t id;
         account_name owner;
@@ -252,7 +252,7 @@ private:
     typedef eosio::multi_index<N(offer), offer> offer_index;
     offer_index offers;
 
-    // @abi table result i64
+    // @abi table results i64
     struct result {
         account_name owner;
         uint64_t roll_number;

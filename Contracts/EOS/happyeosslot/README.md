@@ -9,7 +9,7 @@ cleos create account eosio happyeosslot EOS6rRNxJWzdFtKH8MfsdvDci3vnC7QQhcRDA6a8
 eosiocpp -o happyeosslot/happyeosslot.wast happyeosslot/happyeosslot.cpp
 eosiocpp -g happyeosslot/happyeosslot.abi happyeosslot/happyeosslot.cpp
 cleos set contract happyeosslot happyeosslot -p happyeosslot@active
-cleos push action happyeosslot init '["slot", "d533f24d6f28ddcef3f066474f7b8355383e485681ba8e793e037f5cf36e4883"]' -p happyeosslot@active
+cleos push action happyeosslot init '["happyeosslot", "d533f24d6f28ddcef3f066474f7b8355383e485681ba8e793e037f5cf36e4883"]' -p happyeosslot@active
 
 ## Create minakokojima Account
 cleos create account eosio tmonomonomon EOS6hcHfjnhdgPyRCMJneazKWRq6TjY5WyFpMfbVDrBX6e3uvUU4U EOS6hcHfjnhdgPyRCMJneazKWRq6TjY5WyFpMfbVDrBX6e3uvUU4U
@@ -26,9 +26,13 @@ cleos push action eosio.token transfer '[ "tmonomonomon", "happyeosslot", "11.00
 
 cleos push action eosio.token transfer '[ "tmonomonomon", "happyeosslot", "1.0000 EOS", "bet" ]' -p tmonomonomon@active
 
+cleos push action happyeosslot transfer '[ "happyeosslot", "tmonomonomon", "1.0000 HPY", "got" ]' -p happyeosslot@active
+cleos push action happyeosslot create '[ "happyeosslot", "1000000000.0000 HPZ" ]' -p happyeosslot@active
+cleos push action happyeosslot issue '[ "tmonomonomon", "1.0000 HPY", "memo" ]' -p happyeosslot@active
+
 # Query
 cleos get table happyeosslot happyeosslot offer
-cleos get table happyeosslot happyeosslot resul
+cleos get table happyeosslot happyeosslot result
 cleos get table happyeosslot happyeosslot accounts
 
 cleos get table happyeosslot happyeosslot global
@@ -38,4 +42,4 @@ cleos get table happyeosslot happyeosslot exchange_state
 cleos get table eosio.token tmonomonomon accounts
 
 ## Query HPY
-cleos get table happyeosslot tmonomonomon accounts
+cleos get table happyeosslot tmonomonomon account

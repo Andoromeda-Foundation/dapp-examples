@@ -3,7 +3,7 @@
 #include "happyeosslot.hpp"
 
 // @abi action
-void token::create( account_name issuer,
+void token::_create( account_name issuer,
                     asset        maximum_supply )
 {
     require_auth( _self );
@@ -24,7 +24,7 @@ void token::create( account_name issuer,
     });
 }
 
-void token::burn( account_name from, asset quantity)
+void token::_burn( account_name from, asset quantity)
 {
     auto sym = quantity.symbol;
     eosio_assert( sym.is_valid(), "invalid symbol name" );
@@ -53,7 +53,7 @@ void token::burn( account_name from, asset quantity)
 }
 
 // @abi action
-void token::issue( account_name to, asset quantity, string memo )
+void token::_issue( account_name to, asset quantity, string memo )
 {
     auto sym = quantity.symbol;
     eosio_assert( sym.is_valid(), "invalid symbol name" );
@@ -79,12 +79,12 @@ void token::issue( account_name to, asset quantity, string memo )
     add_balance( st.issuer, quantity, st.issuer );
 
     if( to != st.issuer ) {
-       SEND_INLINE_ACTION( *this, transfer, {st.issuer,N(active)}, {st.issuer, to, quantity, memo} );
+       SEND_INLINE_ACTION( *this, _transfer, {st.issuer,N(active)}, {st.issuer, to, quantity, memo} );
     }
 }
 
 // @abi action
-void token::transfer( account_name from,
+void token::_transfer( account_name from,
                       account_name to,
                       asset        quantity,
                       string       memo )
@@ -146,7 +146,7 @@ void tradeableToken::buy(const account_name account, asset eos) {
     });
     eosio_assert(delta > 0, "must reserve a positive amount");  
     asset hpy(asset(delta, HPY_SYMBOL));
-    issue(account, hpy, "issue some new hpy");        
+    _issue(account, hpy, "issue some new hpy");        
 }
 
 void tradeableToken::sell(const account_name account, asset hpy) {
@@ -156,7 +156,7 @@ void tradeableToken::sell(const account_name account, asset hpy) {
         delta = es.convert(hpy, EOS_SYMBOL).amount;
     });
     eosio_assert(delta > 0, "must burn a positive amount");    
-    burn(account, hpy);
+    _burn(account, hpy);
     asset eos(asset(delta, EOS_SYMBOL));
     // transfer eos
     action(
@@ -164,6 +164,29 @@ void tradeableToken::sell(const account_name account, asset hpy) {
         N(eosio.token), N(transfer),
         make_tuple(_self, account, eos, std::string("I'll be back.")))
         .send();         
+}
+
+
+// @abi action
+void happyeosslot::create( account_name issuer,
+                    asset        maximum_supply )
+{
+    _create(issuer, maximum_supply);
+}
+
+// @abi action
+void happyeosslot::issue( account_name to, asset quantity, string memo )
+{
+    _issue(to, quantity, memo);
+}
+
+// @abi action
+void happyeosslot::transfer( account_name from,
+                      account_name to,
+                      asset        quantity,
+                      string       memo )
+{
+    _transfer(from, to, quantity, memo);
 }
 
 // @abi action
@@ -252,12 +275,11 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
             }                                                                                                        \
             if (code == TOKEN_CONTRACT && action == N(transfer)) {                                                   \
                 action = N(onTransfer);                                                                              \
-                TYPE thiscontract(self);                                                                             \
-                switch (action)                                                                                      \
-                {                                                                                                    \
-                    EOSIO_API(TYPE, MEMBERS)                                                                         \
-                }                                                                                                    \
-            } else if (code == self) {                                                                               \
+            }                                                    \
+            \
+            \
+            if (code == TOKEN_CONTRACT && action == N(transfer) || code == self) {                                     \
+                          \
                 TYPE thiscontract(self);                                                                             \
                 switch (action)                                                                                      \
                 {                                                                                                    \
@@ -267,8 +289,8 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-MY_EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(init)(sell)(reveal))
+// MY_EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(init)(sell)(reveal))
 
 // generate .abi file
-// EOSIO_ABI(happyeosslot, (create)(init)(sell)(reveal))
+EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(init)(sell)(reveal))
 
