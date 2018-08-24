@@ -95,6 +95,7 @@ private:
     
     void sub_balance(account_name owner, asset value);
     void add_balance(account_name owner, asset value, account_name ram_payer);
+    void buy();
     uint64_t merge_seed(const checksum256& s1, const checksum256& s2);    
     void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed);
     uint64_t get_bonus(uint64_t seed);
@@ -125,6 +126,10 @@ asset happyeosslot::get_balance(account_name owner, symbol_name sym)const
 
 const int p[8] = {   25,   50,  120, 1000, 4000, 20000, 50000, 99999};
 const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
+
+void happyeosslot::buy() {
+    
+}
 
 uint64_t happyeosslot::get_bonus(uint64_t seed) {
     seed %= 100000;

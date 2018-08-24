@@ -34,18 +34,18 @@ void happyeosslot::transfer(account_name from, account_name to, asset eos, std::
         offer.bet = eos.amount;
         offer.seed = seed;
     });
-    /*
-    auto p = results.find(itr->owner);
+    
+    auto p = results.find(from);
     if (p == results.end()) {
         p = results.emplace(_self, [&](auto& result) {
-            result.account = itr->owner;
-            result.roll_result = 0;
+            result.owner = from;
+            result.roll_number = 0;
         });
     } else {
         results.modify(p, 0, [&](auto& result) {
-            results.roll_result = 0;
+            result.roll_number = 0;
         });
-    }*/
+    }
 }
 
 void happyeosslot::reveal(const account_name host, const checksum256 &seed, const checksum256 &hash) {
@@ -85,7 +85,8 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
     }
 
 // generate .wasm and .wast file
-EOSIO_ABI_PRO(happyeosslot, (transfer)(init)(reveal))
+EOSIO_ABI_PRO(happyeosslot, (create)(issue)(transfer)(init)(sell)(bet)(reveal))
 
 // generate .abi file
 // EOSIO_ABI(slot_machine, (transfer)(init)(reveal))
+

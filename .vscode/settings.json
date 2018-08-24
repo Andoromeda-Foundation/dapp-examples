@@ -32,6 +32,7 @@
         "limits": "cpp",
         "locale": "cpp",
         "ratio": "cpp",
-        "tuple": "cpp"
+        "tuple": "cpp",
+        "queue": "cpp"
     }
 }
