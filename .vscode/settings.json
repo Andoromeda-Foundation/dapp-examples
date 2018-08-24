@@ -33,6 +33,7 @@
         "locale": "cpp",
         "ratio": "cpp",
         "tuple": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "ios": "cpp"
     }
 }
