@@ -6,6 +6,7 @@
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/contract.hpp>
+#include "../eosio.token/eosio.token.hpp"
 #include <cmath>
 #include <string>
 
@@ -16,7 +17,12 @@
 typedef double real_type;
 
 using std::string;
-using namespace eosio;
+using eosio::symbol_name;
+using eosio::asset;
+using eosio::symbol_type;
+using eosio::contract;
+using eosio::permission_level;
+using eosio::action;
 
 class token : public contract {
     public:
@@ -38,7 +44,7 @@ class token : public contract {
         
         inline asset get_balance( account_name owner, symbol_name sym )const;
 
-    private:
+  //  private:
         // @abi table accounts i64    
         struct account {
             asset    balance;
@@ -81,6 +87,7 @@ asset token::get_balance( account_name owner, symbol_name sym )const
     return ac.balance;
 }
 
+
 class tradeableToken : public token {
     public:    
     tradeableToken(account_name self):token(self), _market(_self, _self) {}
@@ -93,7 +100,12 @@ class tradeableToken : public token {
         *  side effects associated with using this API.
         *  Love BM. Love Bancor.
         */
-    private:
+    uint64_t get_deposit() const{
+        auto market_itr = _market.begin();
+        return market_itr->deposit.balance.amount;    
+    }
+
+
     // @abi table market i64    
     struct exchange_state {
         uint64_t id = 0;
@@ -157,7 +169,9 @@ class tradeableToken : public token {
     };
 
     typedef eosio::multi_index<N(market), exchange_state> market;
-    market _market;    
+    market _market;   
+    
+    private:
 };
 
 class happyeosslot : public tradeableToken {
@@ -187,6 +201,7 @@ public:
 
     void apply(account_name contract, account_name act);
 
+    uint64_t get_my_balance()const;
     real_type eop()const;
 
 private:
@@ -195,6 +210,7 @@ private:
     struct global {
         uint64_t id = 0;
         checksum256 hash; // hash of the game seed, 0 when idle.
+        uint64_t realBalance;
 
         uint64_t primary_key() const { return id; }
         EOSLIB_SERIALIZE(global, (id)(hash))

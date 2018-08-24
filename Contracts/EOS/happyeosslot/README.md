@@ -19,7 +19,7 @@ https://developers.eos.io/eosio-cpp/docs/quick-start-token
 cleos create account eosio eosio.token EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C3dC4 EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C3dC4
 cleos set contract eosio.token build/contracts/eosio.token -p eosio.token
 cleos push action eosio.token create '[ "eosio", "1000000000.0000 SYS"]' -p eosio.token
-cleos push action eosio.token issue '[ "tmonomonomon", "100000.0000 EOS", "memo" ]' -p eosio
+cleos push action eosio.token issue '[ "tmonomonomon", "100000000.0000 EOS", "memo" ]' -p eosio
 cleos push action eosio.token issue '[ "tmonomonomon", "100000.0000 SYS", "memo" ]' -p eosio
 
 cleos push action eosio.token issue '[ "happyeosslot", "100000.0000 SYS", "memo" ]' -p eosio
@@ -37,7 +37,7 @@ cleos push action eosio.token transfer '[ "happyeosslot","tmonomonomon", "1.0000
 
 cleos push action eosio.token transfer '[ "tmonomonomon","happyeosslot", "1.0000 EOS", "buy" ]' -p tmonomonomon@active
 
-cleos push action happyeosslot ontransfer '[ "tmonomonomon", "happyeosslot", "1.0000 EOS", "buy" ]' -p tmonomonomon@active
+cleos push action happyeosslot ontransfer '[ "tmonomonomon", "happyeosslot", "11.0000 EOS", "buy" ]' -p tmonomonomon@active
 
 cleos push action happyeosslot ontransfer '[ "happyeosslot", "tmonomonomon", "1.0000 EOS", "buy" ]' -p happyeosslot@active
 
@@ -56,8 +56,20 @@ cleos get table eosio.token happyeosslot accounts
 ## Query HPY
 cleos get table happyeosslot tmonomonomon accounts
 
-
+cleos get table happyeosslot happyeosslot accounts
 
 
 
 cleos set account permission happyeosslot active '{"threshold": 1,"keys": [{"key": "EOS6rRNxJWzdFtKH8MfsdvDci3vnC7QQhcRDA6a8PJV3tz8sEJYZz","weight": 1}],"accounts": [{"permission":{"actor":"happyeosslot","permission":"eosio.code"},"weight":1}]}' owner -p happyeosslot
+
+cleos push action eosio.token transfer '[ "happyeosslot","tmonomonomon", "450000.0001 EOS", "buy" ]' -p happyeosslot@active
+
+
+cleos push action eosio.token transfer '[ "tmonomonomon","happyeosslot", "450000.0000 EOS", "buy" ]' -p tmonomonomon@active
+
+
+cleos push action happyeosslot sell '[ "happyeosslot", "tmonomonomon", "1.0000 EOS", "buy" ]' -p happyeosslot@active
+
+cleos push action happyeosslot transfer '[ "happyeosslot", "tmonomonomon", "1.0000 HPY", "got" ]' -p happyeosslot@active
+
+cleos push action happyeosslot sell '["tmonomonomon", "1.0000 HPY"]' -p tmonomonomon@active
