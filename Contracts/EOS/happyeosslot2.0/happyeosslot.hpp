@@ -30,8 +30,12 @@ public:
                 asset        quantity,
                 string       memo);
 
+    void onTransfer(account_name from,
+                account_name to,
+                asset        quantity,
+                string       memo);
+
     void init(account_name self, const checksum256& hash);
-    void bet(const account_name account, const uint64_t bet, const checksum256& seed);    
     void sell(uint64_t amount);
     void reveal(const account_name host, const checksum256 &seed, const checksum256 &hash);
     
@@ -95,7 +99,9 @@ private:
     
     void sub_balance(account_name owner, asset value);
     void add_balance(account_name owner, asset value, account_name ram_payer);
-    void buy();
+    void buy(const account_name account, asset value);
+    void bet(const account_name account, asset bet, const checksum256& seed);    
+   
     uint64_t merge_seed(const checksum256& s1, const checksum256& s2);    
     void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed);
     uint64_t get_bonus(uint64_t seed);
@@ -127,8 +133,34 @@ asset happyeosslot::get_balance(account_name owner, symbol_name sym)const
 const int p[8] = {   25,   50,  120, 1000, 4000, 20000, 50000, 99999};
 const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
 
-void happyeosslot::buy() {
+void happyeosslot::buy(const account_name account, asset value) {
+    eosio::print("buy ", value);        
+}
+
+void happyeosslot::bet(const account_name account, asset bet, const checksum256& seed) {
+    eosio::print("bet ", bet);
+    /*
+
+    offers.emplace(_self, [&](auto &offer) {
+        offer.id = offers.available_primary_key();
+        offer.owner = from;
+        offer.bet = eos.amount;
+        offer.seed = seed;
+    });
     
+    auto p = results.find(from);
+    if (p == results.end()) {
+        p = results.emplace(_self, [&](auto& result) {
+            result.owner = from;
+            result.roll_number = 0;
+        });
+    } else {
+        results.modify(p, 0, [&](auto& result) {
+            result.roll_number = 0;
+        });
+    }
+    */    
+
 }
 
 uint64_t happyeosslot::get_bonus(uint64_t seed) {
@@ -160,18 +192,13 @@ void happyeosslot::deal_with(eosio::multi_index<N(offer), offer>::const_iterator
         .send();
     auto p = results.find(itr->owner);
     
-    if (p == results.end()) {
-        p = results.emplace(_self, [&](auto& result) {
-            result.owner = itr->owner;
-        });
-    }
     results.modify(p, 0, [&](auto& result) {
         result.roll_number = bonus_rate;
     });
     offers.erase(itr);
 }
 
-checksum256 happyeosslot::parse_memo(const std::string &memo) { // to bo refind.
+checksum256 happyeosslot::parse_memo(const std::string &memo) { // to bo refine.
     checksum256 checksum;
     memset(&checksum, 0, sizeof(checksum256));
     for (int i = 0; i < memo.length(); i++) {

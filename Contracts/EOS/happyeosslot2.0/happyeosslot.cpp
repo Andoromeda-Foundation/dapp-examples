@@ -17,7 +17,32 @@ void happyeosslot::init(account_name self, const checksum256 &hash) {
     }
 }
 
-void happyeosslot::transfer(account_name from, account_name to, asset eos, std::string memo) {
+void happyeosslot::transfer( account_name from,
+                             account_name to,
+                             asset        quantity,
+                             string       memo ) {
+    eosio_assert( from != to, "cannot transfer to self" );
+    require_auth( from );
+    eosio_assert( is_account( to ), "to account does not exist");
+    auto sym = quantity.symbol.name();
+    stats statstable( _self, sym );
+    const auto& st = statstable.get( sym );
+
+    require_recipient( from );
+    require_recipient( to );
+
+    eosio_assert( quantity.is_valid(), "invalid quantity" );
+    eosio_assert( quantity.amount > 0, "must transfer positive quantity" );
+    eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
+    eosio_assert( memo.size() <= 256, "memo has more than 256 bytes" );
+
+
+    sub_balance( from, quantity );
+    add_balance( to, quantity, from );
+}
+
+
+void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std::string memo) {
     if (to != _self) {
         return;
     }
@@ -26,25 +51,12 @@ void happyeosslot::transfer(account_name from, account_name to, asset eos, std::
     eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
     eosio_assert(eos.amount > 0, "must bet a positive amount");
 
-    const checksum256 seed = parse_memo(memo);
 
-    offers.emplace(_self, [&](auto &offer) {
-        offer.id = offers.available_primary_key();
-        offer.owner = from;
-        offer.bet = eos.amount;
-        offer.seed = seed;
-    });
-    
-    auto p = results.find(from);
-    if (p == results.end()) {
-        p = results.emplace(_self, [&](auto& result) {
-            result.owner = from;
-            result.roll_number = 0;
-        });
+    if (eos.amount >= 10) {
+        buy(from, eos);
     } else {
-        results.modify(p, 0, [&](auto& result) {
-            result.roll_number = 0;
-        });
+        const checksum256 seed = parse_memo(memo);        
+        bet(from, eos, seed);
     }
 }
 
@@ -63,7 +75,8 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
     });
 }
 
-#define EOSIO_ABI_PRO(TYPE, MEMBERS)                                                                                 \
+
+#define MY_EOSIO_ABI(TYPE, MEMBERS)                                                                                  \
     extern "C"                                                                                                       \
     {                                                                                                                \
         void apply(uint64_t receiver, uint64_t code, uint64_t action)                                                \
@@ -73,8 +86,14 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
             {                                                                                                        \
                 eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account"); \
             }                                                                                                        \
-            if ((code == TOKEN_CONTRACT && action == N(transfer)) || (code == self && (action != N(transfer))))      \
-            {                                                                                                        \
+            if (code == TOKEN_CONTRACT && action == N(transfer)) {                                                   \
+                action = N(onTransfer);                                                                              \
+                TYPE thiscontract(self);                                                                             \
+                switch (action)                                                                                      \
+                {                                                                                                    \
+                    EOSIO_API(TYPE, MEMBERS)                                                                         \
+                }                                                                                                    \
+            } else if (code == self) {                                                                               \
                 TYPE thiscontract(self);                                                                             \
                 switch (action)                                                                                      \
                 {                                                                                                    \
@@ -83,9 +102,8 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
             }                                                                                                        \
         }                                                                                                            \
     }
-
 // generate .wasm and .wast file
-EOSIO_ABI_PRO(happyeosslot, (create)(issue)(transfer)(init)(sell)(bet)(reveal))
+MY_EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(init)(sell)(reveal))
 
 // generate .abi file
 // EOSIO_ABI(slot_machine, (transfer)(init)(reveal))
