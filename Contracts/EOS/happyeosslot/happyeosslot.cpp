@@ -1,11 +1,5 @@
 #include <eosiolib/crypto.h>
-//#include <account.hpp>
-//#include <eosio.token/eosio.token.wast.hpp>
-//#include <eosio.token/eosio.token.abi.hpp>
 #include "happyeosslot.hpp"
-
-
-
 
 void token::_create( account_name issuer,
                      asset        maximum_supply ) {
@@ -90,14 +84,14 @@ void token::_issue( account_name to, asset quantity, string memo )
    // eosio::print("__________________");  
 
     if( to != st.issuer ) {
-        //SEND_INLINE_ACTION( *this, _transfer, {st.issuer, N(active)}, {st.issuer, to, quantity, memo} );
+        // SEND_INLINE_ACTION( *this, _transfer, {_self, N(active)}, {_self, to, quantity, memo} );
         //eosio_assert(false, "shab");
        // eosio::print("how many: ", quantity.amount);
         action(
             permission_level{_self, N(active)},
             _self, N(transfer),
             make_tuple(_self, to, quantity, memo))
-            .send();        
+            .send();    
     }
 }
 

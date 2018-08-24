@@ -105,6 +105,10 @@ class tradeableToken : public token {
         return market_itr->deposit.balance.amount;    
     }
 
+    real_type price() const{
+        auto market_itr = _market.begin();
+        return market_itr->get_price(); 
+    }
 
     // @abi table market i64    
     struct exchange_state {
@@ -165,6 +169,20 @@ class tradeableToken : public token {
             }
         }
 
+        real_type get_price() const{
+            auto in = asset(1, EOS_SYMBOL);        
+            auto c = deposit;
+            real_type R(supply.amount);
+            real_type C(c.balance.amount + in.amount);
+            real_type F(c.weight / 1000.0);
+            real_type T(in.amount);
+            real_type ONE(1.0);
+
+            real_type E = -R * (ONE - pow(ONE + T / C, F));
+            int64_t issued = int64_t(E);
+            return real_type(1.0) / issued;
+        }
+
         EOSLIB_SERIALIZE(exchange_state, (supply)(deposit))
     };
 
@@ -203,6 +221,7 @@ public:
 
     uint64_t get_my_balance()const;
     real_type eop()const;
+    
 
 private:
         
