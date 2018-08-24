@@ -225,7 +225,9 @@ public:
     void init(account_name self, const checksum256& hash);
 
     void reveal(const account_name host, const checksum256 &seed, const checksum256 &hash);
- 
+
+    void apply(account_name contract, account_name act);
+
 private:
         
     // @abi table global i64

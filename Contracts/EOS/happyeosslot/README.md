@@ -18,17 +18,26 @@ cleos create account eosio tmonomonomon EOS6hcHfjnhdgPyRCMJneazKWRq6TjY5WyFpMfbV
 https://developers.eos.io/eosio-cpp/docs/quick-start-token
 cleos create account eosio eosio.token EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C3dC4 EOS7ijWCBmoXBi3CgtK7DJxentZZeTkeUnaSDvyro9dq7Sd1C3dC4
 cleos set contract eosio.token build/contracts/eosio.token -p eosio.token
-cleos push action eosio.token create '[ "eosio", "1000000000.0000 "]' -p eosio.token
+cleos push action eosio.token create '[ "eosio", "1000000000.0000 SYS"]' -p eosio.token
 cleos push action eosio.token issue '[ "tmonomonomon", "100000.0000 EOS", "memo" ]' -p eosio
+cleos push action eosio.token issue '[ "tmonomonomon", "100000.0000 SYS", "memo" ]' -p eosio
+
+cleos push action eosio.token issue '[ "happyeosslot", "100000.0000 SYS", "memo" ]' -p eosio
+
+cleos push action eosio.token transfer '[ "tmonomonomon", "happyeosslot", "1.1000 SYS", "buy" ]' -p tmonomonomon@active
 
 # Test
-cleos push action eosio.token transfer '[ "tmonomonomon", "happyeosslot", "15.0000 EOS", "buy" ]' -p tmonomonomon@active
+cleos push action eosio.token transfer '[ "tmonomonomon", "happyeosslot", "1.1000 EOS", "buy" ]' -p tmonomonomon@active
 cleos push action eosio.token transfer '[ "tmonomonomon", "happyeosslot", "1.0000 EOS", "bet" ]' -p tmonomonomon@active
 cleos push action happyeosslot transfer '[ "happyeosslot", "tmonomonomon", "1.0000 HPY", "got" ]' -p happyeosslot@active
 cleos push action happyeosslot create '[ "happyeosslot", "1000000000.0000 HPZ" ]' -p happyeosslot@active
 cleos push action happyeosslot issue '[ "tmonomonomon", "20.0000 HPY", "memo" ]' -p happyeosslot@active
 
-cleos push action eosio.token transfer '[ "happyeosslot", tmonomonomonm", "1.0000 EOS", "buy" ]' -p tmonomonomon@active
+cleos push action eosio.token transfer '[ "happyeosslot","tmonomonomon", "1.0000 EOS", "buy" ]' -p happyeosslot@active
+
+cleos push action happyeosslot ontransfer '[ "tmonomonomon", "happyeosslot", "1.0000 EOS", "buy" ]' -p tmonomonomon@active
+
+cleos push action happyeosslot ontransfer '[ "happyeosslot", "tmonomonomon", "1.0000 EOS", "buy" ]' -p tmonomonomon@active
 
 # Query
 cleos get table happyeosslot happyeosslot offer
