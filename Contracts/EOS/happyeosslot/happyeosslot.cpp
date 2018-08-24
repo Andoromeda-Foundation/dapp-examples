@@ -174,10 +174,10 @@ void tradeableToken::sell(const account_name account, asset hpy) {
         .send();       
 }
 
-
 // @abi action
 void happyeosslot::create( account_name issuer,
                            asset        maximum_supply ) {
+    require_auth( _self );
     _create(issuer, maximum_supply);
 }
 
@@ -216,7 +216,6 @@ void happyeosslot::init(account_name self, const checksum256 &hash) {
 
 void happyeosslot::bet(const account_name account, asset bet, const checksum256& seed) {
     eosio::print("bet ", bet);
-    /*
     offers.emplace(_self, [&](auto &offer) {
         offer.id = offers.available_primary_key();
         offer.owner = account;
@@ -234,7 +233,7 @@ void happyeosslot::bet(const account_name account, asset bet, const checksum256&
         results.modify(p, 0, [&](auto& result) {
             result.roll_number = 0;
         });
-    } */
+    }
 }
 
 void happyeosslot::ontransfer(account_name from, account_name to, asset eos, std::string memo) {
