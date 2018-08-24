@@ -2,12 +2,9 @@
 
 #include "happyeosslot.hpp"
 
-// @abi action
 void token::_create( account_name issuer,
-                    asset        maximum_supply )
-{
+                     asset        maximum_supply ) {
     require_auth( _self );
-
     auto sym = maximum_supply.symbol;
     eosio_assert( sym.is_valid(), "invalid symbol name" );
     eosio_assert( maximum_supply.is_valid(), "invalid supply");
@@ -20,7 +17,6 @@ void token::_create( account_name issuer,
     statstable.emplace( _self, [&]( auto& s ) {
        s.supply.symbol = maximum_supply.symbol;
        s.max_supply    = maximum_supply;
-       s.issuer        = issuer;
     });
 }
 
@@ -52,7 +48,6 @@ void token::_burn( account_name from, asset quantity)
     } */   
 }
 
-// @abi action
 void token::_issue( account_name to, asset quantity, string memo )
 {
     auto sym = quantity.symbol;
@@ -79,16 +74,14 @@ void token::_issue( account_name to, asset quantity, string memo )
     add_balance( st.issuer, quantity, st.issuer );
 
     if( to != st.issuer ) {
-       SEND_INLINE_ACTION( *this, _transfer, {st.issuer,N(active)}, {st.issuer, to, quantity, memo} );
+       SEND_INLINE_ACTION( *this, _transfer, {st.issuer, N(active)}, {st.issuer, to, quantity, memo} );
     }
 }
 
-// @abi action
 void token::_transfer( account_name from,
-                      account_name to,
-                      asset        quantity,
-                      string       memo )
-{
+                       account_name to,
+                       asset        quantity,
+                       string       memo ) {
     eosio_assert( from != to, "cannot transfer to self" );
     require_auth( from );
     eosio_assert( is_account( to ), "to account does not exist");
@@ -184,8 +177,7 @@ void tradeableToken::sell(const account_name account, asset hpy) {
 
 // @abi action
 void happyeosslot::create( account_name issuer,
-                    asset        maximum_supply )
-{
+                           asset        maximum_supply ) {
     _create(issuer, maximum_supply);
 }
 
@@ -198,11 +190,10 @@ void happyeosslot::issue( account_name to, asset quantity, string memo )
 
 // @abi action
 void happyeosslot::transfer( account_name from,
-                      account_name to,
-                      asset        quantity,
-                      string       memo )
-{
-    eosio::print("Transfer ");        
+                             account_name to,
+                             asset        quantity,
+                             string       memo ) {
+    require_auth( from );
     _transfer(from, to, quantity, memo);
 }
 
@@ -307,7 +298,7 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-MY_EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(ontransfer)(init)(sell)(reveal))
+MY_EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(init)(sell)(reveal))
 
 // generate .abi file
-// EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(ontransfer)(init)(sell)(reveal))
+// EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(init)(sell)(reveal))

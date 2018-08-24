@@ -23,7 +23,7 @@ class token : public contract {
         token( account_name self ):contract(self){}
 
         void _create( account_name issuer,
-                    asset        maximum_supply);
+                      asset        maximum_supply);
 
         void _issue( account_name to, asset quantity, string memo );
         void _burn( account_name from, asset quantity );
@@ -48,7 +48,6 @@ class token : public contract {
         struct currency_stats {
             asset          supply;
             asset          max_supply;
-            account_name   issuer;
             uint64_t primary_key()const { return supply.symbol.name(); }
         };
 
@@ -95,14 +94,12 @@ class tradeableToken : public token {
         */
     private:
     // @abi table market i64    
-    struct exchange_state
-    {
+    struct exchange_state {
         uint64_t id = 0;
 
         asset supply;
 
-        struct connector
-        {
+        struct connector {
             asset balance;
             double weight = .5;
             EOSLIB_SERIALIZE(connector, (balance)(weight))
@@ -112,8 +109,7 @@ class tradeableToken : public token {
 
         uint64_t primary_key() const { return id; }
 
-        asset convert_to_exchange(connector &c, asset in)
-        {
+        asset convert_to_exchange(connector &c, asset in) {
             real_type R(supply.amount);
             real_type C(c.balance.amount + in.amount);
             real_type F(c.weight / 1000.0);
@@ -129,8 +125,7 @@ class tradeableToken : public token {
             return asset(issued, supply.symbol);
         }
 
-        asset convert_from_exchange(connector &c, asset in)
-        {
+        asset convert_from_exchange(connector &c, asset in) {
             real_type R(supply.amount - in.amount);
             real_type C(c.balance.amount);
             real_type F(1000.0 / c.weight);
@@ -146,8 +141,7 @@ class tradeableToken : public token {
             return asset(out, c.balance.symbol);
         }
 
-        asset convert(asset from, symbol_type to)
-        {
+        asset convert(asset from, symbol_type to) {
             if (from.symbol == EOS_SYMBOL && to == HPY_SYMBOL) {
                 return convert_to_exchange(deposit, from);
             } else if (from.symbol == HPY_SYMBOL && to == EOS_SYMBOL) {
