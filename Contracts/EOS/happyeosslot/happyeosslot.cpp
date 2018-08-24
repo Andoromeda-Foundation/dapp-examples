@@ -24,8 +24,32 @@ void token::create( account_name issuer,
 }
 
 
-void token::burn( account_name to, asset quantity)
+void token::burn( account_name from, asset quantity)
 {
+    auto sym = quantity.symbol;
+    eosio_assert( sym.is_valid(), "invalid symbol name" );
+
+    auto sym_name = sym.name();
+    stats statstable( _self, sym_name );
+    auto existing = statstable.find( sym_name );
+    eosio_assert( existing != statstable.end(), "token with symbol does not exist, create token before burn" );
+    const auto& st = *existing;
+
+    eosio_assert( quantity.is_valid(), "invalid quantity" );
+    eosio_assert( quantity.amount > 0, "must burn positive quantity" );
+
+    eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
+    eosio_assert(  st.supply.amount >= quantity.amount, "quantity exceeds available supply");
+
+    statstable.modify( st, 0, [&]( auto& s ) {
+       s.supply -= quantity;
+    });
+
+    sub_balance(from, quantity);
+
+    /*if( to != st.issuer ) {
+       SEND_INLINE_ACTION( *this, transfer, {st.issuer,N(active)}, {st.issuer, to, quantity, memo} );
+    } */   
 }
 
 void token::issue( account_name to, asset quantity, string memo )
@@ -151,16 +175,6 @@ void happyeosslot::init(account_name self, const checksum256 &hash) {
         });
     }
 }
-
-/*
-void happyeosslot::buy(const account_name account, asset value) {
-    eosio::print("buy ", value);
-    int64_t amount;
-    _market.modify(market_itr, 0, [&](auto &es) {
-      ite_out = es.convert(quant_after_fee, ITE).amount;
-    }); 
-}
-*/
 
 void happyeosslot::bet(const account_name account, asset bet, const checksum256& seed) {
     eosio::print("bet ", bet);
