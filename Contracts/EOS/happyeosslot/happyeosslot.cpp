@@ -186,6 +186,7 @@ void happyeosslot::transfer( account_name from,
                       asset        quantity,
                       string       memo )
 {
+    eosio::print("Transfer ");        
     _transfer(from, to, quantity, memo);
 }
 
@@ -229,7 +230,8 @@ void happyeosslot::bet(const account_name account, asset bet, const checksum256&
     }
 }
 
-void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std::string memo) {
+void happyeosslot::ontransfer(account_name from, account_name to, asset eos, std::string memo) {
+    eosio::print("on Transfer ");    
     if (to != _self) {
         return;
     }
@@ -273,12 +275,12 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
             {                                                                                                        \
                 eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account"); \
             }                                                                                                        \
-            if (code == TOKEN_CONTRACT && action == N(transfer)) {                                                   \
-                action = N(onTransfer);                                                                              \
-            }                                                    \
-            \
-            \
-            if (code == TOKEN_CONTRACT && action == N(transfer) || code == self) {                                     \
+            if (code == TOKEN_CONTRACT) { \
+                                                                   \
+                action = N(ontransfer)                                                                           \
+            } \
+            if ((code == TOKEN_CONTRACT && action == N(ontransfer)) || code == self) {     \
+                                             \
                           \
                 TYPE thiscontract(self);                                                                             \
                 switch (action)                                                                                      \
@@ -289,8 +291,8 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-// MY_EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(init)(sell)(reveal))
+// MY_EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(ontransfer)(init)(sell)(reveal))
 
 // generate .abi file
-EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(init)(sell)(reveal))
+EOSIO_ABI(happyeosslot, (create)(issue)(transfer)(ontransfer)(init)(sell)(reveal))
 

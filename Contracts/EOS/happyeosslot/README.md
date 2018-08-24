@@ -22,13 +22,13 @@ cleos push action eosio.token create '[ "eosio", "1000000000.0000 "]' -p eosio.t
 cleos push action eosio.token issue '[ "tmonomonomon", "100000.0000 EOS", "memo" ]' -p eosio
 
 # Test
-cleos push action eosio.token transfer '[ "tmonomonomon", "happyeosslot", "11.0000 EOS", "buy" ]' -p tmonomonomon@active
-
+cleos push action eosio.token transfer '[ "tmonomonomon", "happyeosslot", "15.0000 EOS", "buy" ]' -p tmonomonomon@active
 cleos push action eosio.token transfer '[ "tmonomonomon", "happyeosslot", "1.0000 EOS", "bet" ]' -p tmonomonomon@active
-
 cleos push action happyeosslot transfer '[ "happyeosslot", "tmonomonomon", "1.0000 HPY", "got" ]' -p happyeosslot@active
 cleos push action happyeosslot create '[ "happyeosslot", "1000000000.0000 HPZ" ]' -p happyeosslot@active
-cleos push action happyeosslot issue '[ "tmonomonomon", "1.0000 HPY", "memo" ]' -p happyeosslot@active
+cleos push action happyeosslot issue '[ "tmonomonomon", "20.0000 HPY", "memo" ]' -p happyeosslot@active
+
+cleos push action eosio.token transfer '[ "happyeosslot", tmonomonomonm", "1.0000 EOS", "buy" ]' -p tmonomonomon@active
 
 # Query
 cleos get table happyeosslot happyeosslot offer
@@ -40,6 +40,7 @@ cleos get table happyeosslot happyeosslot exchange_state
 
 ## Query EOS
 cleos get table eosio.token tmonomonomon accounts
+cleos get table eosio.token happyeosslot accounts
 
 ## Query HPY
-cleos get table happyeosslot tmonomonomon account
+cleos get table happyeosslot tmonomonomon accounts
