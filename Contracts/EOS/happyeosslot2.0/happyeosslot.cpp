@@ -76,41 +76,7 @@ class slot_machine : public contract {
     }
 
   private:
-    // @abi table global i64
-    struct global {
-        uint64_t id = 0;
-        checksum256 hash; // hash of the game seed, 0 when idle.
-
-        uint64_t primary_key() const { return id; }
-        EOSLIB_SERIALIZE(global, (id)(hash))
-    };
-    typedef eosio::multi_index<N(global), global> global_index;
-    global_index global;
-
-    // @abi table offer i64
-    struct offer {
-        uint64_t id;
-        account_name owner;
-        uint64_t bet;
-        checksum256 seed;
-
-        uint64_t primary_key() const { return id; }
-        EOSLIB_SERIALIZE(offer, (id)(owner)(bet)(seed))
-    };
-    typedef eosio::multi_index<N(offer), offer> offer_index;
-    offer_index offers;
-
-    // @abi table result i64
-    struct result {
-        account_name owner;
-        uint64_t roll_number;
-
-        uint64_t primary_key() const { return account; }
-        EOSLIB_SERIALIZE(result, (owner)(roll_number))
-    };
-    typedef eosio::multi_index<N(result), result> result_index;
-    result_index results;
-
+  
     const int p[8] = {   25,   50,  120, 1000, 4000, 20000, 50000, 99999};
     const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
 
