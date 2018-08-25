@@ -8,7 +8,7 @@ using namespace eosio;
 #define EOS_SYMBOL S(4, EOS)
 #define TOKEN_CONTRACT N(eosio.token)
 
-class slot_machine : public contract {
+class snakesladder : public contract {
     public:
         slot_machine(account_name self) : contract(self),
         global(_self, _self),

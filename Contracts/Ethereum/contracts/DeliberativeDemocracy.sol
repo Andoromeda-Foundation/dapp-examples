@@ -34,6 +34,7 @@ contract DeliberativeDemocracy is Ownable  {
     mapping(address => bool) public isUsed; // 用户是否已经投票
     mapping(address => address) public candidate; // 我的候选人
     mapping(address => uint256) public ticket; // 得票数
+    mapping(address => bool) public isRun; // 是否参选
     mapping(address => bool) public isMember; // 是否是议员
     mapping(address => uint256) public lastVoteTime; // 上次投票时间
     Node[21] public nodes; // 议员地址
@@ -94,8 +95,12 @@ contract DeliberativeDemocracy is Ownable  {
     function run() public {
         require(!isMember[msg.sender]);
 
+        if(!isRun[msg.sender]) isRun[msg.sender] = true;
+
         // 维护21个议员
         if (ticket[msg.sender] > nodes[minVotesIndex].tickets) {
+            isMember[nodes[minVotesIndex].member] = false;
+
             Node memory _node = Node(msg.sender, ticket[msg.sender]);
             nodes[minVotesIndex] = _node;
 
@@ -116,24 +121,30 @@ contract DeliberativeDemocracy is Ownable  {
     }
 
     // 退选议员
+    // 两种情况，一：本身是议员退选，二：本身不是议员退选
     // 退选议员，那么他所在那个位置的议员空掉，此时只有２０个议员(如果之前为２１)
     // 此时任何有票的人参选就可以选为议员。
     function runOut() public {
-        require(isMember[msg.sender]);
+        require(isRun[msg.sender]);
 
-        if (ticket[msg.sender] >= nodes[minVotesIndex].tickets) {
+        if(isMember[msg.sender]){
             for(uint256 i = 0; i < 21; i++) {
                 if(nodes[i].member == msg.sender) {
                     nodes[i].member = 0x0;
                     nodes[i].tickets = 0;
                     minVotesIndex = i;
-
+                    
                     isMember[msg.sender] = false;
+                    isRun[msg.sender] = false;
                     emit RunOut(i, msg.sender, ticket[msg.sender]);
                     break;
-                }
+                }                    
             }
+        } else {
+            isRun[msg.sender] = false;
         }
+
+        
     }
 
     function execute(string method, uint256 para) internal returns(bool){

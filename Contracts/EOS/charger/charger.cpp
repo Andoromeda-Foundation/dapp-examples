@@ -59,12 +59,11 @@ class charger : public contract {
         uint64_t timestamp;
         std::string memo;
 
-        uint64_t primary_key()const { return id; }
+        uint64_t primary_key() const { return id; }
         EOSLIB_SERIALIZE( offer, (id)(memo) )
     };  
     typedef eosio::multi_index<N(offer), offer> offer_index;  
     offer_index offers;
-
 
     void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr) {
       offers.erase(itr);

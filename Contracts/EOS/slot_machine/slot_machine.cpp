@@ -107,11 +107,6 @@ class slot_machine : public contract {
     });
   }
   
-  uint64_t get_credits(account_name account) const {
-    const auto& p = players.get(account);
-    return p.credits;
-  }
-
   private:
   // @abi table global i64
   struct global {
@@ -148,34 +143,34 @@ class slot_machine : public contract {
   typedef eosio::multi_index< N(offer), offer> offer_index;  
   offer_index offers;
 
-  const int p[8] = {25,50,1200,1000,4000,20000,50000,23725};
-  const float b[8] = {100, 50, 20, 10, 5, 2, 0.1, 0.01};
+  const int p[8] = {   10,   20,  120, 1000, 4000, 20000, 60000, 53725};
+  const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
 
-  float get_bonus(uint64_t seed) {
-    seed %= 100000;
-    int i = 0;
-    while (seed > p[i]) {
-      seed -= p[i];      
-      ++i;
-    }
-    return b[i];
+  uint64_t get_bonus(uint64_t seed, uint64_t amount) {
+      seed %= 100000;
+      int i = 0;
+      while (seed >= p[i]) {
+          seed -= p[i];
+          ++i;
+      }
+      return b[i] * amount / 100;
   }
 
   uint64_t merge_seed(const checksum256& s1, const checksum256& s2) {
-    uint64_t hash = 0, x;
-    for (int i = 0; i < 32; ++i) {
-      hash ^= (s1.hash[i] ^ s2.hash[i]) << ((i & 7) << 3);
-    }
-    return hash;
+      uint64_t hash = 0, x;
+      for (int i = 0; i < 32; ++i) {
+          hash ^= (s1.hash[i] ^ s2.hash[i]) << ((i & 7) << 3);
+      }
+      return hash;
   }
 
   void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed) {
-    auto p = players.find(itr->owner);
-    eosio_assert(p != players.end(), "Player is not exist.");
-    players.modify(p, 0, [&](auto &player) {
-      player.credits += uint64_t(get_bonus(merge_seed(seed, itr->seed)) * itr->bet);
-    });
-    offers.erase(itr);
+      auto p = players.find(itr->owner);
+      eosio_assert(p != players.end(), "Player is not exist.");
+      players.modify(p, 0, [&](auto &player) {
+        player.credits += get_bonus(merge_seed(seed, itr->seed), itr->bet);
+      });
+      offers.erase(itr);
   }
 };
 
