@@ -105,10 +105,13 @@ class tradeableToken : public token {
         return market_itr->deposit.balance.amount;    
     }
 
-    real_type price() const{
+    real_type raw_price() const{
         auto market_itr = _market.begin();
         return market_itr->get_price(); 
     }
+
+    uint64_t get_my_balance()const;
+    real_type eop()const;    
 
     // @abi table market i64    
     struct exchange_state {
@@ -218,10 +221,10 @@ public:
     void reveal(const account_name host, const checksum256 &seed, const checksum256 &hash);
 
     void apply(account_name contract, account_name act);
-
-    uint64_t get_my_balance()const;
-    real_type eop()const;
     
+    real_type price() const{
+        return raw_price() * eop();
+    }        
 
 private:
         

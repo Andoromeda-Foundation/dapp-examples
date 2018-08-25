@@ -151,13 +151,29 @@ void token::add_balance( account_name owner, asset value, account_name ram_payer
 
 const uint64_t init_quote_balance = 50 * 10000 * 10000ll; // 初始保证金 50 万 EOS。
 
+uint64_t tradeableToken::get_my_balance() const{
+    auto sym = eosio::symbol_type(EOS_SYMBOL).name();
+    accounts eos_account(TOKEN_CONTRACT, _self);
+    auto account = eos_account.get(sym);
+    return account.balance.amount;
+}
+
+real_type tradeableToken::eop()const{
+    auto sym = eosio::symbol_type(EOS_SYMBOL).name();
+    auto balance = eosio::token(TOKEN_CONTRACT).get_balance(_self, sym);
+    eosio_assert(balance.amount == get_my_balance(), "should be equal");
+    return real_type(balance.amount) / get_deposit();
+}
+
 void tradeableToken::buy(const account_name account, asset eos) {
     eosio::print("buy ");    
-   //  auto global_itr = global.begin();
- //   global_itr->realBalance += eos.amount;
+    // auto global_itr = global.begin();
+    // global_itr->realBalance += eos.amount;
     auto market_itr = _market.begin();
 
     int64_t delta;
+//    eos.amount *= eop();
+
     _market.modify(market_itr, 0, [&](auto &es) {
         delta = es.convert(eos, HPY_SYMBOL).amount;
     });
@@ -175,7 +191,8 @@ void tradeableToken::sell(const account_name account, asset hpy) {
     });
     eosio_assert(delta > 0, "must burn a positive amount");    
     _burn(account, hpy);
-    asset eos(asset(delta, EOS_SYMBOL));
+    asset eos(asset(delta * eop(), EOS_SYMBOL));
+    
     // transfer eos
     action(
         permission_level{_self, N(active)},
@@ -215,7 +232,7 @@ void happyeosslot::init(account_name self, const checksum256 &hash) {
         global.emplace(_self, [&](auto &g) {
             g.id = 0;
             g.hash = hash;
-        });
+        }); 
         
         _market.emplace(_self, [&](auto &m) {
             m.supply.amount = 100000000000000ll;
@@ -254,22 +271,6 @@ void happyeosslot::bet(const account_name account, asset bet, const checksum256&
     }
 }
 
-uint64_t happyeosslot::get_my_balance() const{
-    auto sym = eosio::symbol_type(EOS_SYMBOL).name();
-    accounts eos_account(TOKEN_CONTRACT, _self);
-    auto account = eos_account.get(sym);
-    return account.balance.amount;
-}
-
-real_type happyeosslot::eop()const{
-    auto sym = eosio::symbol_type(EOS_SYMBOL).name();
-    auto balance = eosio::token(TOKEN_CONTRACT).get_balance(_self, sym);
-    eosio_assert(balance.amount == get_my_balance(), "should be equal");
- //   return 1;
-   // return balance.amount;
-    return real_type(balance.amount) / get_deposit();
-}
-
 void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
     if (to != _self) {
         return;
@@ -288,7 +289,7 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
             const checksum256 seed = parse_memo(memo); 
             bet(from, eos, seed);
         } else {
-            if (eos.amount >= 0) {
+            if (eos.amount >= 100000) {
                 buy(from, eos);
             } else {
                 const checksum256 seed = parse_memo(memo); 
@@ -317,8 +318,6 @@ void happyeosslot::reveal(const account_name host, const checksum256 &seed, cons
         g.hash = hash;
     });
 }
-
-
 
 #define MY_EOSIO_ABI(TYPE, MEMBERS)                                                                                  \
     extern "C"                                                                                                       \
