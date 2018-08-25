@@ -84,10 +84,13 @@ class tradeableToken : public token {
             return market_itr->deposit.balance.amount;    
         }
 
-        real_type price() const{
+        real_type raw_price() const{
             auto market_itr = _market.begin();
             return market_itr->get_price(); 
         }
+
+        uint64_t get_my_balance()const;
+        real_type eop()const;    
 
         // @abi table market i64    
         struct exchange_state {
@@ -187,7 +190,7 @@ class happyeosslot : public tradeableToken {
         void transfer(account_name from,
                       account_name to,
                       asset        quantity,
-                      string       memo);  
+                      string       memo);
 
         // EOS transfer event.
         void onTransfer(account_name from,
@@ -196,11 +199,14 @@ class happyeosslot : public tradeableToken {
                         string       memo);
 
         void reveal(const account_name host, const checksum256 &seed, const checksum256 &hash);
+        real_type price() const{
+            return raw_price() * eop();
+        }
 
         void apply(account_name contract, account_name act);
 
         uint64_t get_my_balance()const;
-        real_type eop()const;
+        real_type eop() const;
         uint64_t get_roll_result(const account_name& account) const;
 
     private:

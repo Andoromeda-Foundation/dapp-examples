@@ -28,12 +28,13 @@ cleos push action eosio.token issue '["alice", "1000.0000 EOS", "memo"]' -p eosi
 
 
 
+
+# Kylin
+
 cleos create account eosio happyeosslot EOS6rRNxJWzdFtKH8MfsdvDci3vnC7QQhcRDA6a8PJV3tz8sEJYZz EOS76hCgV1mfHivJYb7wpbT4PNxxJricYdJCZVo8JtgNWyV4Td1h1
 
 eosiocpp -o happyeosslot/happyeosslot.wast happyeosslot/happyeosslot.cpp
 eosiocpp -g happyeosslot/happyeosslot.abi happyeosslot/happyeosslot.cpp
 cleos set contract happyeosslot happyeosslot -p happyeosslot@active
-
-
 cleos push action happyeosslot f '["alice"]' -p alice
 
