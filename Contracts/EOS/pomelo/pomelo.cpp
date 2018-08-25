@@ -107,12 +107,6 @@ private:
           }
 
           if (itr -> asset.amount >= trade.asset.amount) { // 出售者的资源比购买者欲购买数量多
-            status_index.modify(itr, 0, [&] (auto& t) {
-              t.asset.amount -= trade.asset.amount; // 卖家交易资产总量减少
-              t.total_eos -= (int64_t)(trade.asset.amount * sell_unit); // 将出售的资源标记售出，剩余部分继续售卖
-            });
-            trade.asset.amount = 0; // 购买的订单减少相应的数额
-            trade.total_eos -= (int64_t)(trade.asset.amount * sell_unit); // 计算余额，稍后退还给购买者
             asset a;
             a.symbol = EOS;
             a.amount = (int64_t)(trade.asset.amount * sell_unit);
@@ -128,17 +122,18 @@ private:
               TOKEN_CONTRACT, N(transfer),
               make_tuple(_self, trade.account, a, string("buy")))
               .send();
+            status_index.modify(itr, 0, [&] (auto& t) {
+              t.asset.amount -= trade.asset.amount; // 卖家交易资产总量减少
+              t.total_eos -= (int64_t)(trade.asset.amount * sell_unit); // 将出售的资源标记售出，剩余部分继续售卖
+            });
+            trade.asset.amount = 0; // 购买的订单减少相应的数额
+            trade.total_eos -= (int64_t)(trade.asset.amount * sell_unit); // 计算余额，稍后退还给购买者
           } 
           else { // 出售者的资源不足完成本笔购买订单
             asset a, b;
             a.symbol = EOS;
             a.amount = itr -> total_eos;
             b = itr -> asset;
-            status_index.modify(itr, 0, [&] (auto& t) {
-              t.asset.amount = 0;
-              t.total_eos = 0; // 出售单完成
-              t.status = 2;
-            });
             action( // 给出售者转账EOS
               permission_level{_self, N(active)},
               TOKEN_CONTRACT, N(transfer),
@@ -149,6 +144,11 @@ private:
               TOKEN_CONTRACT, N(transfer),
               make_tuple(_self, trade.account, b, string("buy")))
               .send();
+            status_index.modify(itr, 0, [&] (auto& t) {
+              t.asset.amount = 0;
+              t.total_eos = 0; // 出售单完成
+              t.status = 2;
+            });
             trade.asset.amount -= b.amount; // 本单剩余购买数量减少
             trade.total_eos -= a.amount;
           }
@@ -193,13 +193,6 @@ private:
           }
 
           if (trade.asset.amount >= itr -> asset.amount) { // 出售者的资源比购买者欲购买数量多
-            trade.asset.amount -= itr -> asset.amount;
-            trade.total_eos -= (int64_t)(itr -> asset.amount * sell_unit);
-
-            status_index.modify(itr, 0, [&] (auto& t) {
-              t.asset.amount = 0; // 购买的订单减少相应的数额
-              t.total_eos -= (int64_t)(itr -> asset.amount * sell_unit); // 计算余额，稍后退还给购买者
-            });
             asset a;
             a.symbol = EOS;
             a.amount = (int64_t)(itr -> asset.amount * sell_unit);
@@ -215,6 +208,13 @@ private:
               TOKEN_CONTRACT, N(transfer),
               make_tuple(_self, itr -> account, a, string("buy")))
               .send();
+            trade.asset.amount -= itr -> asset.amount;
+            trade.total_eos -= (int64_t)(itr -> asset.amount * sell_unit);
+            status_index.modify(itr, 0, [&] (auto& t) {
+              t.asset.amount = 0; // 购买的订单减少相应的数额
+              t.total_eos -= (int64_t)(itr -> asset.amount * sell_unit); // 计算余额，稍后退还给购买者
+              t.status = 2;
+            });
           } 
           else { // 出售者的资源不足完成本笔购买订单
             asset a, b;
