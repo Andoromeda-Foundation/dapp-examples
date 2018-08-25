@@ -69,9 +69,9 @@ cleos  -u https://api-kylin.eosasia.one push action happyeosslot init '["happyeo
 
 cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["tmonomonomon", "happyeosslot", "1.0000 EOS"]' -p tmonomonomon@active
 
-cleos -u https://api-kylin.eosasia.one push action happyeosslot issue '["happyeosslot", "21000000.0000 HPY"]' -p happyeosslot@active
+cleos -u https://api-kylin.eosasia.one push action happyeosslot issue '["tmonomonomon", "1.0000 HPY"]' -p happyeosslot@active
 
-cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["happyeosslot", "tmonomonomon", "100.0000 EOS"]' -p happyeosslot@active
+cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["happyeosslot", "tmonomonomon", "100.0000 EOS", "buy"]' -p happyeosslot@active
 
 
 cleos -u https://api-kylin.eosasia.one get table happyeosslot happyeosslot accounts
@@ -79,3 +79,9 @@ cleos -u https://api-kylin.eosasia.one get table happyeosslot happyeosslot accou
 cleos -u https://api-kylin.eosasia.one get table happyeosslot dawnwalletes  accounts
 
 cleos -u https://api-kylin.eosasia.one get table happyeosslot tmonomonomon accounts
+
+cleos -u https://api-kylin.eosasia.one set contract happyeosslot happyeosslot -p happyeosslot@active
+
+
+
+cleos push action eosio.token transfer '["tmonomonomon", "happyeosslot", "1.0000 EOS"]' -p tmonomonomon@active
