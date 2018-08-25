@@ -370,14 +370,14 @@ checksum256 happyeosslot::parse_memo(const std::string &memo) { // to bo refine.
 void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_number) {
     results res_table(_self, account);
 
-    auto res = results.find(0);
+    auto res = res_table.find(0);
 
-    if( to == to_acnts.end() ) {
-        res_table.emplace( ram_payer, [&]( auto& res ){
+    if( res == res_table.end() ) {
+        res_table.emplace( account /* ram payer*/, [&]( auto& res ){
                     res.roll_number = roll_number;
                 });
     } else {
-        res_table.modify( res_table, 0, [&]( auto& res ) {
+        res_table.modify( res, account /* ram payer */, [&]( auto& res ) {
                     res.roll_number = roll_number;
                 });
     }
@@ -385,7 +385,7 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
 
 uint64_t happyeosslot::get_roll_result(const account_name& account) const {
     results res_table(_self, account);
-    const auto& res = results.get(0, "No available result.");
+    const auto& res = res_table.get(0, "No available result.");
     return res.roll_number;
 }
 
