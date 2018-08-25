@@ -65,16 +65,16 @@ cleos push action happyeosslot sell '["tmonomonomon", "10.0000 HPY"]' -p tmonomo
 
 # Kylin
 
-cleos  -u https://api-kylin.eosasia.one push action happyeosslot init '["happyeosslot", "d533f24d6f28ddcef3f066474f7b8355383e485681ba8e793e037f5cf36e4883"]' -p happyeosslot@active
+cleos -u https://api-kylin.eosasia.one push action ceshiyongeos init '["ceshiyongeos", "d533f24d6f28ddcef3f066474f7b8355383e485681ba8e793e037f5cf36e4883"]' -p ceshiyongeos@active
 
-cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["tmonomonomon", "happyeosslot", "1.0000 EOS"]' -p tmonomonomon@active
+cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["tmonomonomon", "ceshiyongeos", "1.0000 EOS", "buy"]' -p tmonomonomon@active
 
 cleos -u https://api-kylin.eosasia.one push action happyeosslot issue '["tmonomonomon", "1.0000 HPY"]' -p happyeosslot@active
 
 cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["happyeosslot", "tmonomonomon", "100.0000 EOS", "buy"]' -p happyeosslot@active
 
 
-cleos -u https://api-kylin.eosasia.one get table happyeosslot happyeosslot accounts
+cleos -u https://api-kylin.eosasia.one get table eosio.token ceshiyongeos accounts
 
 cleos -u https://api-kylin.eosasia.one get table happyeosslot dawnwalletes  accounts
 
@@ -82,6 +82,24 @@ cleos -u https://api-kylin.eosasia.one get table happyeosslot tmonomonomon accou
 
 cleos -u https://api-kylin.eosasia.one set contract happyeosslot happyeosslot -p happyeosslot@active
 
+cleos -u https://api-kylin.eosasia.one set contract ceshiyongeos happyeosslot -p ceshiyongeos@active
 
 
 cleos push action eosio.token transfer '["tmonomonomon", "happyeosslot", "1.0000 EOS"]' -p tmonomonomon@active
+
+
+
+cleos -u https://api-kylin.eosasia.one get table ceshiyongeos tmonomonomon accounts
+
+//
+// 001.0000 EOS 009.9999 HPY 0.1 EOS/HPY
+// 010.0000 EOS 099.9972 HPY
+// 100.0000 EOS 999.7363 HPY
+
+// 
+
+
+
+cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["tmonomonomon", "ceshiyongeos", "9.0000 EOS", "buy"]' -p tmonomonomon@active
+
+cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["tmonomonomon", "ceshiyongeos", "90.0000 EOS", "buy"]' -p tmonomonomon@active

@@ -206,8 +206,6 @@ class happyeosslot : public tradeableToken {
 
         void apply(account_name contract, account_name act);
 
-        uint64_t get_my_balance()const;
-        real_type eop() const;
         uint64_t get_roll_result(const account_name& account) const;
 
     private:
@@ -236,11 +234,15 @@ class happyeosslot : public tradeableToken {
         typedef eosio::multi_index<N(offer), offer> offer_index;
         offer_index offers;
 
+        // @abi table result i64
         struct result {
             uint64_t roll_number;
             uint64_t primary_key() const { return 0; }
         };
         typedef eosio::multi_index<N(result), result> results;
+
+//        typedef eosio::multi_index<N(result), result> result_index;
+  //      result_index results;
 
         void bet(const account_name account, asset bet, const checksum256& seed);
         uint64_t merge_seed(const checksum256& s1, const checksum256& s2);    

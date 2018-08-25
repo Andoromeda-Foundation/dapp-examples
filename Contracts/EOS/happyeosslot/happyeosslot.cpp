@@ -164,6 +164,7 @@ asset token::get_balance( account_name owner, symbol_name sym )const {
 // tradeableToken
 const uint64_t init_quote_balance = 50 * 10000 * 10000ll; // 初始保证金 50 万 EOS。
 
+
 uint64_t tradeableToken::get_my_balance() const{
     auto sym = eosio::symbol_type(EOS_SYMBOL).name();
     accounts eos_account(TOKEN_CONTRACT, _self);
@@ -171,12 +172,15 @@ uint64_t tradeableToken::get_my_balance() const{
     return account.balance.amount;
 }
 
+
 real_type tradeableToken::eop()const{
     auto sym = eosio::symbol_type(EOS_SYMBOL).name();
     auto balance = eosio::token(TOKEN_CONTRACT).get_balance(_self, sym);
     eosio_assert(balance.amount == get_my_balance(), "should be equal");
     return real_type(balance.amount) / get_deposit();
+    return 1;
 }
+
 
 void tradeableToken::buy(const account_name account, asset eos) {
     eosio::print("buy ");    
@@ -303,9 +307,9 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
         }
     }
 
-    eosio::print("current balance: ", get_my_balance());   
+//    eosio::print("current balance: ", get_my_balance());   
     eosio::print("current deposit: ", get_deposit());         
-    eosio::print("current eop: ", eop());
+//    eosio::print("current eop: ", eop());
 }
 
 // @abi action
