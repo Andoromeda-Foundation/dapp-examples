@@ -162,7 +162,7 @@ asset token::get_balance( account_name owner, symbol_name sym )const {
 }
 
 // tradeableToken
-const uint64_t init_quote_balance = 50 * 10000 * 10000ll; // 初始保证金 50 万 EOS。
+const uint64_t init_quote_balance = 1 * 10000 * 10000ll; // 初始保证金 1 万 EOS。
 
 
 uint64_t tradeableToken::get_my_balance() const{
@@ -231,7 +231,7 @@ void happyeosslot::init(account_name self, const checksum256 &hash) {
         }); 
         
         _market.emplace(_self, [&](auto &m) {
-            m.supply.amount = 100000000000000ll;
+            m.supply.amount = 1000000000000ll;
             m.supply.symbol = HPY_SYMBOL;
             m.deposit.balance.amount = init_quote_balance;
             m.deposit.balance.symbol = EOS_SYMBOL;
