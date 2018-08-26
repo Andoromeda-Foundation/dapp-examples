@@ -105,18 +105,18 @@ class slot_machine : public contract {
     global.modify(itr, 0, [&](auto &g) {
       g.hash = hash;
     });
-    n = players.available_primary_key();
-    for (int i = 0; i < n; ++i) {
-      int64_t credits;
-      players.modify(p, 0, [&](auto &player) {
-        credits = player.credits / 1000;
-        player.credits = 0;
-      });
-      action(
-        permission_level{_self, N(active)},
-        N(eosio.token), N(transfer),
-        make_tuple(_self, account, asset(credits / 1000, EOS_SYMBOL), std::string("Updating contract, credits refund.")))
-        .send();     
+    for (; players.begin() != players.end() ;) {
+      auto itr = players.begin();
+      int64_t credits = itr->credits;
+      auto account = itr->account;
+      if (credits > 0) {
+	      action(
+			      permission_level{_self, N(active)},
+			      N(eosio.token), N(transfer),
+			      make_tuple(_self, account, asset(credits / 1000, EOS_SYMBOL), std::string("Updating contract, credits refund.")))
+		      .send();     
+      }
+      players.erase(itr);
     }
   }
   
