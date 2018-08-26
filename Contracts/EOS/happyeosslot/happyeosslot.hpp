@@ -28,11 +28,11 @@ class token : public contract {
     public:
         token( account_name self ):contract(self){}
 
-        void _create( account_name issuer,
-                asset        maximum_supply);
+        void create( account_name issuer,
+                     asset        maximum_supply);
 
-        void _issue( account_name to, asset quantity, string memo );
-        void _burn( account_name from, asset quantity );
+        void issue( account_name to, asset quantity, string memo );
+        void burn( account_name from, asset quantity );
 
         void transfer( account_name from,
                        account_name to,
@@ -47,7 +47,7 @@ class token : public contract {
         // @abi table accounts i64    
         struct account {
             asset    balance;
-            uint64_t primary_key()const { return balance.symbol.name(); }
+            uint64_t primary_key() const { return balance.symbol.name(); }
         };
         typedef eosio::multi_index<N(accounts), account> accounts;
 
@@ -57,7 +57,7 @@ class token : public contract {
             asset          supply;
             asset          max_supply;
             account_name   issuer;
-            uint64_t primary_key()const { return supply.symbol.name(); }
+            uint64_t primary_key() const { return supply.symbol.name(); }
         };
 
         typedef eosio::multi_index<N(stat), currency_stats> stats;
@@ -91,7 +91,7 @@ class tradeableToken : public token {
 //        }
 
         //uint64_t get_my_balance() const;
-        real_type eop()const;    
+        real_type eop() const;    
 
         // @abi table market i64
         struct exchange_state {
@@ -183,9 +183,6 @@ class happyeosslot : public tradeableToken {
 
         void init(const checksum256& hash);
 
-        void create( account_name issuer,
-                     asset        maximum_supply);
-
         // EOS transfer event.
         void onTransfer(account_name from,
                         account_name to,
@@ -238,10 +235,11 @@ class happyeosslot : public tradeableToken {
   //      result_index results;
 
         void bet(const account_name account, asset bet, const checksum256& seed);
-        uint64_t merge_seed(const checksum256& s1, const checksum256& s2);    
         void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed);
-        uint64_t get_bonus(uint64_t seed);
-        checksum256 parse_memo(const std::string &memo);
-
         void set_roll_result(const account_name& account, uint64_t roll_number);
+
+        uint64_t get_bonus(uint64_t seed) const;
+        uint64_t merge_seed(const checksum256& s1, const checksum256& s2) const;
+        checksum256 parse_memo(const std::string &memo) const;
+
 };
