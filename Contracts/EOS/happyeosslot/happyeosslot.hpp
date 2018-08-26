@@ -82,7 +82,7 @@ class tradeableToken : public token {
 
         uint64_t get_deposit() const{
             auto market_itr = _market.begin();
-            return market_itr->deposit.balance.amount;    
+            return market_itr->deposit.balance.amount - init_quote_balance;  
         }
 
         real_type raw_price() const{
@@ -93,7 +93,7 @@ class tradeableToken : public token {
         //uint64_t get_my_balance() const;
         real_type eop()const;    
 
-        // @abi table market i64    
+        // @abi table market i64
         struct exchange_state {
             uint64_t id = 0;
 
@@ -172,7 +172,8 @@ class tradeableToken : public token {
         typedef eosio::multi_index<N(market), exchange_state> market;
         market _market;
 
-    private:
+        // tradeableToken
+        const uint64_t init_quote_balance = 1 * 10000 * 10000ll; // 初始保证金 1 万 EOS。;  
 };
 
 class happyeosslot : public tradeableToken {
@@ -181,7 +182,7 @@ class happyeosslot : public tradeableToken {
         global(_self, _self),
         offers(_self, _self) {}
 
-        void init(const checksum256& hash);
+        void init(account_name self, const checksum256& hash);
 
         void create( account_name issuer,
                      asset        maximum_supply);

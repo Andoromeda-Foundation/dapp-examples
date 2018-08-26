@@ -271,9 +271,7 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
     eosio_assert(eos.amount > 0, "must bet a positive amount");
 
     string operation = memo.substr(0, 3);
-    if (operation == "buy") {
-        buy(from, eos);
-    } else if (operation == "bet" || eos.amount < 100000) {
+    if (operation == "bet" || ((operation != "buy") && (eos.amount < 100000))) {
         const checksum256 seed = parse_memo(memo);
         bet(from, eos, seed);
     } else {
