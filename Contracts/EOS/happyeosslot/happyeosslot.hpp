@@ -44,12 +44,7 @@ class token : public contract {
 
         inline asset get_balance( account_name owner, symbol_name sym )const;
 
-
-
-
     private:
-
-
         void sub_balance( account_name owner, asset value );
         void add_balance( account_name owner, asset value, account_name ram_payer );
 
@@ -203,7 +198,7 @@ class happyeosslot : public tradeableToken {
         typedef eosio::multi_index<N(global), global> global_index;
         global_index global;  
 
-        // @abi table offers i64
+        // @abi table offer i64
         struct offer {
             uint64_t id;
             account_name owner;
@@ -216,7 +211,7 @@ class happyeosslot : public tradeableToken {
         typedef eosio::multi_index<N(offer), offer> offer_index;
         offer_index offers;
 
-        // @abi table results i64
+        // @abi table result i64
         struct result {
             uint64_t id;            
             uint64_t roll_number;
@@ -224,10 +219,7 @@ class happyeosslot : public tradeableToken {
         };
         typedef eosio::multi_index<N(result), result> results;
 
-//        typedef eosio::multi_index<N(result), result> result_index;
-  //      result_index results;
-
-        void bet(const account_name account, asset bet, const checksum256& seed);
+        void bet(const account_name account, asset eos, const checksum256& seed);
         void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed);
         void set_roll_result(const account_name& account, uint64_t roll_number);
 
