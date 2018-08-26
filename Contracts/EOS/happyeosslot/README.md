@@ -21,9 +21,7 @@ cleos set contract eosio.token build/contracts/eosio.token -p eosio.token
 cleos push action eosio.token create '[ "eosio", "1000000000.0000 SYS"]' -p eosio.token
 cleos push action eosio.token issue '[ "tmonomonomon", "100000000.0000 EOS", "memo" ]' -p eosio
 cleos push action eosio.token issue '[ "tmonomonomon", "100000.0000 SYS", "memo" ]' -p eosio
-
 cleos push action eosio.token issue '[ "happyeosslot", "100000.0000 SYS", "memo" ]' -p eosio
-
 cleos push action eosio.token transfer '[ "tmonomonomon", "happyeosslot", "1.1000 SYS", "buy" ]' -p tmonomonomon@active
 
 # Test
@@ -41,21 +39,12 @@ cleos push action happyeosslot ontransfer '[ "tmonomonomon", "happyeosslot", "11
 
 cleos push action happyeosslot ontransfer '[ "happyeosslot", "tmonomonomon", "1.0000 EOS", "buy" ]' -p happyeosslot@active
 
-# Query
-cleos get table happyeosslot happyeosslot offer
-cleos get table happyeosslot happyeosslot result
-cleos get table happyeosslot happyeosslot accounts
-
-cleos get table happyeosslot happyeosslot global
-cleos get table happyeosslot happyeosslot exchange_state
-
 ## Query EOS
 cleos get table eosio.token tmonomonomon accounts
 cleos get table eosio.token happyeosslot accounts
 
 ## Query HPY
 cleos get table happyeosslot tmonomonomon accounts
-
 cleos get table happyeosslot happyeosslot accounts
 
 
@@ -64,12 +53,53 @@ cleos set account permission happyeosslot active '{"threshold": 1,"keys": [{"key
 
 cleos push action eosio.token transfer '[ "happyeosslot","tmonomonomon", "450000.0001 EOS", "buy" ]' -p happyeosslot@active
 
-
 cleos push action eosio.token transfer '[ "tmonomonomon","happyeosslot", "450000.0000 EOS", "buy" ]' -p tmonomonomon@active
-
 
 cleos push action happyeosslot sell '[ "happyeosslot", "tmonomonomon", "1.0000 EOS", "buy" ]' -p happyeosslot@active
 
 cleos push action happyeosslot transfer '[ "happyeosslot", "tmonomonomon", "1.0000 HPY", "got" ]' -p happyeosslot@active
 
-cleos push action happyeosslot sell '["tmonomonomon", "1.0000 HPY"]' -p tmonomonomon@active
+cleos push action happyeosslot sell '["tmonomonomon", "10.0000 HPY"]' -p tmonomonomon@active
+
+
+
+# Kylin
+
+cleos -u https://api-kylin.eosasia.one push action ceshiyongeos init '["ceshiyongeos", "d533f24d6f28ddcef3f066474f7b8355383e485681ba8e793e037f5cf36e4883"]' -p ceshiyongeos@active
+
+cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["tmonomonomon", "ceshiyongeos", "1.0000 EOS", "buy"]' -p tmonomonomon@active
+
+cleos -u https://api-kylin.eosasia.one push action happyeosslot issue '["tmonomonomon", "1.0000 HPY"]' -p happyeosslot@active
+
+cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["happyeosslot", "tmonomonomon", "100.0000 EOS", "buy"]' -p happyeosslot@active
+
+
+cleos -u https://api-kylin.eosasia.one get table eosio.token ceshiyongeos accounts
+
+cleos -u https://api-kylin.eosasia.one get table happyeosslot dawnwalletes  accounts
+
+cleos -u https://api-kylin.eosasia.one get table happyeosslot tmonomonomon accounts
+
+cleos -u https://api-kylin.eosasia.one set contract happyeosslot happyeosslot -p happyeosslot@active
+
+cleos -u https://api-kylin.eosasia.one set contract ceshiyongeos happyeosslot -p ceshiyongeos@active
+
+
+cleos push action eosio.token transfer '["tmonomonomon", "happyeosslot", "1.0000 EOS"]' -p tmonomonomon@active
+
+
+
+cleos -u https://api-kylin.eosasia.one get table ceshiyongeos tmonomonomon accounts
+
+//
+// 001.0000 EOS 009.9999 HPY 0.1 EOS/HPY
+// 010.0000 EOS 099.9972 HPY
+// 100.0000 EOS 999.7363 HPY
+
+// 
+
+
+
+cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["tmonomonomon", "ceshiyongeos", "9.0000 EOS", "buy"]' -p tmonomonomon@active
+
+cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["tmonomonomon", "ceshiyongeos", "90.0000 EOS", "buy"]' -p tmonomonomon@active
