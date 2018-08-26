@@ -74,6 +74,8 @@ cleos -u https://api-kylin.eosasia.one push action happyeosslot issue '["tmonomo
 cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["happyeosslot", "tmonomonomon", "100.0000 EOS", "buy"]' -p happyeosslot@active
 
 
+cleos -u https://api-kylin.eosasia.one get table happyeosslot happyeosslot players
+
 cleos -u https://api-kylin.eosasia.one get table eosio.token ceshiyongeos accounts
 
 cleos -u https://api-kylin.eosasia.one get table happyeosslot dawnwalletes  accounts
