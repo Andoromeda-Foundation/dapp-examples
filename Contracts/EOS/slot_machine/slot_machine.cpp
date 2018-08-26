@@ -33,13 +33,12 @@ class slot_machine : public contract {
     }
   }
 
-  void transfer(account_name from, account_name to, asset quantity, std::string memo) { // I cannot understand this...
+  void transfer(account_name from, account_name to, asset quantity, std::string memo) {
     if (from == _self || to != _self) {
       return;
     }
     eosio_assert(quantity.is_valid(), "Invalid token transfer");
     eosio_assert(quantity.amount > 0, "Quantity must be positive");
-    eosio_assert(false, "During contract updating.");
     if (quantity.symbol == EOS_SYMBOL) {
       _transfer(from, quantity);
     }
@@ -78,7 +77,6 @@ class slot_machine : public contract {
 
   void bet(const account_name account, const uint64_t bet, const checksum256& seed) {
     require_auth(account);
-    eosio_assert(false, "During contract updating.");
     auto p = players.find(account);
     eosio_assert(p->credits >= bet, "must have enouth credits");    
     players.modify(p, 0, [&](auto &player) {
@@ -105,6 +103,7 @@ class slot_machine : public contract {
     global.modify(itr, 0, [&](auto &g) {
       g.hash = hash;
     });
+    /* refund
     uint64_t t = 12;
     for (; players.begin() != players.end() ;) {
       t--;
@@ -120,10 +119,11 @@ class slot_machine : public contract {
 		      .send();     
       }
       players.erase(itr);
-    }
+    }*/
   }
   
   private:
+
   // @abi table global i64
   struct global {
     uint64_t id = 0;
@@ -159,7 +159,7 @@ class slot_machine : public contract {
   typedef eosio::multi_index< N(offer), offer> offer_index;  
   offer_index offers;
 
-  const int p[8] = {   10,   20,  120, 1000, 4000, 20000, 60000, 53725};
+  const int p[8] = {   10,   20,  120, 1000, 4000, 20000, 60000, 53835};
   const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
 
   uint64_t get_bonus(uint64_t seed, uint64_t amount) {
@@ -182,7 +182,7 @@ class slot_machine : public contract {
 
   void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed) {
       auto p = players.find(itr->owner);
-      eosio_assert(p != players.end(), "Player is not exist.");
+      eosio_assert(p != players.end(), "player is not exist.");
       players.modify(p, 0, [&](auto &player) {
         player.credits += get_bonus(merge_seed(seed, itr->seed), itr->bet);
       });
