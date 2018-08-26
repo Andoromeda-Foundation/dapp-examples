@@ -21,7 +21,7 @@ void token::create( account_name issuer,
     });
 }
 
-void token::burn( account_name from, asset quantity) {
+void token::burn( account_name from, asset quantity ) {
     auto sym = quantity.symbol;
     eosio_assert( sym.is_valid(), "Invalid symbol name" );
 
@@ -159,7 +159,7 @@ asset token::get_balance( account_name owner, symbol_name sym )const {
 //uint64_t tradeableToken::get_my_balance() const{
 //}
 
-real_type tradeableToken::eop()const{
+real_type tradeableToken::eop() const {
     auto sym = eosio::symbol_type(EOS_SYMBOL).name();
     accounts eos_account(TOKEN_CONTRACT, _self);
     auto account = eos_account.get(sym);
@@ -236,16 +236,11 @@ void happyeosslot::init(const checksum256 &hash) {
     }
 }
 
-//void happyeosslot::issue( account_name to, asset quantity, string memo ) {
-//    require_auth( _self );    
-//    issue(to, quantity, memo);
-//}
-
-void happyeosslot::bet(const account_name account, asset bet, const checksum256& seed) {
-    offers.emplace(_self, [&](auto &offer) {
+void happyeosslot::bet(const account_name account, asset eos, const checksum256& seed) {
+    offers.emplace(_self, [&](auto& offer) {
         offer.id = offers.available_primary_key();
         offer.owner = account;
-        offer.bet = bet.amount;
+        offer.bet = eos.amount;
         offer.seed = seed;
     });
     
@@ -350,12 +345,6 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
         });
     }
 }
-
-//uint64_t happyeosslot::get_roll_result(const account_name& account) const {
-//    results res_table(_self, account);
-//    const auto& res = res_table.get(0, "No available result.");
-//    return res.roll_number;
-//}
 
 #define MY_EOSIO_ABI(TYPE, MEMBERS)                                                                                  \
     extern "C"                                                                                                       \
