@@ -330,32 +330,4 @@ private:
     }
 };
 
-
-#define EOSIO_WAST(TYPE, MEMBERS)                                                                                  \
-    extern "C"                                                                                                       \
-    {                                                                                                                \
-        void apply(uint64_t receiver, uint64_t code, uint64_t action)                                                \
-        {                                                                                                            \
-                                                                                                                     \
-            auto self = receiver;                                                                                    \
-            if (action == N(onerror))                                                                                \
-            {                                                                                                        \
-                eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account"); \
-            }                                                                                                        \
-            if (code == TOKEN_CONTRACT && action == N(transfer)) {                                                   \
-                action = N(onTransfer);                                                                              \
-            }                                                                                                        \
-            if ((code == TOKEN_CONTRACT && action == N(onTransfer)) || code == self && action != N(onTransfer)) {                               \
-                TYPE thiscontract(self);                                                                             \
-                switch (action)                                                                                      \
-                {                                                                                                    \
-                    EOSIO_API(TYPE, MEMBERS)                                                                         \
-                }                                                                                                     \
-            }                                                                                                        \
-        }                                                                                                            \
-    }
-// generate .wasm and .wast file
-EOSIO_WAST(pomelo, (onTransfer)(transfer)(init)(sell)(reveal))
-
-// generate .abi file
 EOSIO_ABI(pomelo, (cancelbuy)(cancelsell)(buy)(sell))
