@@ -34,10 +34,10 @@ class token : public contract {
         void _issue( account_name to, asset quantity, string memo );
         void _burn( account_name from, asset quantity );
 
-        void _transfer( account_name from,
-                account_name to,
-                asset        quantity,
-                string       memo );
+        void transfer( account_name from,
+                       account_name to,
+                       asset        quantity,
+                       string       memo );
 
 
         inline asset get_supply( symbol_name sym )const;
@@ -185,13 +185,6 @@ class happyeosslot : public tradeableToken {
 
         void create( account_name issuer,
                      asset        maximum_supply);
-
-        void issue( account_name to, asset quantity, string memo );
-        // HPY token transfer function.
-        void transfer(account_name from,
-                      account_name to,
-                      asset        quantity,
-                      string       memo);
 
         // EOS transfer event.
         void onTransfer(account_name from,
