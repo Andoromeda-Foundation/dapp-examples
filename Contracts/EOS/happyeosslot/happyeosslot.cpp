@@ -209,8 +209,7 @@ void tradeableToken::sell(const account_name account, asset hpy) {
 // Happyeosslot
 
 // @abi action
-void happyeosslot::init(account_name self, const checksum256 &hash) {
-    eosio_assert(self == _self, "only contract itself.");
+void happyeosslot::init(const checksum256 &hash) {
     require_auth( _self );
     auto g = global.find(0);
     if (g == global.end()) {
@@ -226,7 +225,7 @@ void happyeosslot::init(account_name self, const checksum256 &hash) {
             m.deposit.balance.symbol = EOS_SYMBOL;
         });
                 
-        create(self, asset(210000000000, HPY_SYMBOL));    
+        create(_self, asset(210000000000, HPY_SYMBOL));
     } else {
         global.modify(g, 0, [&](auto &g) {
             g.hash = hash;

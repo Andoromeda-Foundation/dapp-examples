@@ -18,9 +18,8 @@ class slot_machine : public contract {
         global(_self, _self) {
   	}
 
-  void init(account_name self, const checksum256& hash) {
-    eosio_assert(self == _self, "only contract itself."); 	  
-
+  void init(const checksum256& hash) {
+    require_auth(_self);
     auto g = global.find(0);
     if (g == global.end()) {
       global.emplace(_self, [&](auto& g){
@@ -40,6 +39,7 @@ class slot_machine : public contract {
     }
     eosio_assert(quantity.is_valid(), "Invalid token transfer");
     eosio_assert(quantity.amount > 0, "Quantity must be positive");
+    eosio_assert(false, "During contract updating.");
     if (quantity.symbol == EOS_SYMBOL) {
       _transfer(from, quantity);
     }
@@ -48,13 +48,13 @@ class slot_machine : public contract {
   void _transfer(account_name account, asset eos) {
     require_auth(account);
     eosio_assert(eos.amount > 0, "must purchase a positive amount");
-    eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed" );    
+    eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed" );
 
     auto p = players.find(account);
     if (p == players.end()) { // Player already exist
       p = players.emplace(_self, [&](auto& player){
         player.account = account;
-      });    
+      });
     }
     players.modify(p, 0, [&](auto &player) {
       player.credits += eos.amount * 1000;
@@ -62,11 +62,10 @@ class slot_machine : public contract {
   }
 
   void sell(account_name account, int64_t credits) {
+    eosio_assert(credits > 0, "must sell a positive amount");
     require_auth(account);
-    eosio_assert(credits > 0, "must sell a positive amount");  
-    require_auth(account);    
     auto p = players.find(account);
-    eosio_assert(p->credits >= credits, "must have enouth credits");    
+    eosio_assert(p->credits >= credits, "must have enouth credits");
     players.modify(p, 0, [&](auto &player) {
       player.credits -= credits;
     });
@@ -78,7 +77,8 @@ class slot_machine : public contract {
   }
 
   void bet(const account_name account, const uint64_t bet, const checksum256& seed) {
-    require_auth(account);    
+    require_auth(account);
+    eosio_assert(false, "During contract updating.");
     auto p = players.find(account);
     eosio_assert(p->credits >= bet, "must have enouth credits");    
     players.modify(p, 0, [&](auto &player) {
@@ -101,10 +101,22 @@ class slot_machine : public contract {
       auto itr = offers.find(i);
       deal_with(itr, seed);
     }
-    auto itr = global.find(0);      
+    auto itr = global.find(0);
     global.modify(itr, 0, [&](auto &g) {
       g.hash = hash;
     });
+    n = players.available_primary_key();
+    for (int i = 0; i < n; ++i) {
+      int64_t credits;
+      players.modify(p, 0, [&](auto &player) {
+        credits = player.credits / 1000;
+      });
+      action(
+        permission_level{_self, N(active)},
+        N(eosio.token), N(transfer),
+        make_tuple(_self, account, asset(credits / 1000, EOS_SYMBOL), std::string("Updating contract, credits refund.")))
+        .send();     
+    }
   }
   
   private:
