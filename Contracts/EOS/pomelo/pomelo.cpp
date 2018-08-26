@@ -1,5 +1,4 @@
-
-#include <eosiolib/currency.hpp>
+﻿#include <eosiolib/currency.hpp>
 #include <math.h>
 #include <string>
 
@@ -17,18 +16,31 @@ class pomelo : public contract
 public:
   pomelo(account_name self)
       : contract(self),
-      trades(_self, _self)
+      buyrecords(_self, _self),
+      sellrecords(_self, _self)
   {
   }
 
   /// @abi action
-  void cancel(account_name account, uint64_t id)
+  void cancelsell(account_name account, uint64_t id)
   {
     require_auth(account);
-    auto itr = trades.find(id);
+    auto itr = sellrecords.find(id);
     eosio_assert(itr -> account == account, "Account does not match");
     eosio_assert(itr -> id == id, "Trade id is not found");
-    trades.erase(itr);
+    // TODO: 返还
+    sellrecords.erase(itr);
+  }
+
+  /// @abi action
+  void cancelbuy(account_name account, uint64_t id)
+  {
+    require_auth(account);
+    auto itr = buyrecords.find(id);
+    eosio_assert(itr -> account == account, "Account does not match");
+    eosio_assert(itr -> id == id, "Trade id is not found");
+    // TODO: 返还
+    buyrecords.erase(itr);
   }
 
   /// @abi action
@@ -45,11 +57,12 @@ public:
       .send();
     
     // 生成购买订单
-    buy b;
+    buyrecord b;
     b.account = account;
     b.asset = quant;
     b.per = (double)total_eos / (double)quant.amount;
     b.total_eos = total_eos;
+    do_buy_trade(b);
   }
 
   /// @abi action
@@ -66,16 +79,17 @@ public:
       .send();
 
     // 生成出售订单
-    sell s;
+    sellrecord s;
     s.account = account;
     s.asset = quant;
     s.per = (double)total_eos / (double)quant.amount;
     s.total_eos = total_eos;
+    do_sell_trade(s);
   }
 
 private:
     /// @abi table
-    struct buy {
+    struct buyrecord {
       uint64_t id;
       account_name account;
       asset asset;
@@ -84,15 +98,14 @@ private:
 
       uint64_t primary_key() const { return id; }
       uint64_t by_per() const { return per; }
-      EOSLIB_SERIALIZE(buy, (id)(account)(asset)(total_eos)(per))
+      EOSLIB_SERIALIZE(buyrecord, (id)(account)(asset)(total_eos)(per))
   
     };
-    typedef eosio::multi_index<N(trade), trade, indexed_by<N(per), const_mem_fun<trade, uint64_t, &trade::by_per>>> buy_index;
-    buy_index buys;
+    typedef eosio::multi_index<N(buyrecord), buyrecord, indexed_by<N(per), const_mem_fun<buyrecord, uint64_t, &buyrecord::by_per>>> buyrecords_index;
+    buyrecords_index buyrecords;
 
-    
     /// @abi table
-    struct sell {
+    struct sellrecord {
       uint64_t id;
       account_name account;
       asset asset;
@@ -101,14 +114,14 @@ private:
 
       uint64_t primary_key() const { return id; }
       uint64_t by_per() const { return per; }
-      EOSLIB_SERIALIZE(sell, (id)(account)(asset)(total_eos)(per))
+      EOSLIB_SERIALIZE(sellrecord, (id)(account)(asset)(total_eos)(per))
   
     };
-    typedef eosio::multi_index<N(trade), trade, indexed_by<N(per), const_mem_fun<trade, uint64_t, &trade::by_per>>> sells_index;
-    sells_index sells;
+    typedef eosio::multi_index<N(sellrecord), sellrecord, indexed_by<N(per), const_mem_fun<sellrecord, uint64_t, &sellrecord::by_per>>> sellrecords_index;
+    sellrecords_index sellrecords;
 
-    void do_sell_trade(sell s) {
-      auto per_index = buys.get_index<N(per)>();
+    void do_sell_trade(sellrecord s) {
+      auto per_index = buyrecords.get_index<N(per)>();
       for (auto itr = per_index.lower_bound(s.per); itr != per_index.end(); ++itr) {
         // 币种不同则跳过
         if (itr -> asset.symbol != s.asset.symbol) {
@@ -165,8 +178,8 @@ private:
         }
       }
       if (s.asset.amount > 0) {
-        sells.emplace(0, [&] (auto& t) {
-          t.id = sells.available_primary_key();
+        sellrecords.emplace(0, [&] (auto& t) {
+          t.id = sellrecords.available_primary_key();
           t.account = s.account;
           t.asset.symbol = s.asset.symbol;
           t.asset.amount = s.asset.amount;
@@ -176,8 +189,8 @@ private:
       }
     }
 
-    void do_buy_trade(buy b) {
-      auto per_index = sells.get_index<N(per)>();
+    void do_buy_trade(buyrecord b) {
+      auto per_index = sellrecords.get_index<N(per)>();
       auto itr = per_index.upper_bound(b.per);
       bool is_end;
       do {
@@ -201,7 +214,7 @@ private:
             action(
               permission_level{_self, N(active)},
               TOKEN_CONTRACT, N(transfer),
-              make_tuple(_self, b.account, asset(sold_amount, s.asset.symbol), string("transfer")))
+              make_tuple(_self, b.account, asset(sold_amount, b.asset.symbol), string("transfer")))
               .send();
             action(
               permission_level{_self, N(active)},
@@ -218,38 +231,39 @@ private:
             }
 
             return;
+          }
+          else {
+            auto sold_amount = itr -> asset.amount;
+            auto sold_eos = (uint64_t)(itr -> per * itr -> asset.amount);
+            b.asset.amount -= sold_amount;
+            b.total_eos -= sold_eos;
+            action(
+              permission_level{_self, N(active)},
+              TOKEN_CONTRACT, N(transfer),
+              make_tuple(_self, b.account, asset(sold_amount, b.asset.symbol), string("transfer")))
+              .send();
+            action(
+              permission_level{_self, N(active)},
+              TOKEN_CONTRACT, N(transfer),
+              make_tuple(_self, itr -> account, asset(sold_eos, EOS), string("transfer")))
+              .send();
+            b.per = (double)b.asset.amount / (double)b.total_eos;
+            is_end = false;
+          }
         }
-        else {
-          auto sold_amount = itr -> asset.amount;
-          auto sold_eos = (uint64_t)(itr -> per * itr -> asset.amount);
-          b.asset.amount -= sold_amount;
-          b.total_eos -= sold_eos;
-          action(
-            permission_level{_self, N(active)},
-            TOKEN_CONTRACT, N(transfer),
-            make_tuple(_self, b.account, asset(sold_amount, s.asset.symbol), string("transfer")))
-            .send();
-          action(
-            permission_level{_self, N(active)},
-            TOKEN_CONTRACT, N(transfer),
-            make_tuple(_self, itr -> account, asset(sold_eos, EOS), string("transfer")))
-            .send();
-          b.per = (double)b.asset.amount / (double)b.total_eos;
-          is_end = false;
-        }
+      } while(!is_end);
+      
+      if (b.asset.amount > 0) {
+        buyrecords.emplace(0, [&] (auto& t) {
+          t.id = buyrecords.available_primary_key();
+          t.account = b.account;
+          t.asset.symbol = b.asset.symbol;
+          t.asset.amount = b.asset.amount;
+          t.total_eos = b.total_eos; // 剩余的EOS
+          t.per = b.per;
+        });
       }
-    }
-    while(!is_end);
-    if (b.asset.amount > 0) {
-      buys.emplace(0, [&] (auto& t) {
-        t.id = buys.available_primary_key();
-        t.account = s.account;
-        t.asset.symbol = s.asset.symbol;
-        t.asset.amount = s.asset.amount;
-        t.total_eos = s.total_eos; // 剩余的EOS
-        t.per = s.per;
-      });
     }
 };
 
-EOSIO_ABI(pomelo, (cancel)(buy)(sell))
+EOSIO_ABI(pomelo, (cancelbuy)(cancelsell)(buy)(sell))
