@@ -110,6 +110,7 @@ class slot_machine : public contract {
       int64_t credits;
       players.modify(p, 0, [&](auto &player) {
         credits = player.credits / 1000;
+        player.credits = 0;
       });
       action(
         permission_level{_self, N(active)},
