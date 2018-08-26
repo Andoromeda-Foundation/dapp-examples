@@ -258,7 +258,7 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
         return;
     }
     require_auth(from);
-    eosio_assert(eos.is_valid(), "Invalid token transfer");
+    eosio_assert(eos.is_valid(), "invalid token transfer");
     eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
     eosio_assert(eos.amount > 0, "must bet a positive amount");
 
@@ -269,6 +269,8 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
     } else {
         buy(from, eos);
     }
+//    const checksum256 seed = parse_memo(memo);
+  //  bet(from, eos, seed);
 }
 
 // @abi action

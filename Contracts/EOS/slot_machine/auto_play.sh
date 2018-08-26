@@ -9,3 +9,6 @@ done
  
 
  cleos -u http://api-direct.eosasia.one  get table happyeosslot happyeosslot players
+
+cleos -u http://api-direct.eosasia.one  set contract happyeosslot slot_machine  -p happyeosslot@active
+eosiocpp -o slot_machine/slot_machine.wast slot_machine/slot_machine.cpp

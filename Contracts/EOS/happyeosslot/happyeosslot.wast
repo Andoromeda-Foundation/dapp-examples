@@ -93,7 +93,7 @@
  (data (i32.const 1840) "next primary key in table is at autoincrement limit\00")
  (data (i32.const 1904) "cannot decrement end iterator when the table is empty\00")
  (data (i32.const 1968) "cannot decrement iterator at beginning of table\00")
- (data (i32.const 2016) "Invalid token transfer\00")
+ (data (i32.const 2016) "invalid token transfer\00")
  (data (i32.const 2048) "bet\00")
  (data (i32.const 2064) "buy\00")
  (data (i32.const 2080) "only core token allowed\00")
