@@ -117,25 +117,24 @@
  (export "_ZneRK11checksum160S1_" (func $_ZneRK11checksum160S1_))
  (export "now" (func $now))
  (export "_ZN5eosio12require_authERKNS_16permission_levelE" (func $_ZN5eosio12require_authERKNS_16permission_levelE))
- (export "_ZN5token7_createEyN5eosio5assetE" (func $_ZN5token7_createEyN5eosio5assetE))
- (export "_ZN5token5_burnEyN5eosio5assetE" (func $_ZN5token5_burnEyN5eosio5assetE))
+ (export "_ZN5token6createEyN5eosio5assetE" (func $_ZN5token6createEyN5eosio5assetE))
+ (export "_ZN5token4burnEyN5eosio5assetE" (func $_ZN5token4burnEyN5eosio5assetE))
  (export "_ZN5token11sub_balanceEyN5eosio5assetE" (func $_ZN5token11sub_balanceEyN5eosio5assetE))
- (export "_ZN5token6_issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE" (func $_ZN5token6_issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE))
+ (export "_ZN5token5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE" (func $_ZN5token5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE))
  (export "_ZN5token11add_balanceEyN5eosio5assetEy" (func $_ZN5token11add_balanceEyN5eosio5assetEy))
  (export "_ZN5token8transferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE" (func $_ZN5token8transferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE))
  (export "_ZNK14tradeableToken3eopEv" (func $_ZNK14tradeableToken3eopEv))
  (export "_ZN14tradeableToken3buyEyN5eosio5assetE" (func $_ZN14tradeableToken3buyEyN5eosio5assetE))
  (export "_ZN14tradeableToken4sellEyN5eosio5assetE" (func $_ZN14tradeableToken4sellEyN5eosio5assetE))
  (export "_ZN12happyeosslot4initERK11checksum256" (func $_ZN12happyeosslot4initERK11checksum256))
- (export "_ZN12happyeosslot6createEyN5eosio5assetE" (func $_ZN12happyeosslot6createEyN5eosio5assetE))
  (export "_ZN12happyeosslot3betEyN5eosio5assetERK11checksum256" (func $_ZN12happyeosslot3betEyN5eosio5assetERK11checksum256))
  (export "_ZN12happyeosslot15set_roll_resultERKyy" (func $_ZN12happyeosslot15set_roll_resultERKyy))
  (export "_ZN12happyeosslot10onTransferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE" (func $_ZN12happyeosslot10onTransferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE))
- (export "_ZN12happyeosslot10parse_memoERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE" (func $_ZN12happyeosslot10parse_memoERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE))
+ (export "_ZNK12happyeosslot10parse_memoERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE" (func $_ZNK12happyeosslot10parse_memoERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE))
  (export "_ZN12happyeosslot6revealERK11checksum256S2_" (func $_ZN12happyeosslot6revealERK11checksum256S2_))
  (export "_ZN12happyeosslot9deal_withEN5eosio11multi_indexILy11733754445404569600ENS_5offerEJEE14const_iteratorERK11checksum256" (func $_ZN12happyeosslot9deal_withEN5eosio11multi_indexILy11733754445404569600ENS_5offerEJEE14const_iteratorERK11checksum256))
- (export "_ZN12happyeosslot9get_bonusEy" (func $_ZN12happyeosslot9get_bonusEy))
- (export "_ZN12happyeosslot10merge_seedERK11checksum256S2_" (func $_ZN12happyeosslot10merge_seedERK11checksum256S2_))
+ (export "_ZNK12happyeosslot9get_bonusEy" (func $_ZNK12happyeosslot9get_bonusEy))
+ (export "_ZNK12happyeosslot10merge_seedERK11checksum256S2_" (func $_ZNK12happyeosslot10merge_seedERK11checksum256S2_))
  (export "apply" (func $apply))
  (export "malloc" (func $malloc))
  (export "free" (func $free))
@@ -191,7 +190,7 @@
    )
   )
  )
- (func $_ZN5token7_createEyN5eosio5assetE (param $0 i32) (param $1 i64) (param $2 i32)
+ (func $_ZN5token6createEyN5eosio5assetE (param $0 i32) (param $1 i64) (param $2 i32)
   (local $3 i64)
   (local $4 i64)
   (local $5 i64)
@@ -2201,7 +2200,7 @@
    )
   )
  )
- (func $_ZN5token5_burnEyN5eosio5assetE (param $0 i32) (param $1 i64) (param $2 i32)
+ (func $_ZN5token4burnEyN5eosio5assetE (param $0 i32) (param $1 i64) (param $2 i32)
   (local $3 i64)
   (local $4 i32)
   (local $5 i64)
@@ -4455,7 +4454,7 @@
    )
   )
  )
- (func $_ZN5token6_issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE (param $0 i32) (param $1 i64) (param $2 i32) (param $3 i32)
+ (func $_ZN5token5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE (param $0 i32) (param $1 i64) (param $2 i32) (param $3 i32)
   (local $4 i64)
   (local $5 i32)
   (local $6 i64)
@@ -11286,7 +11285,7 @@
      (get_local $9)
     )
    )
-   (call $_ZN5token6_issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE
+   (call $_ZN5token5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE
     (get_local $0)
     (get_local $1)
     (get_local $9)
@@ -12284,7 +12283,7 @@
     (get_local $12)
    )
   )
-  (call $_ZN5token5_burnEyN5eosio5assetE
+  (call $_ZN5token4burnEyN5eosio5assetE
    (get_local $0)
    (get_local $1)
    (get_local $12)
@@ -13136,7 +13135,7 @@
      (i32.load offset=4
       (i32.const 0)
      )
-     (i32.const 80)
+     (i32.const 96)
     )
    )
   )
@@ -13417,7 +13416,7 @@
      (call $memcpy
       (i32.add
        (get_local $9)
-       (i32.const 16)
+       (i32.const 32)
       )
       (get_local $6)
       (i32.const 8)
@@ -13432,7 +13431,7 @@
       (i32.or
        (i32.add
         (get_local $9)
-        (i32.const 16)
+        (i32.const 32)
        )
        (i32.const 8)
       )
@@ -13450,7 +13449,7 @@
      (i64.const 0)
      (i32.add
       (get_local $9)
-      (i32.const 16)
+      (i32.const 32)
      )
      (i32.const 40)
     )
@@ -13610,7 +13609,7 @@
     (call $memcpy
      (i32.add
       (get_local $9)
-      (i32.const 16)
+      (i32.const 32)
      )
      (get_local $6)
      (i32.const 8)
@@ -13625,7 +13624,7 @@
      (i32.or
       (i32.add
        (get_local $9)
-       (i32.const 16)
+       (i32.const 32)
       )
       (i32.const 8)
      )
@@ -13655,7 +13654,7 @@
       )
       (i32.add
        (get_local $9)
-       (i32.const 16)
+       (i32.const 32)
       )
       (i32.const 40)
      )
@@ -13690,11 +13689,11 @@
      )
     )
    )
-   (i32.store offset=64
+   (i32.store offset=80
     (get_local $9)
     (get_local $6)
    )
-   (i64.store offset=16
+   (i64.store offset=32
     (get_local $9)
     (tee_local $8
      (i64.load
@@ -13702,7 +13701,7 @@
      )
     )
    )
-   (i32.store offset=60
+   (i32.store offset=76
     (get_local $9)
     (get_local $7)
    )
@@ -13736,7 +13735,7 @@
       (get_local $4)
       (get_local $7)
      )
-     (i32.store offset=64
+     (i32.store offset=80
       (get_local $9)
       (i32.const 0)
      )
@@ -13760,24 +13759,24 @@
      )
      (i32.add
       (get_local $9)
-      (i32.const 64)
+      (i32.const 80)
      )
      (i32.add
       (get_local $9)
-      (i32.const 16)
+      (i32.const 32)
      )
      (i32.add
       (get_local $9)
-      (i32.const 60)
+      (i32.const 76)
      )
     )
    )
    (set_local $6
-    (i32.load offset=64
+    (i32.load offset=80
      (get_local $9)
     )
    )
-   (i32.store offset=64
+   (i32.store offset=80
     (get_local $9)
     (i32.const 0)
    )
@@ -13839,35 +13838,35 @@
      (get_local $0)
     )
    )
-   (i32.store offset=72
+   (i32.store offset=88
     (get_local $9)
     (i32.add
      (i32.add
       (get_local $9)
-      (i32.const 16)
+      (i32.const 32)
      )
      (i32.const 40)
     )
    )
-   (i32.store offset=68
+   (i32.store offset=84
     (get_local $9)
     (i32.add
      (get_local $9)
-     (i32.const 16)
+     (i32.const 32)
     )
    )
-   (i32.store offset=64
+   (i32.store offset=80
     (get_local $9)
     (i32.add
      (get_local $9)
-     (i32.const 16)
+     (i32.const 32)
     )
    )
    (drop
     (call $_ZlsIN5eosio10datastreamIPcEEERT_S5_RKN14tradeableToken14exchange_stateE
      (i32.add
       (get_local $9)
-      (i32.const 64)
+      (i32.const 80)
      )
      (get_local $4)
     )
@@ -13891,7 +13890,7 @@
       )
       (i32.add
        (get_local $9)
-       (i32.const 16)
+       (i32.const 32)
       )
       (i32.const 40)
      )
@@ -13926,11 +13925,11 @@
      )
     )
    )
-   (i32.store offset=64
+   (i32.store offset=80
     (get_local $9)
     (get_local $6)
    )
-   (i64.store offset=16
+   (i64.store offset=32
     (get_local $9)
     (tee_local $8
      (i64.load
@@ -13938,7 +13937,7 @@
      )
     )
    )
-   (i32.store offset=60
+   (i32.store offset=76
     (get_local $9)
     (get_local $7)
    )
@@ -13972,7 +13971,7 @@
       (get_local $4)
       (get_local $7)
      )
-     (i32.store offset=64
+     (i32.store offset=80
       (get_local $9)
       (i32.const 0)
      )
@@ -13996,27 +13995,27 @@
      )
      (i32.add
       (get_local $9)
-      (i32.const 64)
+      (i32.const 80)
      )
      (i32.add
       (get_local $9)
-      (i32.const 16)
+      (i32.const 32)
      )
      (i32.add
       (get_local $9)
-      (i32.const 60)
+      (i32.const 76)
      )
     )
    )
    (set_local $4
-    (i32.load offset=64
+    (i32.load offset=80
      (get_local $9)
     )
    )
    (set_local $6
     (i32.const 0)
    )
-   (i32.store offset=64
+   (i32.store offset=80
     (get_local $9)
     (i32.const 0)
    )
@@ -14029,6 +14028,14 @@
     (call $_ZdlPv
      (get_local $4)
     )
+   )
+   (i64.store offset=16
+    (get_local $9)
+    (i64.const 210000000000)
+   )
+   (i64.store offset=24
+    (get_local $9)
+    (i64.const 1498433540)
    )
    (set_local $5
     (i64.load
@@ -14124,31 +14131,28 @@
     (get_local $4)
     (i32.const 16)
    )
-   (call $require_auth
-    (i64.load
-     (get_local $0)
-    )
-   )
-   (i64.store offset=24
-    (get_local $9)
-    (i64.const 1498433540)
-   )
    (i64.store
     (i32.add
      (get_local $9)
      (i32.const 8)
     )
-    (i64.const 1498433540)
-   )
-   (i64.store offset=16
-    (get_local $9)
-    (i64.const 210000000000)
+    (i64.load
+     (i32.add
+      (i32.add
+       (get_local $9)
+       (i32.const 16)
+      )
+      (i32.const 8)
+     )
+    )
    )
    (i64.store
     (get_local $9)
-    (i64.const 210000000000)
+    (i64.load offset=16
+     (get_local $9)
+    )
    )
-   (call $_ZN5token7_createEyN5eosio5assetE
+   (call $_ZN5token6createEyN5eosio5assetE
     (get_local $0)
     (get_local $5)
     (get_local $9)
@@ -14158,7 +14162,7 @@
    (i32.const 0)
    (i32.add
     (get_local $9)
-    (i32.const 80)
+    (i32.const 96)
    )
   )
  )
@@ -14818,101 +14822,6 @@
    )
    (call $_ZdlPv
     (get_local $6)
-   )
-  )
- )
- (func $_ZN12happyeosslot6createEyN5eosio5assetE (param $0 i32) (param $1 i64) (param $2 i32)
-  (local $3 i32)
-  (local $4 i64)
-  (local $5 i32)
-  (i32.store offset=4
-   (i32.const 0)
-   (tee_local $5
-    (i32.sub
-     (i32.load offset=4
-      (i32.const 0)
-     )
-     (i32.const 32)
-    )
-   )
-  )
-  (call $require_auth
-   (i64.load
-    (get_local $0)
-   )
-  )
-  (i64.store
-   (tee_local $3
-    (i32.add
-     (i32.add
-      (get_local $5)
-      (i32.const 16)
-     )
-     (i32.const 8)
-    )
-   )
-   (i64.load
-    (i32.add
-     (get_local $2)
-     (i32.const 8)
-    )
-   )
-  )
-  (set_local $4
-   (i64.load
-    (get_local $2)
-   )
-  )
-  (i32.store
-   (i32.add
-    (get_local $5)
-    (i32.const 12)
-   )
-   (i32.load
-    (i32.add
-     (i32.add
-      (get_local $5)
-      (i32.const 16)
-     )
-     (i32.const 12)
-    )
-   )
-  )
-  (i32.store
-   (i32.add
-    (get_local $5)
-    (i32.const 8)
-   )
-   (i32.load
-    (get_local $3)
-   )
-  )
-  (i64.store offset=16
-   (get_local $5)
-   (get_local $4)
-  )
-  (i32.store offset=4
-   (get_local $5)
-   (i32.load offset=20
-    (get_local $5)
-   )
-  )
-  (i32.store
-   (get_local $5)
-   (i32.load offset=16
-    (get_local $5)
-   )
-  )
-  (call $_ZN5token7_createEyN5eosio5assetE
-   (get_local $0)
-   (get_local $1)
-   (get_local $5)
-  )
-  (i32.store offset=4
-   (i32.const 0)
-   (i32.add
-    (get_local $5)
-    (i32.const 32)
    )
   )
  )
@@ -17934,7 +17843,7 @@
    )
   )
  )
- (func $_ZN12happyeosslot10parse_memoERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE (param $0 i32) (param $1 i32) (param $2 i32)
+ (func $_ZNK12happyeosslot10parse_memoERKNSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -20044,7 +19953,7 @@
    )
   )
  )
- (func $_ZN12happyeosslot9get_bonusEy (param $0 i32) (param $1 i64) (result i64)
+ (func $_ZNK12happyeosslot9get_bonusEy (param $0 i32) (param $1 i64) (result i64)
   (local $2 i32)
   (local $3 i64)
   (local $4 i32)
@@ -20114,7 +20023,7 @@
    )
   )
  )
- (func $_ZN12happyeosslot10merge_seedERK11checksum256S2_ (param $0 i32) (param $1 i32) (param $2 i32) (result i64)
+ (func $_ZNK12happyeosslot10merge_seedERK11checksum256S2_ (param $0 i32) (param $1 i32) (param $2 i32) (result i64)
   (local $3 i32)
   (local $4 i64)
   (set_local $4
