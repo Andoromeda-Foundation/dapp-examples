@@ -181,7 +181,7 @@ class happyeosslot : public tradeableToken {
         global(_self, _self),
         offers(_self, _self) {}
 
-        void init(account_name self, const checksum256& hash);
+        void init(const checksum256& hash);
 
         void create( account_name issuer,
                      asset        maximum_supply);
