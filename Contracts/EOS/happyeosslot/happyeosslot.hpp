@@ -211,7 +211,7 @@ class happyeosslot : public tradeableToken {
         typedef eosio::multi_index<N(offer), offer> offer_index;
         offer_index offers;
 
-        // @abi table results i64
+        // @abi table result i64
         struct result {
             uint64_t id;            
             uint64_t roll_number;

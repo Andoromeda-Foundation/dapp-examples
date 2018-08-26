@@ -184,7 +184,7 @@
       ],
       "type": "global"
     },{
-      "name": "offers",
+      "name": "offer",
       "index_type": "i64",
       "key_names": [
         "id"
@@ -194,7 +194,7 @@
       ],
       "type": "offer"
     },{
-      "name": "results",
+      "name": "result",
       "index_type": "i64",
       "key_names": [
         "id"
