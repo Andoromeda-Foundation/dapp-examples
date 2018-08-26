@@ -179,7 +179,7 @@ void tradeableToken::buy(const account_name account, asset eos) {
    auto market_itr = _market.begin();
     int64_t delta;
     eos.amount /= eop();
-    assert(eos.amount > 0, "Must buy with positive Eos.")
+    eosio_assert(eos.amount > 0, "Must buy with positive Eos.");
 
     _market.modify(market_itr, 0, [&](auto &es) {
         delta = es.convert(eos, HPY_SYMBOL).amount;
