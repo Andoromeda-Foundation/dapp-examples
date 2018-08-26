@@ -97,7 +97,7 @@
  (data (i32.const 2032) "buy\00")
  (data (i32.const 2048) "only core token allowed\00")
  (data (i32.const 2080) "must bet a positive amount\00")
- (data (i32.const 2112) "\19\00\00\002\00\00\00x\00\00\00\e8\03\00\00\a0\0f\00\00 N\00\00P\c3\00\00\9f\86\01\00")
+ (data (i32.const 2112) "\19\00\00\002\00\00\00x\00\00\00\e8\03\00\00\a0\0f\00\00 N\00\00P\c3\00\00\e5`\00\00")
  (data (i32.const 2144) "\10\'\00\00\88\13\00\00\d0\07\00\00\e8\03\00\00\f4\01\00\00\c8\00\00\00\n\00\00\00\01\00\00\00")
  (data (i32.const 2176) "Happy eos slot bonus. happyeosslot.com\00")
  (data (i32.const 2224) "cannot pass end iterator to erase\00")
