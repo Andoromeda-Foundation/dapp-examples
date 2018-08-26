@@ -1,4 +1,4 @@
-﻿#include <eosiolib/currency.hpp>
+#include <eosiolib/currency.hpp>
 #include <math.h>
 #include <string>
 
@@ -17,7 +17,8 @@ public:
     pomelo(account_name self)
         : contract(self),
         buyrecords(_self, _self),
-        sellrecords(_self, _self)
+        sellrecords(_self, _self),
+        txlogs(_self, _self)
     {
     }
 
@@ -120,6 +121,24 @@ private:
     typedef eosio::multi_index<N(sellrecord), sellrecord, indexed_by<N(per), const_mem_fun<sellrecord, uint64_t, &sellrecord::by_per>>> sellrecords_index;
     sellrecords_index sellrecords;
 
+    /// @abi table
+    struct txlog {
+        uint64_t id;
+        uint64_t timestamp;
+        account_name seller;
+        account_name buyer;
+        asset asset;
+        uint64_t total_eos;
+        double per;
+
+        uint64_t primary_key() const { return id; }
+        uint64_t by_timestamp() const { return timestamp; }
+        EOSLIB_SERIALIZE(txlog, (id)(timestamp)(seller)(buyer)(asset)(total_eos)(per))
+
+    };
+    typedef eosio::multi_index<N(txlog), txlog, indexed_by<N(timestamp), const_mem_fun<txlog, uint64_t, &txlog::by_timestamp>>> txlogs_index;
+    txlogs_index txlogs;
+
     void do_sell_trade(sellrecord s) {
         auto per_index = buyrecords.get_index<N(per)>();
         for (auto itr = per_index.upper_bound(s.per - 0.000000001); itr != per_index.end(); ++itr) {
@@ -134,6 +153,7 @@ private:
             if (s.asset.amount >= itr->asset.amount) {
                 auto sold_amount = itr->asset.amount;
                 auto sold_eos = (uint64_t)(s.per * itr->asset.amount);
+                insert_txlog(itr->account, s.account, asset(sold_amount, itr->asset.symbol), sold_eos, s.per);
                 s.asset.amount -= sold_amount;
                 s.total_eos -= sold_eos;
                 auto eos_left = itr->total_eos - sold_eos;
@@ -160,6 +180,9 @@ private:
             else {
                 auto sold_amount = s.asset.amount;
                 auto sold_eos = s.total_eos;
+
+                insert_txlog(itr->account, s.account, asset(sold_amount, itr->asset.symbol), sold_eos, s.per);
+
                 per_index.modify(itr, 0, [&](auto& t) {
                     t.asset.amount -= sold_amount;
                     t.total_eos -= sold_eos;
@@ -220,6 +243,8 @@ private:
                         t.total_eos -= sold_eos;
                     });
 
+                    insert_txlog(b.account, itr->account, asset(sold_amount, itr->asset.symbol), sold_eos, itr->per);
+
                     auto eos_left = b.total_eos - sold_eos;
 
                     action(
@@ -249,6 +274,8 @@ private:
                     b.asset.amount -= sold_amount;
                     b.total_eos -= sold_eos;
                     per_index.erase(itr);
+
+                    insert_txlog(b.account, itr->account, asset(sold_amount, itr->asset.symbol), sold_eos, itr->per);
 
                     action(
                         permission_level{ _self, N(active) },
@@ -280,6 +307,26 @@ private:
                 t.per = b.per;
             });
         }
+    }
+
+    void maintain_txlogs() {
+        auto timestamp_index = txlogs.get_index<N(timestamp)>();
+        for (auto itr = timestamp_index.lower_bound(current_time() - 1000 * 1000 * 60 * 60); itr != timestamp_index.end(); ++itr) {
+            timestamp_index.erase(itr);
+        }
+    }
+
+    void insert_txlog(account_name buyer, account_name seller, asset quant, uint64_t total_eos, double per) {
+        maintain_txlogs();
+        txlogs.emplace(_self, [&](auto& l) {
+            l.id = txlogs.available_primary_key();
+            l.timestamp = current_time();
+            l.buyer = buyer;
+            l.seller = seller;
+            l.asset = quant;
+            l.total_eos = total_eos; // 剩余的EOS
+            l.per = per;
+        });
     }
 };
 
