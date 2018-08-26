@@ -6,7 +6,7 @@
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/contract.hpp>
-#include "../eosio.token/eosio.token.hpp"
+//#include "../eosio.token/eosio.token.hpp"
 #include <cmath>
 #include <string>
 
@@ -34,7 +34,7 @@ class token : public contract {
         void issue( account_name to, asset quantity, string memo );
         void burn( account_name from, asset quantity );
 
-        void transfer( account_name from,
+        void _transfer( account_name from,
                        account_name to,
                        asset        quantity,
                        string       memo );
@@ -44,28 +44,28 @@ class token : public contract {
 
         inline asset get_balance( account_name owner, symbol_name sym )const;
 
-        // @abi table accounts i64    
+
+
+
+    private:
+
+
+        void sub_balance( account_name owner, asset value );
+        void add_balance( account_name owner, asset value, account_name ram_payer );
+
+    public:  
         struct account {
             asset    balance;
             uint64_t primary_key() const { return balance.symbol.name(); }
         };
-        typedef eosio::multi_index<N(accounts), account> accounts;
-
-
-    private:
         struct currency_stats {
             asset          supply;
             asset          max_supply;
             account_name   issuer;
             uint64_t primary_key() const { return supply.symbol.name(); }
         };
-
+        typedef eosio::multi_index<N(accounts), account> accounts;
         typedef eosio::multi_index<N(stat), currency_stats> stats;
-
-        void sub_balance( account_name owner, asset value );
-        void add_balance( account_name owner, asset value, account_name ram_payer );
-
-    public:  
         struct transfer_args {
             account_name  from;
             account_name  to;
@@ -147,23 +147,10 @@ class tradeableToken : public token {
                 } else if (from.symbol == HPY_SYMBOL && to == EOS_SYMBOL) {
                     return convert_from_exchange(deposit, from);
                 } else {
-                    eosio_assert(false, "illegal convertion");
+                    eosio_assert(false, "illegal convertion.");
                     return from;
                 }
             }
-//            real_type get_price() const{
-//                auto in = asset(1, EOS_SYMBOL);        
-//                auto c = deposit;
-//                real_type R(supply.amount);
-//                real_type C(c.balance.amount + in.amount);
-//                real_type F(c.weight / 1000.0);
-//                real_type T(in.amount);
-//                real_type ONE(1.0);
-
-//                real_type E = -R * (ONE - pow(ONE + T / C, F));
-//                int64_t issued = int64_t(E);
-//                return real_type(1.0) / issued;
-//            }
 
             EOSLIB_SERIALIZE(exchange_state, (supply)(deposit))
         };
@@ -188,6 +175,11 @@ class happyeosslot : public tradeableToken {
                         account_name to,
                         asset        quantity,
                         string       memo);
+
+        void transfer( account_name from,
+                       account_name to,
+                       asset        quantity,
+                       string       memo );                        
 
         void reveal( const checksum256 &seed, const checksum256 &hash);
 //        real_type price() const{
@@ -224,10 +216,11 @@ class happyeosslot : public tradeableToken {
         typedef eosio::multi_index<N(offer), offer> offer_index;
         offer_index offers;
 
-        // @abi table result i64
+        // @abi table results i64
         struct result {
+            uint64_t id;            
             uint64_t roll_number;
-            uint64_t primary_key() const { return 0; }
+            uint64_t primary_key() const { return id; }
         };
         typedef eosio::multi_index<N(result), result> results;
 

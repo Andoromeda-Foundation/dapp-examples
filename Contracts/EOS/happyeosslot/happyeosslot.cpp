@@ -6,9 +6,9 @@ void token::create( account_name issuer,
                      asset        maximum_supply ) {
     require_auth( _self );
     auto sym = maximum_supply.symbol;
-    eosio_assert( sym.is_valid(), "invalid symbol name" );
-    eosio_assert( maximum_supply.is_valid(), "invalid supply");
-    eosio_assert( maximum_supply.amount > 0, "max-supply must be positive");
+    eosio_assert( sym.is_valid(), "Invalid symbol name" );
+    eosio_assert( maximum_supply.is_valid(), "Invalid supply");
+    eosio_assert( maximum_supply.amount > 0, "Max-supply must be positive");
 
     stats statstable( _self, sym.name() );
     auto existing = statstable.find( sym.name() );
@@ -23,7 +23,7 @@ void token::create( account_name issuer,
 
 void token::burn( account_name from, asset quantity) {
     auto sym = quantity.symbol;
-    eosio_assert( sym.is_valid(), "invalid symbol name" );
+    eosio_assert( sym.is_valid(), "Invalid symbol name" );
 
     auto sym_name = sym.name();
     stats statstable( _self, sym_name );
@@ -65,7 +65,6 @@ void token::issue( account_name to, asset quantity, string memo ) {
     const auto& st = *existing;
     //require_auth( st.issuer );
 
-
     eosio_assert( quantity.is_valid(), "invalid quantity" );
     eosio_assert( quantity.amount > 0, "must issue positive quantity" );
 
@@ -73,7 +72,6 @@ void token::issue( account_name to, asset quantity, string memo ) {
 
     //210000000000
     //eosio_assert( quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
-
     statstable.modify( st, 0, [&]( auto& s ) {
        s.supply += quantity;
     });
@@ -94,8 +92,7 @@ void token::issue( account_name to, asset quantity, string memo ) {
     }
 }
 
-// @abi action
-void token::transfer( account_name from,
+void token::_transfer( account_name from,
                        account_name to,
                        asset        quantity,
                        string       memo ) {
@@ -160,15 +157,16 @@ asset token::get_balance( account_name owner, symbol_name sym )const {
 }
 
 //uint64_t tradeableToken::get_my_balance() const{
-//    auto sym = eosio::symbol_type(EOS_SYMBOL).name();
-//    accounts eos_account(TOKEN_CONTRACT, _self);
-//    auto account = eos_account.get(sym);
-//    return account.balance.amount;
 //}
 
 real_type tradeableToken::eop()const{
     auto sym = eosio::symbol_type(EOS_SYMBOL).name();
-    auto balance = eosio::token(TOKEN_CONTRACT).get_balance(_self, sym);
+    accounts eos_account(TOKEN_CONTRACT, _self);
+    auto account = eos_account.get(sym);
+    auto balance = account.balance;
+    // auto balance = eosio::token(TOKEN_CONTRACT).get_balance(_self, sym);
+   
+    //auto sym = eosio::symbol_type(EOS_SYMBOL).name();
     auto deposit = get_deposit();
 //    eosio_assert(balance.amount == get_my_balance(), "should be equal");
     if (deposit > 0) {
@@ -222,18 +220,19 @@ void happyeosslot::init(const checksum256 &hash) {
             g.id = 0;
             g.hash = hash;
         });
-        _market.emplace(_self, [&](auto &m) {
-            m.supply.amount = 2000000000000;
-            m.supply.symbol = HPY_SYMBOL;
-            m.deposit.balance.amount = init_quote_balance;
-            m.deposit.balance.symbol = EOS_SYMBOL;
-        });
-                
-        create(_self, asset(210000000000, HPY_SYMBOL));
     } else {
         global.modify(g, 0, [&](auto &g) {
             g.hash = hash;
         });
+    }
+    if (_market.begin() == _market.end()) {
+        _market.emplace(_self, [&](auto &m) {
+            m.supply.amount = 2000000000000ll;
+            m.supply.symbol = HPY_SYMBOL;
+            m.deposit.balance.amount = init_quote_balance;
+            m.deposit.balance.symbol = EOS_SYMBOL;
+        });                
+        create(_self, asset(210000000000ll, HPY_SYMBOL));
     }
 }
 
@@ -270,6 +269,11 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
     } else {
         buy(from, eos);
     }
+}
+
+// @abi action
+void happyeosslot::transfer(account_name from, account_name to, asset quantity, std::string memo) {        
+    _transfer(from, to, quantity, memo);
 }
 
 // @abi action
@@ -333,16 +337,17 @@ checksum256 happyeosslot::parse_memo(const std::string &memo) const { // to bo r
 void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_number) {
     results res_table(_self, account);
 
-    auto res = res_table.find(0);
+    auto res = res_table.begin();
 
     if( res == res_table.end() ) {
         res_table.emplace( account /* ram payer*/, [&]( auto& res ){
-                    res.roll_number = roll_number;
-                });
+            res.id = 0;
+            res.roll_number = roll_number;
+        });
     } else {
         res_table.modify( res, account /* ram payer */, [&]( auto& res ) {
-                    res.roll_number = roll_number;
-                });
+            res.roll_number = roll_number;
+        });
     }
 }
 
@@ -371,7 +376,7 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
                 switch (action)                                                                                      \
                 {                                                                                                    \
                     EOSIO_API(TYPE, MEMBERS)                                                                         \
-                }                                                                                                    \
+                }                                                                                                     \
             }                                                                                                        \
         }                                                                                                            \
     }

@@ -105,11 +105,14 @@ class slot_machine : public contract {
     global.modify(itr, 0, [&](auto &g) {
       g.hash = hash;
     });
+    uint64_t t = 12;
     for (; players.begin() != players.end() ;) {
+      t--;
+      if (t == 0) break;
       auto itr = players.begin();
       int64_t credits = itr->credits;
       auto account = itr->account;
-      if (credits > 0) {
+      if (credits >= 1000) {
 	      action(
 			      permission_level{_self, N(active)},
 			      N(eosio.token), N(transfer),

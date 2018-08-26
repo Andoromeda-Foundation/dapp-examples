@@ -34,6 +34,7 @@
         "ratio": "cpp",
         "tuple": "cpp",
         "queue": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "iosfwd": "cpp"
     }
 }

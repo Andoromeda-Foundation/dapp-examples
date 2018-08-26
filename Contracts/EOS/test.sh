@@ -4,9 +4,13 @@ eosiocpp -o slot_machine/slot_machine.wast slot_machine/slot_machine.cpp
 eosiocpp -g slot_machine/slot_machine.abi slot_machine/slot_machine.cpp
 cleos set contract slot slot_machine -p slot@active
 
+
+cleos -u http://api-direct.eosasia.one  set contract happyeosslot slot_machine -p happyeosslot@active
+
+cleos -u http://api-direct.eosasia.one  get table happyeosslot happyeosslot players
+
 eosiocpp -o charger/charger.wast charger/charger.cpp
 eosiocpp -g charger/charger.abi charger/charger.cpp
-
 
 eosiocpp -o exchange/exchange.wast exchange/exchange.cpp
 
