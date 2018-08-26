@@ -43,12 +43,13 @@ public:
       TOKEN_CONTRACT, N(transfer),
       make_tuple(account, _self, asset(total_eos, EOS), string("transfer"))) // 由合约账号代为管理用于购买代币的EOS
       .send();
-    trade t;
-    t.account = account;
-    t.asset = quant;
-    t.status = 0;
-    t.total_eos = total_eos;
-    do_trade(t);
+    
+    // 生成购买订单
+    buy b;
+    b.account = account;
+    b.asset = quant;
+    b.per = (double)total_eos / (double)quant.amount;
+    b.total_eos = total_eos;
   }
 
   /// @abi action
@@ -63,199 +64,191 @@ public:
       TOKEN_CONTRACT, N(transfer),
       make_tuple(account, _self, quant, string("transfer"))) // 由合约账号代为管理欲出售的代币
       .send();
-    trade t;
-    t.account = account;
-    t.asset = quant;
-    t.status = 1;
-    t.total_eos = total_eos;
-    do_trade(t);
+
+    // 生成出售订单
+    sell s;
+    s.account = account;
+    s.asset = quant;
+    s.per = (double)total_eos / (double)quant.amount;
+    s.total_eos = total_eos;
   }
 
 private:
     /// @abi table
-    struct trade {
+    struct buy {
       uint64_t id;
       account_name account;
       asset asset;
       uint64_t total_eos;
-      uint64_t status;
+      double per;
 
       uint64_t primary_key() const { return id; }
-      uint64_t by_status() const { return status; }
-      EOSLIB_SERIALIZE(trade, (id)(account)(asset)(total_eos)(status))
+      uint64_t by_per() const { return per; }
+      EOSLIB_SERIALIZE(buy, (id)(account)(asset)(total_eos)(per))
   
     };
-    typedef eosio::multi_index<N(trade), trade, indexed_by<N(status), const_mem_fun<trade, uint64_t, &trade::by_status>>> trade_index;
-    trade_index trades;
+    typedef eosio::multi_index<N(trade), trade, indexed_by<N(per), const_mem_fun<trade, uint64_t, &trade::by_per>>> buy_index;
+    buy_index buys;
 
-    void do_trade(trade trade) {
-      auto status_index = trades.get_index<N(status)>();
-      if (trade.status == 0) {
-        for (auto itr = status_index.lower_bound(1); itr != status_index.end() && trade.asset.amount > 0; ++itr) {
-          if (itr -> status != 1) { // 如果迭代器进入了比1大的状态则结束迭代
-            break;
-          }
+    
+    /// @abi table
+    struct sell {
+      uint64_t id;
+      account_name account;
+      asset asset;
+      uint64_t total_eos;
+      double per;
 
-          if (itr -> asset.amount == 0) {
-            continue;
-          }
+      uint64_t primary_key() const { return id; }
+      uint64_t by_per() const { return per; }
+      EOSLIB_SERIALIZE(sell, (id)(account)(asset)(total_eos)(per))
+  
+    };
+    typedef eosio::multi_index<N(trade), trade, indexed_by<N(per), const_mem_fun<trade, uint64_t, &trade::by_per>>> sells_index;
+    sells_index sells;
 
-          auto sell_unit = (double)itr -> total_eos / (double)itr -> asset.amount;
-          auto buy_unit = (double)trade.total_eos / (double)trade.asset.amount;
-          if (sell_unit > buy_unit) {
-            continue;
-          }
-
-          if (itr -> asset.amount >= trade.asset.amount) { // 出售者的资源比购买者欲购买数量多
-            asset a;
-            a.symbol = EOS;
-            a.amount = (int64_t)(trade.asset.amount * sell_unit);
-            action( // 给出售者转账EOS
-              permission_level{_self, N(active)},
-              TOKEN_CONTRACT, N(transfer),
-              make_tuple(_self, itr -> account, a, string("sell")))
-              .send();
-            a.symbol = trade.asset.symbol;
-            a.amount = trade.asset.amount;
-            action( // 给购买者转账代币
-              permission_level{_self, N(active)},
-              TOKEN_CONTRACT, N(transfer),
-              make_tuple(_self, trade.account, a, string("buy")))
-              .send();
-            status_index.modify(itr, 0, [&] (auto& t) {
-              t.asset.amount -= trade.asset.amount; // 卖家交易资产总量减少
-              t.total_eos -= (int64_t)(trade.asset.amount * sell_unit); // 将出售的资源标记售出，剩余部分继续售卖
-            });
-            trade.asset.amount = 0; // 购买的订单减少相应的数额
-            trade.total_eos -= (int64_t)(trade.asset.amount * sell_unit); // 计算余额，稍后退还给购买者
-          } 
-          else { // 出售者的资源不足完成本笔购买订单
-            asset a, b;
-            a.symbol = EOS;
-            a.amount = itr -> total_eos;
-            b = itr -> asset;
-            action( // 给出售者转账EOS
-              permission_level{_self, N(active)},
-              TOKEN_CONTRACT, N(transfer),
-              make_tuple(_self, itr -> account, a, string("sell")))
-              .send();
-            action( // 给购买者转账代币
-              permission_level{_self, N(active)},
-              TOKEN_CONTRACT, N(transfer),
-              make_tuple(_self, trade.account, b, string("buy")))
-              .send();
-            status_index.modify(itr, 0, [&] (auto& t) {
-              t.asset.amount = 0;
-              t.total_eos = 0; // 出售单完成
-              t.status = 2;
-            });
-            trade.asset.amount -= b.amount; // 本单剩余购买数量减少
-            trade.total_eos -= a.amount;
-          }
+    void do_sell_trade(sell s) {
+      auto per_index = buys.get_index<N(per)>();
+      for (auto itr = per_index.lower_bound(s.per); itr != per_index.end(); ++itr) {
+        // 币种不同则跳过
+        if (itr -> asset.symbol != s.asset.symbol) {
+          continue;
         }
-        if (trade.asset.amount == 0) { // 判断本购买单是否完成
-          if (trade.total_eos > 0) { // 购买用的EOS还有剩余将退还
-            asset a;
-            a.symbol = EOS;
-            a.amount = trade.total_eos;
-            action( // 给购买者转账代币
+
+        if (s.asset.amount >= itr -> asset.amount) {
+          auto sold_amount = itr -> asset.amount;
+          auto sold_eos = (uint64_t)(s.per * itr -> asset.amount);
+          s.asset.amount -= sold_amount;
+          s.total_eos -= sold_eos;
+          auto eos_left = itr -> total_eos - sold_eos;
+          per_index.erase(itr);
+          
+          action(
+            permission_level{_self, N(active)},
+            TOKEN_CONTRACT, N(transfer),
+            make_tuple(_self, itr -> account, asset(sold_amount, s.asset.symbol), string("transfer"))) // 由合约账号代为管理欲出售的代币
+            .send();
+          action(
+            permission_level{_self, N(active)},
+            TOKEN_CONTRACT, N(transfer),
+            make_tuple(_self, s.account, asset(sold_eos, EOS), string("transfer"))) // 由合约账号代为管理欲出售的代币
+            .send();
+          if (eos_left) {
+            action(
               permission_level{_self, N(active)},
               TOKEN_CONTRACT, N(transfer),
-              make_tuple(_self, trade.account, a, string("back")))
+              make_tuple(_self, itr -> account, asset(eos_left, EOS), string("transfer"))) // 将剩余购买款返还给买家
               .send();
           }
         }
-        else { // 在table中记录为未完成的购买订单，将在有新售卖单发生时尝试继续完成。
-          trades.emplace(trade.account, [&] (auto& t) {
-            t.id = trades.available_primary_key();
-            t.account = trade.account;
-            t.asset.symbol = trade.asset.symbol;
-            t.asset.amount = trade.asset.amount;
-            t.total_eos = trade.total_eos; // 剩余的EOS
-            t.status = 0;
+        else {
+          auto sold_amount = s.asset.amount;
+          auto sold_eos = s.total_eos;
+          per_index.modify(itr, 0, [&] (auto& t) {
+            t.asset.amount -= sold_amount;
+            t.total_eos -= sold_eos;
+            t.per = (double)t.asset.amount / (double)t.total_eos;
           });
+          
+          action(
+            permission_level{_self, N(active)},
+            TOKEN_CONTRACT, N(transfer),
+            make_tuple(_self, itr -> account, asset(sold_amount, s.asset.symbol), string("transfer"))) // 由合约账号代为管理欲出售的代币
+            .send();
+          action(
+            permission_level{_self, N(active)},
+            TOKEN_CONTRACT, N(transfer),
+            make_tuple(_self, s.account, asset(sold_eos, EOS), string("transfer"))) // 由合约账号代为管理欲出售的代币
+            .send();
+
+          return;
         }
       }
-      else if (trade.status == 1) {
-        for (auto itr = status_index.lower_bound(0); itr != status_index.end() && trade.asset.amount > 0; ++itr) {
-          if (itr -> status != 0) { // 如果迭代器进入了比0大的状态则结束迭代
-            break;
-          }
+      if (s.asset.amount > 0) {
+        sells.emplace(0, [&] (auto& t) {
+          t.id = sells.available_primary_key();
+          t.account = s.account;
+          t.asset.symbol = s.asset.symbol;
+          t.asset.amount = s.asset.amount;
+          t.total_eos = s.total_eos; // 剩余的EOS
+          t.per = s.per;
+        });
+      }
+    }
 
-          if (itr -> asset.amount == 0) {
+    void do_buy_trade(buy b) {
+      auto per_index = sells.get_index<N(per)>();
+      auto itr = per_index.upper_bound(b.per);
+      bool is_end;
+      do {
+        is_end = true;
+        for (auto itr = per_index.upper_bound(b.per); itr != per_index.end(); ++itr) {
+          // 币种不同则跳过
+          if (itr -> asset.symbol != b.asset.symbol) {
             continue;
           }
- 
-          auto buy_unit = (double)itr -> total_eos / (double)itr -> asset.amount;
-          auto sell_unit = (double)trade.total_eos / (double)trade.asset.amount;
-          if (sell_unit > buy_unit) {
-            continue;
-          }
 
-          if (trade.asset.amount >= itr -> asset.amount) { // 出售者的资源比购买者欲购买数量多
-            asset a;
-            a.symbol = EOS;
-            a.amount = (int64_t)(itr -> asset.amount * sell_unit);
-            action( // 给出售者转账EOS
-              permission_level{_self, N(active)},
-              TOKEN_CONTRACT, N(transfer),
-              make_tuple(_self, trade.account, a, string("sell")))
-              .send();
-            a.symbol = trade.asset.symbol;
-            a.amount = itr -> asset.amount;
-            action( // 给购买者转账代币
-              permission_level{_self, N(active)},
-              TOKEN_CONTRACT, N(transfer),
-              make_tuple(_self, itr -> account, a, string("buy")))
-              .send();
-            trade.asset.amount -= itr -> asset.amount;
-            trade.total_eos -= (int64_t)(itr -> asset.amount * sell_unit);
-            status_index.modify(itr, 0, [&] (auto& t) {
-              t.asset.amount = 0; // 购买的订单减少相应的数额
-              t.total_eos -= (int64_t)(itr -> asset.amount * sell_unit); // 计算余额，稍后退还给购买者
-              t.status = 2;
+          if (b.asset.amount <= itr -> asset.amount) {
+            auto sold_amount = b.asset.amount;
+            auto sold_eos = (uint64_t)(itr -> per * b.asset.amount);
+            per_index.modify(itr, 0, [&] (auto& t) {
+              t.asset.amount -= sold_amount;
+              t.total_eos -= sold_eos;
             });
-          } 
-          else { // 出售者的资源不足完成本笔购买订单
-            asset a, b;
-            a.symbol = EOS;
-            a.amount = trade.total_eos;
-            b = trade.asset;
-            trade.status = 2;
-            trade.total_eos = 0;
-            trade.asset.amount = 0;
             
-            action( // 给出售者转账EOS
+            auto eos_left = b.total_eos - sold_eos;
+            
+            action(
               permission_level{_self, N(active)},
               TOKEN_CONTRACT, N(transfer),
-              make_tuple(_self, trade. account, a, string("sell")))
+              make_tuple(_self, b.account, asset(sold_amount, s.asset.symbol), string("transfer")))
               .send();
-            action( // 给购买者转账代币
+            action(
               permission_level{_self, N(active)},
               TOKEN_CONTRACT, N(transfer),
-              make_tuple(_self, itr -> account, b, string("buy")))
+              make_tuple(_self, itr -> account, asset(sold_eos, EOS), string("transfer")))
               .send();
-              
-            status_index.modify(itr, 0, [&] (auto& t) {
-              t.asset.amount -= b.amount;
-              t.total_eos -= a.amount;
-            });
-          }
+
+            if (eos_left) {
+              action(
+                permission_level{_self, N(active)},
+                TOKEN_CONTRACT, N(transfer),
+                make_tuple(_self, b.account, asset(eos_left, EOS), string("transfer"))) // 将剩余购买款返还给买家
+                .send();
+            }
+
+            return;
         }
-        if (trade.asset.amount > 0) { // 判断本购买单是否完成
-          trades.emplace(trade.account, [&] (auto& t) {
-            t.id = trades.available_primary_key();
-            t.account = trade.account;
-            t.asset.symbol = trade.asset.symbol;
-            t.asset.amount = trade.asset.amount;
-            t.total_eos = trade.total_eos;
-            t.status = 1;
-          });
+        else {
+          auto sold_amount = itr -> asset.amount;
+          auto sold_eos = (uint64_t)(itr -> per * itr -> asset.amount);
+          b.asset.amount -= sold_amount;
+          b.total_eos -= sold_eos;
+          action(
+            permission_level{_self, N(active)},
+            TOKEN_CONTRACT, N(transfer),
+            make_tuple(_self, b.account, asset(sold_amount, s.asset.symbol), string("transfer")))
+            .send();
+          action(
+            permission_level{_self, N(active)},
+            TOKEN_CONTRACT, N(transfer),
+            make_tuple(_self, itr -> account, asset(sold_eos, EOS), string("transfer")))
+            .send();
+          b.per = (double)b.asset.amount / (double)b.total_eos;
+          is_end = false;
         }
       }
-      else {
-        eosio_assert(false, "Invalid trade status");
-      }
+    }
+    while(!is_end);
+    if (b.asset.amount > 0) {
+      buys.emplace(0, [&] (auto& t) {
+        t.id = buys.available_primary_key();
+        t.account = s.account;
+        t.asset.symbol = s.asset.symbol;
+        t.asset.amount = s.asset.amount;
+        t.total_eos = s.total_eos; // 剩余的EOS
+        t.per = s.per;
+      });
     }
 };
 
