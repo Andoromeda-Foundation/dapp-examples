@@ -249,7 +249,6 @@ void happyeosslot::create( account_name issuer,
 //}
 
 void happyeosslot::bet(const account_name account, asset bet, const checksum256& seed) {
-    eosio::print("bet ", bet);
     offers.emplace(_self, [&](auto &offer) {
         offer.id = offers.available_primary_key();
         offer.owner = account;
@@ -271,7 +270,7 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
     eosio_assert(eos.amount > 0, "must bet a positive amount");
 
     string operation = memo.substr(0, 3);
-    if (operation == "bet" || ((operation != "buy") && (eos.amount < 100000))) {
+    if (operation == "bet" || ((operation != "buy") && (eos.amount >= 100000))) {
         const checksum256 seed = parse_memo(memo);
         bet(from, eos, seed);
     } else {

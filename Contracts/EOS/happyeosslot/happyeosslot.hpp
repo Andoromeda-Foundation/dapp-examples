@@ -85,10 +85,10 @@ class tradeableToken : public token {
             return market_itr->deposit.balance.amount - init_quote_balance;  
         }
 
-        real_type raw_price() const{
-            auto market_itr = _market.begin();
-            return market_itr->get_price(); 
-        }
+//        real_type raw_price() const{
+//            auto market_itr = _market.begin();
+//            return market_itr->get_price(); 
+//        }
 
         //uint64_t get_my_balance() const;
         real_type eop()const;    
@@ -151,20 +151,19 @@ class tradeableToken : public token {
                     return from;
                 }
             }
+//            real_type get_price() const{
+//                auto in = asset(1, EOS_SYMBOL);        
+//                auto c = deposit;
+//                real_type R(supply.amount);
+//                real_type C(c.balance.amount + in.amount);
+//                real_type F(c.weight / 1000.0);
+//                real_type T(in.amount);
+//                real_type ONE(1.0);
 
-            real_type get_price() const{
-                auto in = asset(1, EOS_SYMBOL);        
-                auto c = deposit;
-                real_type R(supply.amount);
-                real_type C(c.balance.amount + in.amount);
-                real_type F(c.weight / 1000.0);
-                real_type T(in.amount);
-                real_type ONE(1.0);
-
-                real_type E = -R * (ONE - pow(ONE + T / C, F));
-                int64_t issued = int64_t(E);
-                return real_type(1.0) / issued;
-            }
+//                real_type E = -R * (ONE - pow(ONE + T / C, F));
+//                int64_t issued = int64_t(E);
+//                return real_type(1.0) / issued;
+//            }
 
             EOSLIB_SERIALIZE(exchange_state, (supply)(deposit))
         };
@@ -182,7 +181,7 @@ class happyeosslot : public tradeableToken {
         global(_self, _self),
         offers(_self, _self) {}
 
-        void init(account_name self, const checksum256& hash);
+        void init(const checksum256& hash);
 
         void create( account_name issuer,
                      asset        maximum_supply);
