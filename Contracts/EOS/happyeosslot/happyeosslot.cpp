@@ -287,7 +287,7 @@ void happyeosslot::reveal(const checksum256 &seed, const checksum256 &hash) {
     });
 }
 
-const int p[8] = {   25,   50,  120, 1000, 4000, 20000, 50000, 99999};
+const int p[8] = {   25,   50,  120, 1000, 4000, 20000, 50000, 24805};
 const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
 
 uint64_t happyeosslot::get_bonus(uint64_t seed) const {
