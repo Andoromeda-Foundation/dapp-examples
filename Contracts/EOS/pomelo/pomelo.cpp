@@ -1,4 +1,4 @@
-#include <eosiolib/currency.hpp>
+﻿#include <eosiolib/currency.hpp>
 #include <math.h>
 #include <string>
 
@@ -122,9 +122,12 @@ private:
 
     void do_sell_trade(sellrecord s) {
         auto per_index = buyrecords.get_index<N(per)>();
-        for (auto itr = per_index.upper_bound(s.per); itr != per_index.end(); ++itr) {
+        for (auto itr = per_index.upper_bound(s.per - 0.000000001); itr != per_index.end(); ++itr) {
             // 币种不同则跳过
             if (itr->asset.symbol != s.asset.symbol) {
+                continue;
+            }
+            if (itr->per < s.per) {
                 continue;
             }
 
