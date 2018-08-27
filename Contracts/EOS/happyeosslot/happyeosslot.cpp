@@ -311,13 +311,15 @@ uint64_t happyeosslot::merge_seed(const checksum256 &s1, const checksum256 &s2) 
 
 void happyeosslot::deal_with(eosio::multi_index<N(offer), offer>::const_iterator itr, const checksum256 &seed) {
     uint64_t bonus_rate = get_bonus(merge_seed(seed, itr->seed));
-    uint64_t bonus = bonus * itr->bet / 100;
-    action(
-            permission_level{_self, N(active)},
-            N(eosio.token), N(transfer),
-            make_tuple(_self, itr->owner, asset(bonus, EOS_SYMBOL),
-                std::string("Happy eos slot bonus. happyeosslot.com")))
-        .send();
+    uint64_t bonus = bonus_rate * itr->bet / 100;
+    if (bonus > 0) {
+        action(
+                permission_level{_self, N(active)},
+                N(eosio.token), N(transfer),
+                make_tuple(_self, itr->owner, asset(bonus, EOS_SYMBOL),
+                    std::string("Happy eos slot bonus. happyeosslot.com")))
+            .send();
+    }
     set_roll_result(itr->owner, bonus_rate);
     offers.erase(itr);
 }
