@@ -7,7 +7,22 @@ void cryptohero::init() {
 void cryptohero::test() {
 }
 
-void cryptohero::onTransfer() {
+// @abi action
+void cryptohero::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
+    if (to != _self) {
+        return;
+    }
+    require_auth(from);
+    eosio_assert(eos.is_valid(), "Invalid token transfer");
+    eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
+    eosio_assert(eos.amount > 0, "must bet a positive amount");
+     string operation = memo.substr(0, 3);
+    if (operation == "buy") {
+        buy(from, eos);      
+    } else {
+        //const checksum256 seed = parse_memo(memo);
+        //draw(from, eos, seed);
+    }
 }
 
 
