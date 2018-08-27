@@ -1,0 +1,9 @@
+# Setup
+
+## Unlock Wallet
+cleos wallet unlock
+PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4LZ1u
+
+## Setup Happyeosslot Contract
+cleos create account eosio happyeosslot EOS6rRNxJWzdFtKH8MfsdvDci3vnC7QQhcRDA6a8PJV3tz8sEJYZz EOS76hCgV1mfHivJYb7wpbT4PNxxJricYdJCZVo8JtgNWyV4Td1h1
+eosiocpp -o cryptoherooo/cryptoherooo.wast cryptoherooo/cryptoherooo.cpp

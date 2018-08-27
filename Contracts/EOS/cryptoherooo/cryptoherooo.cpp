@@ -1,24 +1,115 @@
 #include <eosiolib/crypto.h>
+#include <cstdio>
 #include "cryptoherooo.hpp"
 
 // @abi action
-void cryptohero::init() {
+void cryptoherooo::init(const checksum256& hash) {
+    require_auth(_self);
+    auto g = global.find(0);
+    if (g == global.end()) {
+        global.emplace(_self, [&](auto &g) {
+            g.id = 0;
+            g.hash = hash;
+        });
+    } else {
+        global.modify(g, 0, [&](auto &g) {
+            g.hash = hash;
+        });
+    }
 }
 
 // @abi action
-void cryptohero::test() {
+void cryptoherooo::test(const account_name account, asset eos) {
 }
 
 // @abi action
-void cryptohero::draw(const account_name account, asset eos, const checksum256& seed){
+void cryptoherooo::draw(const account_name account, asset eos, const checksum256& seed) {
+    offers.emplace(_self, [&](auto& offer) {
+        offer.id = offers.available_primary_key();
+        offer.owner = account;
+        offer.count = 1;
+        offer.seed = seed;
+    });  
+}
+
+uint64_t merge_seed(const checksum256 &s1, const checksum256 &s2) {
+    uint64_t hash = 0, x;
+    for (int i = 0; i < 32; ++i) {
+        hash ^= (s1.hash[i] ^ s2.hash[i]) << ((i & 7) << 3);
+    }
+    return hash;
+}
+
+uint64_t get_type(uint64_t seed) {
+    /*seed %= 100000;
+    int i = 0;
+    while (seed >= p[i]) {
+        seed -= p[i];
+        ++i;
+    }
+    return b[i];*/
+    return 0;
+}
+
+void cryptoherooo::issueCard(account_name to, uint64_t type_id, string memo) {
+    require_auth(_self);
+	
+	uint64_t token_id = cards.available_primary_key();
+    cards.emplace(_self, [&](auto& c) {
+        c.id = token_id;
+		c.type = type_id;
+        c.owner = to;
+    });
+}
+
+void cryptoherooo::transferCard(account_name from,
+                                account_name to,
+                                uint64_t     id,
+                                string       memo) {
+    require_auth(from);
+    eosio_assert(from != to, "cannot transfer card to self" );     
+    auto itr = cards.find(id);
+    eosio_assert(itr->owner == from, "user don't have this card" );
+    cards.modify(itr, 0, [&](auto &c) {
+        c.owner = to;
+    });      
+    require_recipient(from);
+    require_recipient(to);      
+}
+
+void cryptoherooo::_reveal(eosio::multi_index<N(offer), offer>::const_iterator itr, const checksum256 &seed) {
+    uint64_t type_id = get_type(merge_seed(seed, itr->seed));
+    
+    /*static char msg[10];
+    sprintf(msg, "card type: %d", type_id);*/
+/*
+    action(
+        permission_level{_self, N(active)},
+        _self, N(issueCard),
+        make_tuple(itr->owner, type_id, ""))
+    .send(); */
+
+    offers.erase(itr);  
 }
 
 // @abi action
-void cryptohero::reveal(const checksum256 &seed, const checksum256 &hash){
+void cryptoherooo::reveal(const checksum256 &seed, const checksum256 &hash) {
+    require_auth(_self);
+    assert_sha256((char *)&seed, sizeof(seed), (const checksum256 *)&global.begin()->hash);
+    auto n = offers.available_primary_key();
+    for (int i = 0; i < n; ++i) {
+        auto itr = offers.find(i);
+        _reveal(itr, seed);
+    }
+    auto itr = global.find(0);
+    global.modify(itr, 0, [&](auto &g) {
+        g.hash = hash;
+    });  
 }
 
+
 // @abi action
-void cryptohero::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
+void cryptoherooo::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
     if (to != _self) {
         return;
     }
@@ -28,7 +119,7 @@ void cryptohero::onTransfer(account_name from, account_name to, asset eos, std::
     eosio_assert(eos.amount > 0, "must bet a positive amount");
      string operation = memo.substr(0, 3);
     if (operation == "buy") {
-        buy(from, eos);      
+        //buy(from, eos);      
     } else {
         //const checksum256 seed = parse_memo(memo);
         //draw(from, eos, seed);
@@ -62,7 +153,7 @@ void cryptohero::onTransfer(account_name from, account_name to, asset eos, std::
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-EOSIO_WAST(happyeosslot, (onTransfer)(transfer)(init)(test))
+EOSIO_WAST(cryptoherooo, (onTransfer)(init)(test))
 
 // generate .abi file
-// EOSIO_ABI(happyeosslot, (transfer)(init)(sell)(reveal)(test))
+// EOSIO_ABI(cryptoherooo, (init)(test))
