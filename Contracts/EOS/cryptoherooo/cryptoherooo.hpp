@@ -3,12 +3,7 @@
  *  @copyright Andoromeda
  */
 #pragma once
-#include <eosiolib/eosio.hpp>
-#include <eosiolib/asset.hpp>
-#include <eosiolib/contract.hpp>
-#include "../eosio.token/eosio.token.hpp"
-#include <cmath>
-#include <string>
+#include "../tradeabbletoken/tradeabletoken.hpp"
 
 #define EOS_SYMBOL S(4, EOS)
 #define HPY_SYMBOL S(4, HPY)
@@ -16,18 +11,12 @@
 
 typedef double real_type;
 
-using std::string;
-using eosio::symbol_name;
-using eosio::asset;
-using eosio::symbol_type;
-using eosio::contract;
-using eosio::permission_level;
-using eosio::action;
-
 class cryptoherooo : public tradeableToken {
-
     public:
     cryptoherooo( account_name self ):tradeableToken(self){}
+    void init(const checksum256& hash);
+    void test(const account_name account, asset eos);    
+
     struct global {
         uint64_t id = 0;
         checksum256 hash;
