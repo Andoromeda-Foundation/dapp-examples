@@ -159,7 +159,7 @@ asset token::get_balance( account_name owner, symbol_name sym )const {
 //uint64_t tradeableToken::get_my_balance() const{
 //}
 
-real_type tradeableToken::eop(assert current_deposit) const {
+real_type tradeableToken::eop(asset current_deposit) const {
     auto sym = eosio::symbol_type(EOS_SYMBOL).name();
     accounts eos_account(TOKEN_CONTRACT, _self);
     auto account = eos_account.get(sym);
@@ -197,7 +197,7 @@ void tradeableToken::sell(const account_name account, asset hpy) {
     _market.modify(market_itr, 0, [&](auto &es) {
         delta = es.convert(hpy, EOS_SYMBOL).amount;
     });
-    delta *= eop(assert(0, EOS_SYMBOL));
+    delta *= eop(asset(0, EOS_SYMBOL));
     eosio_assert(delta > 0, "Must burn a positive amount");    
     burn(account, hpy);
     asset eos(delta, EOS_SYMBOL);
@@ -349,16 +349,16 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
     }
 }
 
-void happyeosslot::test(){
-    buy(2eos); 
-    ..hpy..
-    sell(hpy).. 
-    assert() 
+//void happyeosslot::test(){
+//    buy(2eos); 
+//    ..hpy..
+//    sell(hpy).. 
+//    assert() 
 
-    buy(1) buy(1) 
-    hpy 
-    assert()
-}
+//    buy(1) buy(1) 
+//    hpy 
+//    assert()
+//}
 
 
 #define MY_EOSIO_ABI(TYPE, MEMBERS)                                                                                  \
