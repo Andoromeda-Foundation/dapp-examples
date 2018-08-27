@@ -342,7 +342,7 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
             res.roll_number = roll_number;
         });
     } else {
-        res_table.modify( res, account /* ram payer */, [&]( auto& res ) {
+        res_table.modify( res, 0 /* ram payer */, [&]( auto& res ) {
             res.roll_number = roll_number;
         });
     }
