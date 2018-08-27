@@ -160,19 +160,19 @@ asset token::get_balance( account_name owner, symbol_name sym )const {
 //}
 
 real_type tradeableToken::eop(asset current_deposit) const {
-    auto sym = eosio::symbol_type(EOS_SYMBOL).name();
-    accounts eos_account(TOKEN_CONTRACT, _self);
-    auto account = eos_account.get(sym);
-    auto old_balance = account.balance - current_deposit;
-    // auto balance = eosio::token(TOKEN_CONTRACT).get_balance(_self, sym);
+    // auto sym = eosio::symbol_type(EOS_SYMBOL).name();
+    // accounts eos_account(TOKEN_CONTRACT, _self);
+    // auto account = eos_account.get(sym);
+    // auto old_balance = account.balance - current_deposit;
+    // // auto balance = eosio::token(TOKEN_CONTRACT).get_balance(_self, sym);
    
-    //auto sym = eosio::symbol_type(EOS_SYMBOL).name();
-    auto deposit = get_deposit();
-    if (deposit > 0) {
-        return real_type(old_balance.amount) / get_deposit();
-    } else {
+    // //auto sym = eosio::symbol_type(EOS_SYMBOL).name();
+    // auto deposit = get_deposit();
+    // if (deposit > 0) {
+    //     return real_type(old_balance.amount) / get_deposit();
+    // } else {
         return 1;
-    }
+    // }
 }
 
 void tradeableToken::buy(const account_name account, asset eos) {
