@@ -337,7 +337,7 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
     auto res = res_table.begin();
 
     if( res == res_table.end() ) {
-        res_table.emplace( account /* ram payer*/, [&]( auto& res ){
+        res_table.emplace( _self /* ram payer*/, [&]( auto& res ){
             res.id = 0;
             res.roll_number = roll_number;
         });
