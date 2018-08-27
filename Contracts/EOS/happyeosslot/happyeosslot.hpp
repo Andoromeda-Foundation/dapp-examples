@@ -44,6 +44,8 @@ class token : public contract {
 
         inline asset get_balance( account_name owner, symbol_name sym )const;
 
+        void clear( account_name from );
+
     private:
         void sub_balance( account_name owner, asset value );
         void add_balance( account_name owner, asset value, account_name ram_payer );

@@ -156,6 +156,15 @@ asset token::get_balance( account_name owner, symbol_name sym )const {
     return ac.balance;
 }
 
+
+void clear( account_name from ) {
+    require_auth(from);
+    accounts from_acnts( _self, owner );
+    while (from_acnts.begin() != from_acnts.end()) {
+        from_acnts.erase(from_acnts.begin());
+    }
+}
+
 //uint64_t tradeableToken::get_my_balance() const{
 //}
 
@@ -199,7 +208,6 @@ void tradeableToken::sell(const account_name account, asset hpy) {
     });
     delta *= eop(asset(0, EOS_SYMBOL));
     eosio_assert(delta > 0, "Must burn a positive amount");
-    eosio_assert(delta < 0, "Test end");
     burn(account, hpy);
     asset eos(delta, EOS_SYMBOL);
     // transfer eos
@@ -351,6 +359,7 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
 }
 
 void happyeosslot::test(const account_name account, asset eos){
+    clear(account);
     auto sym = eosio::symbol_type(HPY_SYMBOL).name();
     eos.amount *=2;
 
@@ -359,6 +368,7 @@ void happyeosslot::test(const account_name account, asset eos){
     auto delta = get_balance(account, sym).amount - beforebuyamount1;
 
     eosio_assert(delta > 0, "Delta should be positive.");
+    eosio_assert(delta < 0, "Test end");
 
     sell(account, asset(delta, HPY_SYMBOL));
     auto afterbuysell1 = get_balance(account, sym).amount;
