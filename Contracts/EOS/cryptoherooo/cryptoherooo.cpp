@@ -1,10 +1,20 @@
 #include <eosiolib/crypto.h>
-#include "happyeosslot.hpp"
+#include "cryptoherooo.hpp"
 
+// @abi action
 void cryptohero::init() {
 }
 
+// @abi action
 void cryptohero::test() {
+}
+
+// @abi action
+void cryptohero::draw(const account_name account, asset eos, const checksum256& seed){
+}
+
+// @abi action
+void cryptohero::reveal(const checksum256 &seed, const checksum256 &hash){
 }
 
 // @abi action
@@ -24,6 +34,8 @@ void cryptohero::onTransfer(account_name from, account_name to, asset eos, std::
         //draw(from, eos, seed);
     }
 }
+
+
 
 
 #define EOSIO_WAST(TYPE, MEMBERS)                                                                                  \

@@ -17,20 +17,21 @@ class cryptoherooo : public tradeableToken {
     void init(const checksum256& hash);
     void test(const account_name account, asset eos);    
 
-    struct global {
-        uint64_t id = 0;
-        checksum256 hash;
-        uint64_t primary_key() const { return id; }
-        EOSLIB_SERIALIZE(global, (id)(hash))
-    };
-    typedef eosio::multi_index<N(global), global> global_index;
-    global_index global;  
+    void draw(const account_name account, asset eos, const checksum256& seed);
+    void reveal(const checksum256 &seed, const checksum256 &hash);
+
+    void onTransfer(account_name from,
+                    account_name to,
+                    asset        quantity,
+                    string       memo);    
+
     // @abi table global i64
     struct global {
         uint64_t id = 0;
+        uint64_t draw_price = 0;
         checksum256 hash;
         uint64_t primary_key() const { return id; }
-        EOSLIB_SERIALIZE(global, (id)(hash))
+        EOSLIB_SERIALIZE(global, (id)(draw_price)(hash))
     };
     typedef eosio::multi_index<N(global), global> global_index;
     global_index global;  
