@@ -159,7 +159,7 @@ asset token::get_balance( account_name owner, symbol_name sym )const {
 
 void token::clear( account_name from ) {
     require_auth(from);
-    accounts from_acnts( _self, owner );
+    accounts from_acnts( _self, from );
     while (from_acnts.begin() != from_acnts.end()) {
         from_acnts.erase(from_acnts.begin());
     }
