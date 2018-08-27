@@ -362,7 +362,7 @@ const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
     offers.erase(itr);
 }
 
-checksum256 happyeosslot::parse_memo(const std::string &memo) const { // to bo refine.
+checksum256 parse_memo(const std::string &memo) const {
     checksum256 checksum;
     memset(&checksum, 0, sizeof(checksum256));
     for (int i = 0; i < memo.length(); i++) {

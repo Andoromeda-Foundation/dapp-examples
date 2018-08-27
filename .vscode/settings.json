@@ -36,6 +36,16 @@
         "queue": "cpp",
         "ios": "cpp",
         "iosfwd": "cpp",
+<<<<<<< HEAD
+=======
+        "__config": "cpp",
+        "__nullptr": "cpp",
+        "cstddef": "cpp",
+        "exception": "cpp",
+        "initializer_list": "cpp",
+        "new": "cpp",
+        "stdexcept": "cpp",
+>>>>>>> 6b20fa7b26052437eaa0582252eed62a2684a171
         "typeinfo": "cpp"
     }
 }
