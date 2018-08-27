@@ -348,8 +348,11 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
     }
 }
 
-void happyeosslot::test(const account_name account, asset eos){
-    //clear(account);
+void happyeosslot::test(const account_name account, asset eos) {
+    while (_market.begin() != _market.end()) {
+        _marekt.erase(_market.begin());
+    }
+    return;
     auto sym = eosio::symbol_type(HPY_SYMBOL).name();
     eos.amount *=2;
 
