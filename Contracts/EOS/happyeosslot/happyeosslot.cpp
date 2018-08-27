@@ -173,7 +173,7 @@ void token::clear( account_name from ) {
 
 asset current_balance;
 
-real_type tradeableToken::eop(asset current_deposit) const {
+real_type tradeableToken::eop() const {
     //if (false) return 1; // For test switch.
     const auto& sym = eosio::symbol_type(EOS_SYMBOL).name();
     accounts eos_account(TOKEN_CONTRACT, _self);
@@ -362,7 +362,7 @@ const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
     offers.erase(itr);
 }
 
-checksum256 parse_memo(const std::string &memo) const {
+checksum256 happyeosslot::parse_memo(const std::string &memo) const {
     checksum256 checksum;
     memset(&checksum, 0, sizeof(checksum256));
     for (int i = 0; i < memo.length(); i++) {
@@ -391,7 +391,7 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
 void happyeosslot::test(const account_name account, asset eos) {
     //eosio_assert(false, "emmm");
     static char msg[100];
-    sprintf(msg, "EOP:%lf", eop(asset(0, EOS_SYMBOL)));
+    sprintf(msg, "EOP:%lf", eop());
     eosio_assert(false, msg);
 
     const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();

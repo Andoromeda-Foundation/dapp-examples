@@ -86,7 +86,7 @@ class tradeableToken : public token {
         }
 
         // For test only.
-        real_type eop(asset current_deposit) const;
+        real_type eop() const;
 
         // @abi table market i64
         struct exchange_state {
