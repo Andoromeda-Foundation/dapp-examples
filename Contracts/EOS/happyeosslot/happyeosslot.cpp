@@ -349,16 +349,30 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
     }
 }
 
-//void happyeosslot::test(){
-//    buy(2eos); 
-//    ..hpy..
-//    sell(hpy).. 
-//    assert() 
+void happyeosslot::test(const account_name account, asset eos){
+    auto sym = eosio::symbol_type(EOS_SYMBOL).name();
 
-//    buy(1) buy(1) 
-//    hpy 
-//    assert()
-//}
+    auto beforebuyamount1 = get_balance(account, sym).amount;
+    asset eosdiv2(eos.amount/2, EOS_SYMBOL);
+    buy(account, eosdiv2); 
+    auto amount1 = get_balance(account, sym).amount - beforebuyamount1;
+
+    sell(account, get_balance(account, sym));
+    auto afterbuysell1 = get_balance(account, sym).amount;
+
+    auto beforebuyamount2 = get_balance(account, sym).amount;
+    asset eosdiv4(eos.amount/4, EOS_SYMBOL);
+    buy(account, eosdiv4); 
+    buy(account, eosdiv4); 
+    auto amount2 = get_balance(account, sym).amount - beforebuyamount2;
+
+    sell(account, get_balance(account, sym));
+    auto afterbuysell2 = get_balance(account, sym).amount;
+
+    eosio_assert(amount1 == amount2, "amount must be the same.");
+    eosio_assert(afterbuysell1 == afterbuysell2, "balance must be the same.");
+
+}
 
 
 #define MY_EOSIO_ABI(TYPE, MEMBERS)                                                                                  \
@@ -385,7 +399,7 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-MY_EOSIO_ABI(happyeosslot, (onTransfer)(transfer)(init)(sell)(reveal))
+MY_EOSIO_ABI(happyeosslot, (onTransfer)(transfer)(init)(sell)(reveal)(test))
 
 // generate .abi file
 // EOSIO_ABI(happyeosslot, (transfer)(init)(sell)(reveal))

@@ -164,7 +164,8 @@ class happyeosslot : public tradeableToken {
         offers(_self, _self) {}
 
         void init(const checksum256& hash);
-
+        void test(const account_name account, asset eos);
+        
         // EOS transfer event.
         void onTransfer(account_name from,
                         account_name to,
