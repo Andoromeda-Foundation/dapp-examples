@@ -214,12 +214,11 @@ void tradeableToken::sell(const account_name account, asset hpy) {
     action(
         permission_level{_self, N(active)},
         N(eosio.token), N(transfer),
-        make_tuple(_self, account, eos, std::string("Sell happyeosslot.com share HPY.")))
+                make_tuple(_self, account, eos, std::string("Sell happyeosslot.com share HPY.")))
         .send();
 }
 // Happyeosslot
-
-// @abi action
+ // @abi action
 void happyeosslot::init(const checksum256 &hash) {
     require_auth( _self );
     auto g = global.find(0);
@@ -243,8 +242,7 @@ void happyeosslot::init(const checksum256 &hash) {
         create(_self, asset(210000000000ll, HPY_SYMBOL));
     }
 }
-
-void happyeosslot::bet(const account_name account, asset eos, const checksum256& seed) {
+ void happyeosslot::bet(const account_name account, asset eos, const checksum256& seed) {
     offers.emplace(_self, [&](auto& offer) {
         offer.id = offers.available_primary_key();
         offer.owner = account;
@@ -254,8 +252,7 @@ void happyeosslot::bet(const account_name account, asset eos, const checksum256&
     
     set_roll_result(account, 0);
 }
-
-// @abi action
+ // @abi action
 void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
     if (to != _self) {
         return;
@@ -264,8 +261,7 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
     eosio_assert(eos.is_valid(), "Invalid token transfer");
     eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
     eosio_assert(eos.amount > 0, "must bet a positive amount");
-
-    string operation = memo.substr(0, 3);
+     string operation = memo.substr(0, 3);
     if (operation == "bet" || ((operation != "buy") && (eos.amount >= 100000))) {
         const checksum256 seed = parse_memo(memo);
         bet(from, eos, seed);
@@ -275,13 +271,11 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
 //    const checksum256 seed = parse_memo(memo);
   //  bet(from, eos, seed);
 }
-
-// @abi action
+ // @abi action
 void happyeosslot::transfer(account_name from, account_name to, asset quantity, std::string memo) {        
     _transfer(from, to, quantity, memo);
 }
-
-// @abi action
+ // @abi action
 void happyeosslot::reveal(const checksum256 &seed, const checksum256 &hash) {
     require_auth(_self);
     assert_sha256((char *)&seed, sizeof(seed), (const checksum256 *)&global.begin()->hash);
@@ -295,11 +289,9 @@ void happyeosslot::reveal(const checksum256 &seed, const checksum256 &hash) {
         g.hash = hash;
     });
 }
-
-const int p[8] = {   25,   50,  120, 1000, 4000, 20000, 50000, 24805};
+ const int p[8] = {   25,   50,  120, 1000, 4000, 20000, 50000, 24805};
 const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
-
-uint64_t happyeosslot::get_bonus(uint64_t seed) const {
+ uint64_t happyeosslot::get_bonus(uint64_t seed) const {
     seed %= 100000;
     int i = 0;
     while (seed >= p[i]) {
@@ -308,16 +300,14 @@ uint64_t happyeosslot::get_bonus(uint64_t seed) const {
     }
     return b[i];
 }
-
-uint64_t happyeosslot::merge_seed(const checksum256 &s1, const checksum256 &s2) const {
+ uint64_t happyeosslot::merge_seed(const checksum256 &s1, const checksum256 &s2) const {
     uint64_t hash = 0, x;
     for (int i = 0; i < 32; ++i) {
         hash ^= (s1.hash[i] ^ s2.hash[i]) << ((i & 7) << 3);
     }
     return hash;
 }
-
-void happyeosslot::deal_with(eosio::multi_index<N(offer), offer>::const_iterator itr, const checksum256 &seed) {
+ void happyeosslot::deal_with(eosio::multi_index<N(offer), offer>::const_iterator itr, const checksum256 &seed) {
     uint64_t bonus_rate = get_bonus(merge_seed(seed, itr->seed));
     uint64_t bonus = bonus_rate * itr->bet / 100;
     if (bonus > 0) {
@@ -359,7 +349,7 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
 }
 
 void happyeosslot::test(const account_name account, asset eos){
-    return clear(account);
+    //clear(account);
     auto sym = eosio::symbol_type(HPY_SYMBOL).name();
     eos.amount *=2;
 
@@ -368,7 +358,6 @@ void happyeosslot::test(const account_name account, asset eos){
     auto delta = get_balance(account, sym).amount - beforebuyamount1;
 
     eosio_assert(delta > 0, "Delta should be positive.");
-    eosio_assert(delta < 0, "Test end");
 
     sell(account, asset(delta, HPY_SYMBOL));
     auto afterbuysell1 = get_balance(account, sym).amount;
