@@ -355,17 +355,16 @@ void happyeosslot::test(const account_name account, asset eos){
 
     auto beforebuyamount1 = get_balance(account, sym).amount;
     buy(account, eos); 
-    auto delta = asset(get_balance(account, sym).amount - beforebuyamount1, HPY_SYMBOL);
+    auto delta = get_balance(account, sym).amount - beforebuyamount1;
 
-    sell(account, delta);
+    sell(account, asset(delta, HPY_SYMBOL));
     auto afterbuysell1 = get_balance(account, sym).amount;
 
-    assert(beforebuyamount1 == afterbuysell1, "not equal after sell1");
+    eosio_assert(beforebuyamount1 == afterbuysell1, "not equal after sell1");
 
 
     auto beforebuyamount2 = get_balance(account, sym).amount;
     eos.amount /= 2;
-    asset eosdiv4(eos.amount/4, EOS_SYMBOL);
     buy(account, eos); 
     buy(account, eos); 
     auto delta2 = get_balance(account, sym).amount - beforebuyamount2;
