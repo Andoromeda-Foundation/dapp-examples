@@ -5,14 +5,23 @@
 // @abi action
 void cryptoherooo::init(const checksum256& hash) {
     require_auth(_self);
+
+	global.begin();
+
     auto g = global.find(0);
+
     if (g == global.end()) {
         global.emplace(_self, [&](auto &g) {
             g.id = 0;
+			g.draw_price = 1;
             g.hash = hash;
         });
     } else {
-        global.modify(g, 0, [&](auto &g) {
+        global.erase(global.begin());
+
+        global.emplace(_self, [&](auto &g) {
+            g.id = 0;
+			g.draw_price = 1;
             g.hash = hash;
         });
     }
@@ -20,6 +29,7 @@ void cryptoherooo::init(const checksum256& hash) {
 
 // @abi action
 void cryptoherooo::test(const account_name account, asset eos) {
+
 }
 
 // @abi action
@@ -51,10 +61,12 @@ uint64_t get_type(uint64_t seed) {
     return 0;
 }
 
-void cryptoherooo::issueCard(account_name to, uint64_t type_id, string memo) {
+// @abi action
+void cryptoherooo::issuecard(account_name to, uint64_t type_id, string memo) {
     require_auth(_self);
 	
 	uint64_t token_id = cards.available_primary_key();
+	
     cards.emplace(_self, [&](auto& c) {
         c.id = token_id;
 		c.type = type_id;
@@ -62,7 +74,8 @@ void cryptoherooo::issueCard(account_name to, uint64_t type_id, string memo) {
     });
 }
 
-void cryptoherooo::transferCard(account_name from,
+// @abi action
+void cryptoherooo::transfercard(account_name from,
                                 account_name to,
                                 uint64_t     id,
                                 string       memo) {
@@ -82,12 +95,12 @@ void cryptoherooo::_reveal(eosio::multi_index<N(offer), offer>::const_iterator i
     
     /*static char msg[10];
     sprintf(msg, "card type: %d", type_id);*/
-/*
+	
     action(
         permission_level{_self, N(active)},
-        _self, N(issueCard),
-        make_tuple(itr->owner, type_id, ""))
-    .send(); */
+        _self, N(issuecard),
+        std::make_tuple(itr->owner, type_id, ""))
+    .send();
 
     offers.erase(itr);  
 }
@@ -107,6 +120,14 @@ void cryptoherooo::reveal(const checksum256 &seed, const checksum256 &hash) {
     });  
 }
 
+checksum256 parse_memo(const std::string &memo) { // to bo refine.
+    checksum256 checksum;
+    memset(&checksum, 0, sizeof(checksum256));
+    for (int i = 0; i < memo.length(); i++) {
+        checksum.hash[i & 31] ^= memo[i];
+    }
+    return checksum;
+}
 
 // @abi action
 void cryptoherooo::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
@@ -117,12 +138,12 @@ void cryptoherooo::onTransfer(account_name from, account_name to, asset eos, std
     eosio_assert(eos.is_valid(), "Invalid token transfer");
     eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
     eosio_assert(eos.amount > 0, "must bet a positive amount");
-     string operation = memo.substr(0, 3);
-    if (operation == "buy") {
+
+    if (memo.find("draw") != string::npos) {
+        const checksum256 seed = parse_memo(memo);
+        draw(from, eos, seed);	
+    } else {	
         //buy(from, eos);      
-    } else {
-        //const checksum256 seed = parse_memo(memo);
-        //draw(from, eos, seed);
     }
 }
 
@@ -153,7 +174,9 @@ void cryptoherooo::onTransfer(account_name from, account_name to, asset eos, std
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-EOSIO_WAST(cryptoherooo, (onTransfer)(init)(test))
+EOSIO_WAST(cryptoherooo, (onTransfer)(issuecard)(transfercard)(init)(test)(reveal))
 
 // generate .abi file
-// EOSIO_ABI(cryptoherooo, (init)(test))
+// EOSIO_ABI(cryptoherooo, (issuecard)(transfercard)(init)(test)(reveal))
+/* transfer() add by hand*/
+

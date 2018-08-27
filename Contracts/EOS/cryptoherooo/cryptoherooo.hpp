@@ -27,9 +27,9 @@ class cryptoherooo : public contract {
     void draw(const account_name account, asset eos, const checksum256& seed);
     void reveal(const checksum256 &seed, const checksum256 &hash);
 
-    void issueCard(account_name to, uint64_t type_id, string memo);
+    void issuecard(account_name to, uint64_t type_id, string memo);
 
-    void transferCard(account_name from,
+    void transfercard(account_name from,
                       account_name to,
                       uint64_t     id,
                       string       memo);
