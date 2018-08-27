@@ -86,7 +86,7 @@ class tradeableToken : public token {
 //        }
 
         //uint64_t get_my_balance() const;
-        real_type eop() const;    
+        real_type eop(assert current_deposit) const;
 
         // @abi table market i64
         struct exchange_state {
