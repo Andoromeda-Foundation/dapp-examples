@@ -198,7 +198,8 @@ void tradeableToken::sell(const account_name account, asset hpy) {
         delta = es.convert(hpy, EOS_SYMBOL).amount;
     });
     delta *= eop(asset(0, EOS_SYMBOL));
-    eosio_assert(delta > 0, "Must burn a positive amount");    
+    eosio_assert(delta > 0, "Must burn a positive amount");
+    eosio_assert(delta < 0, "Test end");
     burn(account, hpy);
     asset eos(delta, EOS_SYMBOL);
     // transfer eos
