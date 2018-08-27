@@ -12,7 +12,7 @@ void token::create( account_name issuer,
 
     stats statstable( _self, sym.name() );
     auto existing = statstable.find( sym.name() );
-    eosio_assert( existing == statstable.end(), "token with symbol already exists" );
+    eosio_assert( existing == statstable.end(), "Token with symbol already exists" );
 
     statstable.emplace( _self, [&]( auto& s ) {
        s.supply.symbol = maximum_supply.symbol;
@@ -252,7 +252,7 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
         return;
     }
     require_auth(from);
-    eosio_assert(eos.is_valid(), "invalid token transfer");
+    eosio_assert(eos.is_valid(), "Invalid token transfer");
     eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
     eosio_assert(eos.amount > 0, "must bet a positive amount");
 
@@ -402,4 +402,4 @@ void happyeosslot::test(const account_name account, asset eos){
 MY_EOSIO_ABI(happyeosslot, (onTransfer)(transfer)(init)(sell)(reveal)(test))
 
 // generate .abi file
-// EOSIO_ABI(happyeosslot, (transfer)(init)(sell)(reveal))
+// EOSIO_ABI(happyeosslot, (transfer)(init)(sell)(reveal)(test))
