@@ -350,18 +350,6 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
     }
 }
 
-void happyeosslot::test(){
-    buy(2eos); 
-    ..hpy..
-    sell(hpy).. 
-    assert() 
-
-    buy(1) buy(1) 
-    hpy 
-    assert()
-}
-
-
 #define MY_EOSIO_ABI(TYPE, MEMBERS)                                                                                  \
     extern "C"                                                                                                       \
     {                                                                                                                \
