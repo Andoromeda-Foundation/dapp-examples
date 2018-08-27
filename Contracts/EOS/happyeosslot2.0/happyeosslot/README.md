@@ -10,10 +10,7 @@ eosiocpp -o happyeosslot/happyeosslot.wast happyeosslot/happyeosslot.cpp
 eosiocpp -g happyeosslot/happyeosslot.abi happyeosslot/happyeosslot.cpp
 cleos set contract happyeosslot happyeosslot -p happyeosslot@active
 
-
 cleos -u http://api-direct.eosasia.one push action happyeosslot init '["0196d5b5d9ec1bc78ba927d2db2cb327d836f002601c77bd8c3f144a07ddc737"]' -p happyeosslot@active
-
-
 
 ## Create minakokojima Account
 cleos create account eosio tmonomonomon EOS6hcHfjnhdgPyRCMJneazKWRq6TjY5WyFpMfbVDrBX6e3uvUU4U EOS6hcHfjnhdgPyRCMJneazKWRq6TjY5WyFpMfbVDrBX6e3uvUU4U
@@ -49,20 +46,14 @@ cleos get table eosio.token happyeosslot accounts
 
 ## Query HPY
 cleos get table happyeosslot tmonomonomon accounts
-cleos -u http://api-direct.eosasia.one get table happyeosslot happyeosslot accounts
+cleos get table happyeosslot happyeosslot accounts
 
 ## Sell
 
 void tradeableToken::sell(const account_name account, asset hpy) {
 
 
-cleos -u http://api-direct.eosasia.one push action happyeosslot sell '["minakokojima", "33.6436 HPY"]' -p minakokojima@active
-
-
-
-
-cleos -u https://api-kylin.eosasia.one push action happyeosslot sell '["minakokojima", "33.5000 HPY"]' -p minakokojima@active
-
+cleos -u https://api-kylin.eosasia.one push action happyeosslot sell '["minakokojima", "33.6436 HPY"]' -p minakokojima@active
 
 
 

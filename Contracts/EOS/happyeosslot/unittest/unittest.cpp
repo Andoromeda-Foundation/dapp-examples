@@ -159,17 +159,18 @@ asset token::get_balance( account_name owner, symbol_name sym )const {
 //uint64_t tradeableToken::get_my_balance() const{
 //}
 
-real_type tradeableToken::eop(assert current_deposit) const {
+real_type tradeableToken::eop() const {
     auto sym = eosio::symbol_type(EOS_SYMBOL).name();
     accounts eos_account(TOKEN_CONTRACT, _self);
     auto account = eos_account.get(sym);
-    auto old_balance = account.balance - current_deposit;
+    auto balance = account.balance;
     // auto balance = eosio::token(TOKEN_CONTRACT).get_balance(_self, sym);
    
     //auto sym = eosio::symbol_type(EOS_SYMBOL).name();
     auto deposit = get_deposit();
+//    eosio_assert(balance.amount == get_my_balance(), "should be equal");
     if (deposit > 0) {
-        return real_type(old_balance.amount) / get_deposit();
+        return real_type(balance.amount) / get_deposit();
     } else {
         return 1;
     }
@@ -178,7 +179,7 @@ real_type tradeableToken::eop(assert current_deposit) const {
 void tradeableToken::buy(const account_name account, asset eos) {
    auto market_itr = _market.begin();
     int64_t delta;
-    eos.amount /= eop(eos);
+    eos.amount /= eop();
     eosio_assert(eos.amount > 0, "Must buy with positive Eos.");
 
     _market.modify(market_itr, 0, [&](auto &es) {
@@ -197,7 +198,7 @@ void tradeableToken::sell(const account_name account, asset hpy) {
     _market.modify(market_itr, 0, [&](auto &es) {
         delta = es.convert(hpy, EOS_SYMBOL).amount;
     });
-    delta *= eop(assert(0, EOS_SYMBOL));
+    delta *= eop();
     eosio_assert(delta > 0, "Must burn a positive amount");    
     burn(account, hpy);
     asset eos(delta, EOS_SYMBOL);
@@ -348,18 +349,6 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
         });
     }
 }
-
-void happyeosslot::test(){
-    buy(2eos); 
-    ..hpy..
-    sell(hpy).. 
-    assert() 
-
-    buy(1) buy(1) 
-    hpy 
-    assert()
-}
-
 
 #define MY_EOSIO_ABI(TYPE, MEMBERS)                                                                                  \
     extern "C"                                                                                                       \

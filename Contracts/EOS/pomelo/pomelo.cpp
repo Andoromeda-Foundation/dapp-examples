@@ -1,4 +1,4 @@
-#include <eosiolib/currency.hpp>
+﻿#include <eosiolib/currency.hpp>
 #include <math.h>
 #include <string>
 

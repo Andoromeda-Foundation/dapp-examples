@@ -4,7 +4,7 @@ do
 result=`cleos -u http://api-direct.eosasia.one get table happyeosslot happyeosslot offer`
 if [ ${#result} -gt 35 ]; then
         sleep 1s
-        cleos wallet unlock --password PW5K2J9uMBHR4nKbiRNY9iLkrYZc8QYzDqKpxdpPxpoZkVrramkdZ
+        cleos wallet unlock --password PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4LZ1u
         last_seed=`cat rawseed.txt`
         echo "last Seed " $last_seed
         seed=`openssl rand 32 -hex`
@@ -21,3 +21,10 @@ if [ ${#result} -gt 35 ]; then
 fi
 sleep 9s
 done
+
+
+cleos -u http://api-direct.eosasia.one  get table happyeosslot happyeosslot players
+cleos -u http://api-direct.eosasia.one  set contract happyeosslot slot_machine  -p happyeosslot@active
+eosiocpp -o slot_machine/slot_machine.wast slot_machine/slot_machine.cpp
+
+eosiocpp -g slot_machine/slot_machine.abi slot_machine/slot_machine.cpp
