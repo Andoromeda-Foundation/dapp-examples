@@ -22,6 +22,7 @@ fi
 sleep 9s
 done
 
+cleos -u https://api-kylin.eosasia.one push action happyeosslot test '["ceshiyongeos", "1.0000 EOS"]' -p ceshiyongeos@active
 
 cleos -u http://api-direct.eosasia.one  get table happyeosslot happyeosslot players
 cleos -u http://api-direct.eosasia.one  set contract happyeosslot slot_machine  -p happyeosslot@active
