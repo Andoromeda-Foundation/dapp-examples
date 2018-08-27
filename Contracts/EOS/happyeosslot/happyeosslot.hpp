@@ -72,8 +72,11 @@ class token : public contract {
 };
 
 class tradeableToken : public token {
-    public:    
-        tradeableToken(account_name self) : token(self), _market(_self, _self) {}
+    public:
+        tradeableToken(account_name self) :
+        token(self),
+        global(_self, _self),
+        _market(_self, _self) {}
         void buy(const account_name account, asset eos);
         void sell(const account_name account, asset hpy);
 
@@ -82,12 +85,7 @@ class tradeableToken : public token {
             return market_itr->deposit.balance.amount - init_quote_balance;  
         }
 
-//        real_type raw_price() const{
-//            auto market_itr = _market.begin();
-//            return market_itr->get_price(); 
-//        }
-
-        //uint64_t get_my_balance() const;
+        // For test only.
         real_type eop(asset current_deposit) const;
 
         // @abi table market i64
@@ -144,28 +142,42 @@ class tradeableToken : public token {
                 } else if (from.symbol == HPY_SYMBOL && to == EOS_SYMBOL) {
                     return convert_from_exchange(deposit, from);
                 } else {
-                    eosio_assert(false, "illegal convertion.");
+                    eosio_assert(false, "Illegal convertion.");
                     return from;
                 }
             }
 
-            EOSLIB_SERIALIZE(exchange_state, (id)(supply)(deposit))
+            EOSLIB_SERIALIZE(exchange_state, (supply)(deposit))
         };
 
         typedef eosio::multi_index<N(market), exchange_state> market;
         market _market;
 
         // tradeableToken
-        const uint64_t init_quote_balance = 1 * 10000 * 10000ll; // 初始保证金 1 万 EOS。;  
+        const uint64_t init_quote_balance = 1 * 10000 * 10000ll; // 初始保证金 1 万 EOS。;
+
+    protected:
+        // @abi table global i64
+        struct global {
+            uint64_t id = 0;
+            checksum256 hash; // hash of the game seed, 0 when idle.
+            uint64_t realBalance; // All balance in offer list.
+
+            uint64_t primary_key() const { return id; }
+            EOSLIB_SERIALIZE(global, (id)(hash))
+        };
+        typedef eosio::multi_index<N(global), global> global_index;
+        global_index global;  
 };
 
 class happyeosslot : public tradeableToken {
     public:
-        happyeosslot(account_name self) : tradeableToken(self),
-        global(_self, _self),
+        happyeosslot(account_name self) :
+        tradeableToken(self),
         offers(_self, _self) {}
 
         void init(const checksum256& hash);
+        // For test only.
         void test(const account_name account, asset eos);
         
         // EOS transfer event.
@@ -189,18 +201,6 @@ class happyeosslot : public tradeableToken {
 //        uint64_t get_roll_result(const account_name& account) const;
 
     private:
-        // @abi table global i64
-        struct global {
-            uint64_t id = 0;
-            checksum256 hash; // hash of the game seed, 0 when idle.
-            uint64_t realBalance;
-
-            uint64_t primary_key() const { return id; }
-            EOSLIB_SERIALIZE(global, (id)(hash))
-        };
-        typedef eosio::multi_index<N(global), global> global_index;
-        global_index global;  
-
         // @abi table offer i64
         struct offer {
             uint64_t id;

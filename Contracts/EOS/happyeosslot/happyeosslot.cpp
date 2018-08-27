@@ -1,9 +1,11 @@
 #include <eosiolib/crypto.h>
 #include "happyeosslot.hpp"
 
+#include <cstdio>
+
 // Token
 void token::create( account_name issuer,
-                     asset        maximum_supply ) {
+                    asset        maximum_supply ) {
     require_auth( _self );
     auto sym = maximum_supply.symbol;
     eosio_assert( sym.is_valid(), "Invalid symbol name" );
@@ -71,7 +73,7 @@ void token::issue( account_name to, asset quantity, string memo ) {
     eosio_assert( quantity.symbol == st.supply.symbol, "symbol precision mismatch" );
 
     //210000000000
-    //eosio_assert( quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
+    eosio_assert( quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
     statstable.modify( st, 0, [&]( auto& s ) {
        s.supply += quantity;
     });
@@ -152,8 +154,9 @@ asset token::get_supply( symbol_name sym )const {
 
 asset token::get_balance( account_name owner, symbol_name sym )const {
     accounts accountstable( _self, owner );
-    const auto& ac = accountstable.get( sym );
-    return ac.balance;
+    const auto& ac = accountstable.find( sym );
+    if (ac == accountstable.end()) return asset(0, HPY_SYMBOL);
+    else return ac->balance;
 }
 
 
@@ -168,26 +171,45 @@ void token::clear( account_name from ) {
 //uint64_t tradeableToken::get_my_balance() const{
 //}
 
+asset current_balance;
+
 real_type tradeableToken::eop(asset current_deposit) const {
-    // auto sym = eosio::symbol_type(EOS_SYMBOL).name();
-    // accounts eos_account(TOKEN_CONTRACT, _self);
-    // auto account = eos_account.get(sym);
-    // auto old_balance = account.balance - current_deposit;
-    // // auto balance = eosio::token(TOKEN_CONTRACT).get_balance(_self, sym);
-   
-    // //auto sym = eosio::symbol_type(EOS_SYMBOL).name();
-    // auto deposit = get_deposit();
-    // if (deposit > 0) {
-    //     return real_type(old_balance.amount) / get_deposit();
-    // } else {
+    //if (false) return 1; // For test switch.
+    const auto& sym = eosio::symbol_type(EOS_SYMBOL).name();
+    accounts eos_account(TOKEN_CONTRACT, _self);
+    auto old_balance = eos_account.get(sym).balance;
+
+    auto g = global.find(0);
+    old_balance.amount -= g->realBalance;
+
+    //auto old_balance = current_balance - current_deposit;
+    auto deposit = get_deposit();
+
+    if (deposit > 0 && old_balance.amount > 0) {
+        return real_type(old_balance.amount) / deposit;
+    } else {
         return 1;
-    // }
+    }
 }
 
 void tradeableToken::buy(const account_name account, asset eos) {
    auto market_itr = _market.begin();
     int64_t delta;
-    eos.amount /= eop(eos);
+    // Calculate eop
+    const auto& sym = eosio::symbol_type(EOS_SYMBOL).name();
+    accounts eos_account(TOKEN_CONTRACT, _self);
+    auto old_balance = eos_account.get(sym).balance - eos;
+
+    auto g = global.find(0);
+    old_balance.amount -= g->realBalance;
+
+    //auto old_balance = current_balance - eos;
+
+    const auto& deposit = get_deposit();
+    if (deposit > 0 && old_balance.amount > 0) {
+        eos.amount = eos.amount * deposit / old_balance.amount;
+    }
+
     eosio_assert(eos.amount > 0, "Must buy with positive Eos.");
 
     _market.modify(market_itr, 0, [&](auto &es) {
@@ -203,14 +225,27 @@ void tradeableToken::sell(const account_name account, asset hpy) {
     require_auth(account);
     auto market_itr = _market.begin();
     int64_t delta;
+    // Calculate eop
+    const auto& sym = eosio::symbol_type(EOS_SYMBOL).name();
+    accounts eos_account(TOKEN_CONTRACT, _self);
+    auto old_balance = eos_account.get(sym).balance;
+
+    auto g = global.find(0);
+    old_balance.amount -= g->realBalance;
+    //auto old_balance = current_balance;
+    const auto& deposit = get_deposit();
+
     _market.modify(market_itr, 0, [&](auto &es) {
         delta = es.convert(hpy, EOS_SYMBOL).amount;
     });
-    delta *= eop(asset(0, EOS_SYMBOL));
+
+    delta = delta * old_balance.amount / deposit;
     eosio_assert(delta > 0, "Must burn a positive amount");
     burn(account, hpy);
     asset eos(delta, EOS_SYMBOL);
     // transfer eos
+
+    //current_balance -= eos;
     action(
         permission_level{_self, N(active)},
         N(eosio.token), N(transfer),
@@ -226,6 +261,7 @@ void happyeosslot::init(const checksum256 &hash) {
         global.emplace(_self, [&](auto &g) {
             g.id = 0;
             g.hash = hash;
+            g.realBalance = 0;
         });
     } else {
         global.modify(g, 0, [&](auto &g) {
@@ -249,7 +285,10 @@ void happyeosslot::init(const checksum256 &hash) {
         offer.bet = eos.amount;
         offer.seed = seed;
     });
-    
+    auto g = global.find(0);
+    global.modify(g, 0, [&](auto &g) {
+        g.realBalance += eos.amount;
+    });
     set_roll_result(account, 0);
 }
  // @abi action
@@ -287,6 +326,7 @@ void happyeosslot::reveal(const checksum256 &seed, const checksum256 &hash) {
     auto itr = global.find(0);
     global.modify(itr, 0, [&](auto &g) {
         g.hash = hash;
+        g.realBalance = 0;
     });
 }
  const int p[8] = {   25,   50,  120, 1000, 4000, 20000, 50000, 24805};
@@ -349,32 +389,45 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
 }
 
 void happyeosslot::test(const account_name account, asset eos) {
-    while (_market.begin() != _market.end()) {
-        _marekt.erase(_market.begin());
-    }
-    return;
-    auto sym = eosio::symbol_type(HPY_SYMBOL).name();
+    //eosio_assert(false, "emmm");
+    static char msg[100];
+    sprintf(msg, "EOP:%lf", eop(asset(0, EOS_SYMBOL)));
+    eosio_assert(false, msg);
+
+    const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();
+    //current_balance = asset(0, EOS_SYMBOL);
+    current_balance = asset(10000, EOS_SYMBOL);
+    buy(account, asset(10000, EOS_SYMBOL));
     eos.amount *=2;
 
     auto beforebuyamount1 = get_balance(account, sym).amount;
-    buy(account, eos); 
+
+    current_balance += eos;
+    buy(account, eos);
     auto delta = get_balance(account, sym).amount - beforebuyamount1;
+
+    current_balance += asset(10000, EOS_SYMBOL);
 
     eosio_assert(delta > 0, "Delta should be positive.");
 
-    sell(account, asset(delta, HPY_SYMBOL));
-    auto afterbuysell1 = get_balance(account, sym).amount;
+    //sell(account, asset(delta, HPY_SYMBOL));
+    //auto afterbuysell1 = get_balance(account, sym).amount;
 
-    eosio_assert(beforebuyamount1 == afterbuysell1, "not equal after sell1");
+    //eosio_assert(beforebuyamount1 == afterbuysell1, "not equal after sell1");
 
-
-    auto beforebuyamount2 = get_balance(account, sym).amount;
+    //auto beforebuyamount2 = get_balance(account, sym).amount;
     eos.amount /= 2;
-    buy(account, eos); 
-    buy(account, eos); 
-    auto delta2 = get_balance(account, sym).amount - beforebuyamount2;
-
-    eosio_assert(delta2 == delta, "not equal when buy 2 times.");
+    current_balance += eos;
+    buy(account, eos);
+    //auto dd = get_balance(account, sym).amount;
+    //auto d3 = dd - beforebuyamount1;
+    current_balance += eos;
+    buy(account, eos);
+    //auto delta2 = get_balance(account, sym).amount - dd;
+    
+    //eosio_assert(delta >= delta2, "Buy one and Buy two");
+    //eosio_assert(delta - delta2 > 10, "not equal when buy 2 times.");
+    eosio_assert(false, "Test end");
 }
 
 

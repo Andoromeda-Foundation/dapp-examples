@@ -32,9 +32,6 @@
       "name": "exchange_state",
       "base": "",
       "fields": [{
-          "name": "id",
-          "type": "uint64"
-        },{
           "name": "supply",
           "type": "asset"
         },{
