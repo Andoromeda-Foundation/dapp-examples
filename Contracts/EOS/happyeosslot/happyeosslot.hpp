@@ -149,7 +149,7 @@ class tradeableToken : public token {
                 }
             }
 
-            EOSLIB_SERIALIZE(exchange_state, (supply)(deposit))
+            EOSLIB_SERIALIZE(exchange_state, (id)(supply)(deposit))
         };
 
         typedef eosio::multi_index<N(market), exchange_state> market;
@@ -219,6 +219,7 @@ class happyeosslot : public tradeableToken {
             uint64_t id;            
             uint64_t roll_number;
             uint64_t primary_key() const { return id; }
+            EOSLIB_SERIALIZE(offer, (id)(roll_number))
         };
         typedef eosio::multi_index<N(result), result> results;
 
