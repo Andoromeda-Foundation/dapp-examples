@@ -6,3 +6,4 @@
 
 
 cleos -u http://kylin.meet.one:8888 set contract happyeosslot happyeosslot -p happyeosslot@active
+cleos -u http://api-kylin.eosasia.one push action happyeosslot test '["happyeosslot", "1.0000 EOS"]' -p happyeosslot@active
