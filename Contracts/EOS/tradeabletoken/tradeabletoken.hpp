@@ -4,8 +4,23 @@
  */
 #pragma once
 #include "../eosio.token/eosio.token.hpp"
+#include <cmath>
 
-class tradeableToken : public token {
+#define EOS_SYMBOL S(4, EOS)
+#define HPY_SYMBOL S(4, HPY)
+#define TOKEN_CONTRACT N(eosio.token)
+
+using std::string;
+using eosio::symbol_name;
+using eosio::asset;
+using eosio::symbol_type;
+using eosio::contract;
+using eosio::permission_level;
+using eosio::action;
+
+typedef double real_type;
+
+class tradeableToken : public eosio::token {
     public:
         tradeableToken(account_name self) : token(self), _market(_self, _self) {}
         void buy(const account_name account, asset eos);
@@ -91,5 +106,4 @@ class tradeableToken : public token {
 
         // tradeableToken
         const uint64_t init_quote_balance = 1 * 10000 * 10000ll; // 初始保证金 1 万 EOS。;  
-
 };
