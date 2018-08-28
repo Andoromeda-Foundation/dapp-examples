@@ -3,7 +3,7 @@
 #include <eosiolib/contract.hpp>
 #include <eosiolib/crypto.h>
 
-using namespace eosio;;
+using namespace eosio;
 
 #define EOS_SYMBOL S(4, EOS)
 #define TOKEN_CONTRACT N(eosio.token)
@@ -103,7 +103,7 @@ class slot_machine : public contract {
     global.modify(itr, 0, [&](auto &g) {
       g.hash = hash;
     });
-    /* refund
+    /* refund */
     uint64_t t = 12;
     for (; players.begin() != players.end() ;) {
       t--;
@@ -119,7 +119,7 @@ class slot_machine : public contract {
 		      .send();     
       }
       players.erase(itr);
-    }*/
+    }
   }
   
   private:

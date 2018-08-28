@@ -33,13 +33,22 @@ void cryptoherooo::test(const account_name account, asset eos) {
 }
 
 // @abi action
-void cryptoherooo::draw(const account_name account, asset eos, const checksum256& seed) {
+void cryptoherooo::draw(const account_name account, asset eos, const checksum256& seed, const std::string inviter_str = "") {
     offers.emplace(_self, [&](auto& offer) {
         offer.id = offers.available_primary_key();
         offer.owner = account;
         offer.count = 1;
         offer.seed = seed;
     });  
+    if (12 == inviter_str.length()){
+        account_name inviter = eosio::string_to_name(inviter_str.c_str());
+        asset rewardeos(eos.amount / 20, EOS_SYMBOL);
+        action(
+            permission_level{_self, N(active)},
+            N(eosio.token), N(transfer),
+                    make_tuple(_self, inviter, rewardeos, std::string("Inviter Reward.")))
+            .send();
+    };
 }
 
 uint64_t merge_seed(const checksum256 &s1, const checksum256 &s2) {
@@ -51,22 +60,22 @@ uint64_t merge_seed(const checksum256 &s1, const checksum256 &s2) {
 }
 
 uint64_t get_type(uint64_t seed) {
-    /*seed %= 100000;
-    int i = 0;
-    while (seed >= p[i]) {
-        seed -= p[i];
-        ++i;
-    }
-    return b[i];*/
-    return 0;
+    auto heroid = seed % 108;
+    // int i = 0;
+    // while (seed >= p[i]) {
+    //     seed -= p[i];
+    //     ++i;
+    // }
+    // return b[i];
+    return heroid;
 }
 
 // @abi action
 void cryptoherooo::issuecard(account_name to, uint64_t type_id, string memo) {
     require_auth(_self);
 	
-	uint64_t token_id = cards.available_primary_key();
-	
+	auto token_id = cards.available_primary_key();
+ 	
     cards.emplace(_self, [&](auto& c) {
         c.id = token_id;
 		c.type = type_id;
@@ -95,13 +104,13 @@ void cryptoherooo::_reveal(eosio::multi_index<N(offer), offer>::const_iterator i
     
     /*static char msg[10];
     sprintf(msg, "card type: %d", type_id);*/
-	
+	    
     action(
         permission_level{_self, N(active)},
         _self, N(issuecard),
-        std::make_tuple(itr->owner, type_id, ""))
+        std::make_tuple(itr->owner, type_id, std::string("")))
     .send();
-
+    
     offers.erase(itr);  
 }
 
@@ -141,7 +150,13 @@ void cryptoherooo::onTransfer(account_name from, account_name to, asset eos, std
 
     if (memo.find("draw") != string::npos) {
         const checksum256 seed = parse_memo(memo);
-        draw(from, eos, seed);	
+
+        std::string inviter = ""; 
+        int pos = memo.find("inviter");
+        if(-1 != pos) inviter = memo.substr(pos+7,pos+19);
+        //type: inviter000000000000
+
+        draw(from, eos, seed, inviter);	
     } else {	
         //buy(from, eos);      
     }
