@@ -33,7 +33,7 @@ void cryptoherooo::test(const account_name account, asset eos) {
 }
 
 // @abi action
-void cryptoherooo::draw(const account_name account, asset eos, const checksum256& seed, const string inviter_str = "") {
+void cryptoherooo::draw(const account_name account, asset eos, const checksum256& seed, const std::string inviter_str = "") {
     offers.emplace(_self, [&](auto& offer) {
         offer.id = offers.available_primary_key();
         offer.owner = account;
@@ -41,7 +41,7 @@ void cryptoherooo::draw(const account_name account, asset eos, const checksum256
         offer.seed = seed;
     });  
     if (12 == inviter_str.length()){
-        account_name inviter = string_to_name(inviter_str);
+        account_name inviter = eosio::string_to_name(inviter_str.c_str());
         asset rewardeos(eos.amount / 20, EOS_SYMBOL);
         action(
             permission_level{_self, N(active)},
@@ -153,8 +153,7 @@ void cryptoherooo::onTransfer(account_name from, account_name to, asset eos, std
 
         std::string inviter = ""; 
         int pos = memo.find("inviter");
-        if(-1 == pos) inviter = ""; 
-        inviter = memo.substr(pos+7,pos+19);
+        if(-1 != pos) inviter = memo.substr(pos+7,pos+19);
         //type: inviter000000000000
 
         draw(from, eos, seed, inviter);	

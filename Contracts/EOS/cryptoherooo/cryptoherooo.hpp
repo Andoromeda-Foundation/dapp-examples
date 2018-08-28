@@ -24,7 +24,7 @@ class cryptoherooo : public contract {
     void init(const checksum256& hash);
     void test(const account_name account, asset eos);    
 
-    void draw(const account_name account, asset eos, const checksum256& seed);
+    void draw(const account_name account, asset eos, const checksum256& seed, const std::string inviter_str);
     void reveal(const checksum256 &seed, const checksum256 &hash);
 
     void issuecard(account_name to, uint64_t type_id, string memo);
