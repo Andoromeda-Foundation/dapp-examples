@@ -161,10 +161,10 @@ class tradeableToken : public token {
         struct global {
             uint64_t id = 0;
             checksum256 hash; // hash of the game seed, 0 when idle.
-            uint64_t realBalance; // All balance in offer list.
+            uint64_t offerBalance; // All balance in offer list.
 
             uint64_t primary_key() const { return id; }
-            EOSLIB_SERIALIZE(global, (id)(hash))
+            EOSLIB_SERIALIZE(global, (id)(hash)(offerBalance))
         };
         typedef eosio::multi_index<N(global), global> global_index;
         global_index global;  

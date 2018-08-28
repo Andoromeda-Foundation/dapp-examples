@@ -49,7 +49,7 @@
           "name": "hash",
           "type": "checksum256"
         },{
-          "name": "realBalance",
+          "name": "offerBalance",
           "type": "uint64"
         }
       ]

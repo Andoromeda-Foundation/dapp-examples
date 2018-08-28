@@ -8,7 +8,7 @@ PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4LZ1u
 cleos create account eosio happyeosslot EOS6rRNxJWzdFtKH8MfsdvDci3vnC7QQhcRDA6a8PJV3tz8sEJYZz EOS76hCgV1mfHivJYb7wpbT4PNxxJricYdJCZVo8JtgNWyV4Td1h1
 eosiocpp -o happyeosslot/happyeosslot.wast happyeosslot/happyeosslot.cpp
 eosiocpp -g happyeosslot/happyeosslot.abi happyeosslot/happyeosslot.cpp
-cleos set contract happyeosslot happyeosslot -p happyeosslot@active
+cleos -u http://api-direct.eosasia.one set contract happyeosslot happyeosslot -p happyeosslot@active
 
 
 cleos -u http://api-direct.eosasia.one push action happyeosslot init '["0196d5b5d9ec1bc78ba927d2db2cb327d836f002601c77bd8c3f144a07ddc737"]' -p happyeosslot@active

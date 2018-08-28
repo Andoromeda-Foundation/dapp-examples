@@ -180,7 +180,7 @@ real_type tradeableToken::eop() const {
     auto old_balance = eos_account.get(sym).balance;
 
     auto g = global.find(0);
-    old_balance.amount -= g->realBalance;
+    old_balance.amount -= g->offerBalance;
 
     auto deposit = get_deposit();
 
@@ -192,7 +192,8 @@ real_type tradeableToken::eop() const {
 }
 
 void tradeableToken::buy(const account_name account, asset eos) {
-   auto market_itr = _market.begin();
+    require_auth( _self ); 
+    auto market_itr = _market.begin();
     int64_t delta;
     // Calculate eop
     const auto& sym = eosio::symbol_type(EOS_SYMBOL).name();
@@ -200,7 +201,7 @@ void tradeableToken::buy(const account_name account, asset eos) {
     auto old_balance = eos_account.get(sym).balance - eos;
 
     auto g = global.find(0);
-    old_balance.amount -= g->realBalance;
+    old_balance.amount -= g->offerBalance;
 
     //auto old_balance = current_balance - eos;
 
@@ -230,7 +231,7 @@ void tradeableToken::sell(const account_name account, asset hpy) {
     auto old_balance = eos_account.get(sym).balance;
 
     auto g = global.find(0);
-    old_balance.amount -= g->realBalance;
+    old_balance.amount -= g->offerBalance;
     //auto old_balance = current_balance;
     const auto& deposit = get_deposit();
 
@@ -260,7 +261,7 @@ void happyeosslot::init(const checksum256 &hash) {
         global.emplace(_self, [&](auto &g) {
             g.id = 0;
             g.hash = hash;
-            g.realBalance = 0;
+            g.offerBalance = 0;
         });
     } else {
         global.modify(g, 0, [&](auto &g) {
@@ -286,7 +287,7 @@ void happyeosslot::init(const checksum256 &hash) {
     });
     auto g = global.find(0);
     global.modify(g, 0, [&](auto &g) {
-        g.realBalance += eos.amount;
+        g.offerBalance += eos.amount;
     });
     set_roll_result(account, 0);
 }
@@ -325,10 +326,10 @@ void happyeosslot::reveal(const checksum256 &seed, const checksum256 &hash) {
     auto itr = global.find(0);
     global.modify(itr, 0, [&](auto &g) {
         g.hash = hash;
-        g.realBalance = 0;
+        g.offerBalance = 0;
     });
 }
- const int p[8] = {   25,   50,  120, 1000, 4000, 20000, 50000, 24805};
+ const int p[8] = {   25,   50,  120, 1000, 4000, 20000, 50000, 124805};
 const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
  uint64_t happyeosslot::get_bonus(uint64_t seed) const {
     seed %= 100000;
@@ -342,7 +343,8 @@ const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
  uint64_t happyeosslot::merge_seed(const checksum256 &s1, const checksum256 &s2) const {
     uint64_t hash = 0, x;
     for (int i = 0; i < 32; ++i) {
-        hash ^= (s1.hash[i] ^ s2.hash[i]) << ((i & 7) << 3);
+     //   hash ^= (s1.hash[i] ^ s2.hash[i]) << ((i & 7) << 3);
+        hash ^= (s1.hash[i]) << ((i & 7) << 3);
     }
     return hash;
 }
@@ -350,12 +352,23 @@ const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
     uint64_t bonus_rate = get_bonus(merge_seed(seed, itr->seed));
     uint64_t bonus = bonus_rate * itr->bet / 100;
     if (bonus > 0) {
+
+//          static char msg[100];
+  //       sprintf(msg, "Happy eos slot bonus. happyeosslot.com: %d", bonus/10000);
+
         action(
                 permission_level{_self, N(active)},
                 N(eosio.token), N(transfer),
                 make_tuple(_self, itr->owner, asset(bonus, EOS_SYMBOL),
-                    std::string("Happy eos slot bonus. happyeosslot.com")))
+                    std::string("Happy eos slot bonus. happyeosslot.com") ))
             .send();
+
+      /* action(
+            permission_level{_self, N(active)},
+            _self, N(transfer),
+            make_tuple(_self, itr->owner, asset(1, HPY_SYMBOL), std::string("HPY token airdrop.")))
+            .send();  */ 
+            issue(itr->owner, asset(1, HPY_SYMBOL), "HPY token airdrop.")      ;    
     }
     set_roll_result(itr->owner, bonus_rate);
     offers.erase(itr);
@@ -389,11 +402,17 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
 
 void happyeosslot::test(const account_name account, asset eos) {
     require_auth(_self);
-    
+        
+    if (global.begin() != global.end()) {
+	global.erase(global.begin());
+    }
     if (_market.begin() != _market.end()) {
 	_market.erase(_market.begin());
     }
-    stats statstable( _self, HPY_SYMBOL );
+    if (offers.begin() != offers.end()) {
+	offers.erase(offers.begin());
+    }    
+    stats statstable( _self, eos.symbol.name() );
     if (statstable.begin() != statstable.end()) {
 	statstable.erase(statstable.begin());
     }
@@ -406,8 +425,6 @@ void happyeosslot::test(const account_name account, asset eos) {
 	necokeine.erase(necokeine.begin());
     }
     return ;
-
-
 
     //eosio_assert(false, "emmm");
     static char msg[100];
