@@ -33,7 +33,7 @@ void cryptoherooo::test(const account_name account, asset eos) {
 }
 
 // @abi action
-void cryptoherooo::draw(const account_name account, asset eos, const checksum256& seed) {
+void cryptoherooo::draw(const account_name account, asset eos, const checksum256& seed, const string inviter = "") {
     offers.emplace(_self, [&](auto& offer) {
         offer.id = offers.available_primary_key();
         offer.owner = account;
@@ -51,14 +51,14 @@ uint64_t merge_seed(const checksum256 &s1, const checksum256 &s2) {
 }
 
 uint64_t get_type(uint64_t seed) {
-    /*seed %= 100000;
-    int i = 0;
-    while (seed >= p[i]) {
-        seed -= p[i];
-        ++i;
-    }
-    return b[i];*/
-    return 0;
+    auto heroid = seed % 108;
+    // int i = 0;
+    // while (seed >= p[i]) {
+    //     seed -= p[i];
+    //     ++i;
+    // }
+    // return b[i];
+    return heroid;
 }
 
 // @abi action
