@@ -23,42 +23,34 @@ typedef double real_type;
 class tradeableToken : public eosio::token {
     public:
         tradeableToken(account_name self) : token(self), _market(_self, _self) {}
+
+        void init();
+        void test();
         void buy(const account_name account, asset eos);
         void sell(const account_name account, asset hpy);
+        void onTransfer(account_name from, account_name to, asset eos, std::string memo);
 
         uint64_t get_deposit() const{
             auto market_itr = _market.begin();
             return market_itr->deposit.balance.amount - init_quote_balance;  
         }
 
-//        real_type raw_price() const{
-//            auto market_itr = _market.begin();
-//            return market_itr->get_price(); 
-//        }
-
-        //uint64_t get_my_balance() const;
-        real_type eop() const;    
-
         // @abi table market i64
         struct exchange_state {
             uint64_t id = 0;
-
             asset supply;
-
             struct connector {
                 asset balance;
-                double weight = .5;
+                double weight = .0005;
                 EOSLIB_SERIALIZE(connector, (balance)(weight))
-            };
-
-            connector deposit;
+            } deposit;
 
             uint64_t primary_key() const { return id; }
 
             asset convert_to_exchange(connector &c, asset in) {
                 real_type R(supply.amount);
                 real_type C(c.balance.amount + in.amount);
-                real_type F(c.weight / 1000.0);
+                real_type F(c.weight);
                 real_type T(in.amount);
                 real_type ONE(1.0);
 
@@ -74,7 +66,7 @@ class tradeableToken : public eosio::token {
             asset convert_from_exchange(connector &c, asset in) {
                 real_type R(supply.amount - in.amount);
                 real_type C(c.balance.amount);
-                real_type F(1000.0 / c.weight);
+                real_type F(1.0 / c.weight);
                 real_type E(in.amount);
                 real_type ONE(1.0);
 

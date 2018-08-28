@@ -1,0 +1,10 @@
+# Setup
+
+## Unlock Wallet
+cleos wallet unlock
+PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4LZ1u
+
+## Setup tradeabletoken Contract
+cleos create account eosio tradeabletoken EOS6rRNxJWzdFtKH8MfsdvDci3vnC7QQhcRDA6a8PJV3tz8sEJYZz EOS76hCgV1mfHivJYb7wpbT4PNxxJricYdJCZVo8JtgNWyV4Td1h1
+eosiocpp -o tradeabletoken/tradeabletoken.wast tradeabletoken/tradeabletoken.cpp
+eosiocpp -g tradeabletoken/tradeabletoken.abi tradeabletoken/tradeabletoken.cpp
