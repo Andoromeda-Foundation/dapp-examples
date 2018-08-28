@@ -22,6 +22,7 @@ eosiocpp -o happyeosslot2.0/happyeosslot.wast happyeosslot2.0/happyeosslot.cpp
 eosiocpp -g happyeosslot2.0/happyeosslot.abi happyeosslot2.0/happyeosslot.cpp
 
 
+eosiocpp -o tradeabletoken/tradeabletoken.wast tradeabletoken/tradeabletoken.cpp
 
 
 
