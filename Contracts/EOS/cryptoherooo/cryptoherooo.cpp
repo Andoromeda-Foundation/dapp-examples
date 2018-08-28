@@ -65,8 +65,8 @@ uint64_t get_type(uint64_t seed) {
 void cryptoherooo::issuecard(account_name to, uint64_t type_id, string memo) {
     require_auth(_self);
 	
-	uint64_t token_id = cards.available_primary_key();
-	
+	auto token_id = cards.available_primary_key();
+ 	
     cards.emplace(_self, [&](auto& c) {
         c.id = token_id;
 		c.type = type_id;
@@ -95,13 +95,13 @@ void cryptoherooo::_reveal(eosio::multi_index<N(offer), offer>::const_iterator i
     
     /*static char msg[10];
     sprintf(msg, "card type: %d", type_id);*/
-	
+	    
     action(
         permission_level{_self, N(active)},
         _self, N(issuecard),
-        std::make_tuple(itr->owner, type_id, ""))
+        std::make_tuple(itr->owner, type_id, std::string("")))
     .send();
-
+    
     offers.erase(itr);  
 }
 

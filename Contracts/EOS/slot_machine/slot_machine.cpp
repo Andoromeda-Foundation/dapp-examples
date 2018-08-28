@@ -3,7 +3,7 @@
 #include <eosiolib/contract.hpp>
 #include <eosiolib/crypto.h>
 
-using namespace eosio;;
+using namespace eosio;
 
 #define EOS_SYMBOL S(4, EOS)
 #define TOKEN_CONTRACT N(eosio.token)
