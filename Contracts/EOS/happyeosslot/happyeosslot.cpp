@@ -184,10 +184,6 @@ real_type tradeableToken::eop() const {
 
     auto deposit = get_deposit();
 
-    static char msg[100];
-    sprintf(msg, "EOP:%lld,%lld", old_balance.amount, deposit);
-    eosio_assert(false, msg);
-
     if (deposit > 0 && old_balance.amount > 0) {
         return real_type(old_balance.amount) / deposit;
     } else {
