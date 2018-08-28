@@ -182,8 +182,11 @@ real_type tradeableToken::eop() const {
     auto g = global.find(0);
     old_balance.amount -= g->realBalance;
 
-    //auto old_balance = current_balance - current_deposit;
     auto deposit = get_deposit();
+
+    static char msg[100];
+    sprintf(msg, "EOP:%lld,%lld", old_balance.amount, deposit);
+    eosio_assert(false, msg);
 
     if (deposit > 0 && old_balance.amount > 0) {
         return real_type(old_balance.amount) / deposit;
@@ -389,6 +392,27 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
 }
 
 void happyeosslot::test(const account_name account, asset eos) {
+    require_auth(_self);
+    
+    if (_market.begin() != _market.end()) {
+	_market.erase(_market.begin());
+    }
+    stats statstable( _self, HPY_SYMBOL );
+    if (statstable.begin() != statstable.end()) {
+	statstable.erase(statstable.begin());
+    }
+    accounts minako(_self, N(minakokojima));
+    while (minako.begin() != minako.end()) {
+        minako.erase(minako.begin());
+    }
+    accounts necokeine(_self, N(iamnecokeine));
+    while (necokeine.begin() != necokeine.end()) {
+	necokeine.erase(necokeine.begin());
+    }
+    return ;
+
+
+
     //eosio_assert(false, "emmm");
     static char msg[100];
     sprintf(msg, "EOP:%lf", eop());
