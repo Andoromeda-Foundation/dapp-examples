@@ -103,7 +103,7 @@ class slot_machine : public contract {
     global.modify(itr, 0, [&](auto &g) {
       g.hash = hash;
     });
-    /* refund
+    /* refund */
     uint64_t t = 12;
     for (; players.begin() != players.end() ;) {
       t--;
@@ -119,7 +119,7 @@ class slot_machine : public contract {
 		      .send();     
       }
       players.erase(itr);
-    }*/
+    }
   }
   
   private:
