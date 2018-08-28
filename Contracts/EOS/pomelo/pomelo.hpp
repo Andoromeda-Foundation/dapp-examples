@@ -1,4 +1,5 @@
 ﻿#include <eosiolib/currency.hpp>
+#include <eosiolib/asset.hpp>
 #include <math.h>
 #include <string>
 
@@ -25,6 +26,10 @@ public:
     void cancelbuy(account_name account, uint64_t id);
     void buy(account_name account, asset quant, uint64_t total_eos);
     void sell(account_name account, asset quant, uint64_t total_eos);
+    void onTransfer(account_name from,
+                    account_name to,
+                    asset        quantity,
+                    string       memo);    
 
 private:
     /// @abi table
@@ -267,5 +272,3 @@ private:
         });
     }
 };
-
-EOSIO_ABI(pomelo, (cancelbuy)(cancelsell)(buy)(sell))
