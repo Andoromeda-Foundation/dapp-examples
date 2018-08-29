@@ -104,26 +104,6 @@ class tradeableToken : public token {
 
             uint64_t primary_key() const { return id; }
 
-            // k = 
-            // 10000 000
-            // 100
-
-            // 100 / 1000 ,0000
-            // 0.00001
-
-            //  (2a+ xk) x / 2 = in
-            // (kxx + 2ax + -2in) = 0
-            //   (-a + sqrt(a^2 - 2kin))
-            //      -----------------     = 
-            //            -k 
-
-            // (-kxx + 2ax + -2in) = 0
-            // 
-
-            //  
-            // 10000 00
-            //
-
             asset convert_to_exchange(connector &c, asset in) {
                 // 增加输入的EOS
                 supply.amount += in.amount;
@@ -131,7 +111,7 @@ class tradeableToken : public token {
                 // supply.amount = (balance_amount / 250000 价格) * (balance_amount / 10000 数量) / 2
                 // supply.amount = balance_amount * balance_amount / 250000 / 10000 / 2.
                 // balance_amount = sqrt(supply.amount * 2 * 250000 * 10000);
-                real_type balance_amount = sqrt(supply.amount * 2 * 250000 * 10000);
+                int64_t balance_amount = sqrt(supply.amount * 2 * 250000 * 10000);
                 int64_t issued = balance_amount - c.balance.amount;
                 c.balance.amount = balance_amount;
                 supply.amount = (c.balance.amount * c.balance.amount) / 2 / 250000 / 10000;
