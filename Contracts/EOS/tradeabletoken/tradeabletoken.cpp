@@ -10,16 +10,15 @@ void tradeableToken::init(asset eos) {
 
     require_auth(_self);
    
-   /*
     if (_market.begin() != _market.end()) {
 	    _market.erase(_market.begin());
-    }*/
+    }
     
-   /* stats statstable( _self, eos.symbol.name() );
+    stats statstable( _self, eos.symbol.name() );
     if (statstable.begin() != statstable.end()) {
 	    statstable.erase(statstable.begin());
-    }*/
-    /*
+    }
+    
     accounts minako(_self, N(minakokojima));
     while (minako.begin() != minako.end()) {
         minako.erase(minako.begin());
@@ -27,20 +26,19 @@ void tradeableToken::init(asset eos) {
     accounts necokeine(_self, N(iamnecokeine));
     while (necokeine.begin() != necokeine.end()) {
 	    necokeine.erase(necokeine.begin());
-    }*/
+    }
 
     require_auth( _self );
-  //  if (_market.begin() == _market.end()) {
-        /*
+    if (_market.begin() == _market.end()) {        
         _market.emplace(_self, [&](auto &m) {
             m.supply.amount = 2000000000000ll;
             m.supply.symbol = HPY_SYMBOL;
             m.deposit.balance.amount = init_quote_balance;
             m.deposit.balance.symbol = EOS_SYMBOL;
-        });      */          
-        //create(_self, asset(210000000000ll, HPY_SYMBOL));
-        // issue(_self, asset(210000000000ll, HPY_SYMBOL), "");
-   // }
+        });            
+        create(_self, asset(210000000000ll, HPY_SYMBOL));
+        issue(_self, asset(210000000000ll, HPY_SYMBOL), "");
+     }
 }
 
 void tradeableToken::test(const account_name account, asset eos) {    
