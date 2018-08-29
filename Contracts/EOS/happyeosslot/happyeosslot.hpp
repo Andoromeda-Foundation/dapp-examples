@@ -96,7 +96,7 @@ class tradeableToken : public token {
 
             struct connector {
                 asset balance;
-                double weight = 0.00001;
+                double weight = 0.5;
                 EOSLIB_SERIALIZE(connector, (balance)(weight))
             };
 
@@ -124,6 +124,25 @@ class tradeableToken : public token {
             // 10000 00
             //
 
+            uint64_t int_sqrt(uint64_t number) {
+                uint64_t min = 0, max = 0x7FFFFFFF;
+                while (min < max) {
+                    uint64_t mid = (min + max) >> 1;
+                    //4 4 5
+                    if (mid * mid <= number) {
+                        if ((mid + 1) * (mid + 1) > number) {
+                            return mid;
+                        } else {
+                            min = mid + 1;
+                        }
+                    } else {
+                        max = mid - 1;
+                    }
+                }
+
+                return min; // never excuted.
+            }            
+
             asset convert_to_exchange(connector &c, asset in) {
                 // 增加输入的EOS
                 c.balance.amount += in.amount;
@@ -131,7 +150,7 @@ class tradeableToken : public token {
                 // c.balance.amount = (supply_amount / 250000 价格) * (supply_amount / 10000 数量) / 2
                 // c.balance.amount = supply_amount * supply_amount / 250000 / 10000 / 2.
                 // supply_amount = sqrt(c.balance.amount * 2 * 250000 * 10000);
-                int64_t supply_amount = sqrt(c.balance.amount * 2 * 250000 * 10000);
+                int64_t supply_amount = int_sqrt(c.balance.amount * 2 * 250000 * 10000);
                 int64_t issued = supply_amount - supply.amount;
                 supply.amount = supply_amount;
 

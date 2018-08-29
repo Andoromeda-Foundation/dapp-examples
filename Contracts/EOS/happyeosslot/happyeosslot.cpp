@@ -283,6 +283,9 @@ void happyeosslot::init(const checksum256 &hash) {
     }
 }
  void happyeosslot::bet(const account_name account, asset eos, const checksum256& seed) {
+
+//    require_auth( _self );
+
     offers.emplace(_self, [&](auto& offer) {
         offer.id = offers.available_primary_key();
         offer.owner = account;
@@ -406,7 +409,6 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
 
 void happyeosslot::test(const account_name account, asset eos) {
     require_auth(_self);
-
 
     //eosio_assert(false, "emmm");
     static char msg[10];
