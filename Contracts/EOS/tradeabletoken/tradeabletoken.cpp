@@ -85,6 +85,7 @@ void tradeableToken::buy(const account_name account, asset eos) {
     eosio_assert(delta > 0, "must reserve a positive amount");  
     asset hpy(delta, HPY_SYMBOL);
     // issue(account, hpy, "issue some new hpy");
+    
     action(
         permission_level{_self, N(active)},
         _self, N(transfer),
