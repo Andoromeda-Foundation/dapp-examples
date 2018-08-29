@@ -19,3 +19,14 @@ cleos -u https://api-kylin.eosasia.one set account permission tokentesteos activ
 
 
 cleos -u https://api-kylin.eosasia.one push action xinzhanghao1 init '[]' -p xinzhanghao1@active
+
+
+
+cleos -u https://api-kylin.eosasia.one get table xinzhanghao1 xinzhanghao1 accounts
+
+
+10000 0000 
+
+
+
+EOS

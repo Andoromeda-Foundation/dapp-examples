@@ -156,7 +156,7 @@ class tradeableToken : public token {
                 real_type a = supply.amount / 1000000;
                 real_type out = (-a + pow(a*a - 2*c.weight*in.amount, 0.5)) / (-c.weight);
            //     return asset(issued, supply.symbol);                
-
+                
                 return asset(out, c.balance.symbol);
             }
 

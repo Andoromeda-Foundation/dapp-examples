@@ -7,7 +7,7 @@ cleos set contract slot slot_machine -p slot@active
 
 cleos -u http://api-direct.eosasia.one  set contract happyeosslot slot_machine -p happyeosslot@active
 
-cleos -u http://api-direct.eosasia.one  get table happyeosslot happyeosslot players
+cleos -u http://api-direct.eosasia.one  get table happyeosslot happyeosslot player
 
 eosiocpp -o charger/charger.wast charger/charger.cpp
 eosiocpp -g charger/charger.abi charger/charger.cpp
