@@ -88,7 +88,7 @@ void tradeableToken::buy(const account_name account, asset eos) {
     action(
         permission_level{_self, N(active)},
         _self, N(transfer),
-        make_tuple(_self, account, hpy, std::string("new token"))
+        make_tuple(_self, account, hpy, std::string("new token."))
     ).send(); 
 }
 

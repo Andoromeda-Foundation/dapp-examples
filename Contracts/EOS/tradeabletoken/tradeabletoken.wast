@@ -86,7 +86,7 @@
  (data (i32.const 1776) "illegal convertion.\00")
  (data (i32.const 1808) "Must buy with positive Eos.\00")
  (data (i32.const 1840) "must reserve a positive amount\00")
- (data (i32.const 1872) "new token\00")
+ (data (i32.const 1872) "new token.\00")
  (data (i32.const 1888) "Invalid token transfer\00")
  (data (i32.const 1920) "buy\00")
  (data (i32.const 1936) "only core token allowed\00")
