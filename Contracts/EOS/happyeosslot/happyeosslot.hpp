@@ -104,25 +104,23 @@ class tradeableToken : public token {
 
             uint64_t primary_key() const { return id; }
 
-            // k = 
-            // 10000 000
-            // 100
-
-            // 100 / 1000 ,0000
-            // 0.00001
-
-            //  (2a+ xk) x / 2 = in
-            // (kxx + 2ax + -2in) = 0
-            //   (-a + sqrt(a^2 - 2kin))
-            //      -----------------     = 
-            //            -k 
-
-            // (-kxx + 2ax + -2in) = 0
-            // 
-
-            //  
-            // 10000 00
-            //
+            uint64_t int_sqrt(uint64_t number) {
+                uint64_t min = 0, max = 0x7FFFFFFF;
+                while (min < max) {
+                    uint64_t mid = (min + max) >> 1;
+                    4 4 5
+                    if (mid * mid <= number) {
+                        if ((mid + 1) * (mid + 1) > number) {
+                            return mid;
+                        } else {
+                            min = mid + 1;
+                        }
+                    } else {
+                        max = mid - 1;
+                    }
+                    return min; // never excuted.
+                }
+            }
 
             uint64_t int_sqrt(uint64_t number) {
                 uint64_t min = 0, max = 0x7FFFFFFF;
