@@ -125,39 +125,30 @@ class tradeableToken : public token {
             //
 
             asset convert_to_exchange(connector &c, asset in) {
-                /*real_type R(supply.amount);
-                real_type C(c.balance.amount + in.amount);
-                real_type F(c.weight / 1000.0);
-                real_type T(in.amount);
-                real_type ONE(1.0);
+                // 增加输入的EOS
+                supply.amount += in.amount;
+                // 计算增加输入之后的新balance, 按照公式
+                // supply.amount = (balance_amount / 250000 价格) * (balance_amount / 10000 数量) / 2
+                // supply.amount = balance_amount * balance_amount / 250000 / 10000 / 2.
+                // balance_amount = sqrt(supply.amount * 2 * 250000 * 10000);
+                real_type balance_amount = sqrt(supply.amount * 2 * 250000 * 10000);
+                int64_t issued = balance_amount - c.balance.amount;
+                c.balance.amount = balance_amount;
+                supply.amount = (b.balance.amount * b.balance.amount) / 2 / 250000 / 10000;
 
-                real_type E = -R * (ONE - pow(ONE + T / C, F));
-                int64_t issued = int64_t(E);
-
-                supply.amount += issued;
-                c.balance.amount += in.amount;*/
-                real_type a = supply.amount / 1000000;
-                real_type issued = (-a + pow(a*a + 2*c.weight*in.amount, 0.5)) / c.weight;
                 return asset(issued, supply.symbol);
             }
 
             asset convert_from_exchange(connector &c, asset in) {
-                /*eal_type R(supply.amount - in.amount);
-                real_type C(c.balance.amount);
-                real_type F(1000.0 / c.weight);
-                real_type E(in.amount);
-                real_type ONE(1.0);
-
-                real_type T = C * (pow(ONE + E / R, F) - ONE);
-                int64_t out = int64_t(T);
-
-                supply.amount -= in.amount;
-                c.balance.amount -= out;*/
-                real_type a = supply.amount / 1000000;
-                real_type out = (-a + pow(a*a - 2*c.weight*in.amount, 0.5)) / (-c.weight);
-           //     return asset(issued, supply.symbol);                
-
-                return asset(out, c.balance.symbol);
+                // 每出售250000个HPY价格提升1EOS
+                // (((b.balance.amount / 250000) 上底 + ((b.balance.amount - in.amount) /250000)下底))
+                //  * (in.amount / 10000高) / 2 * 10000(EOS兑换)
+                // 现在限制发行250000 HPY 所以这里不会整数溢出
+                int64_t eos_return = ((b.balance.amount << 1 - in.amount) * in.amount / 500000 / 10000);
+                c.balance.amount -= in.amount;
+                //supply.amount -= eos_return;
+                supply.amount = (b.balance.amount * b.balance.amount) / 2 / 250000 / 10000;
+                return asset(eos_return, c.balance.symbol);
             }
 
             asset convert(asset from, symbol_type to) {
@@ -178,7 +169,7 @@ class tradeableToken : public token {
         market _market;
 
         // tradeableToken
-        const uint64_t init_quote_balance = 1 * 10000 * 10000ll; // 初始保证金 1 万 EOS。;
+        const uint64_t init_quote_balance = 1250 * 10000ll; // 初始保证金 1250 EOS;
 
     protected:
         // @abi table global i64

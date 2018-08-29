@@ -270,12 +270,13 @@ void happyeosslot::init(const checksum256 &hash) {
     }
     if (_market.begin() == _market.end()) {
         _market.emplace(_self, [&](auto &m) {
-            m.supply.amount = 2000000000000ll;
+            m.supply.amount = 25000ll * 10000ll; // 最初25000个HPY是沉默资金
             m.supply.symbol = HPY_SYMBOL;
-            m.deposit.balance.amount = init_quote_balance;
+            m.deposit.balance.amount = init_quote_balance; // 
             m.deposit.balance.symbol = EOS_SYMBOL;
-        });                
-        create(_self, asset(210000000000ll, HPY_SYMBOL));
+        });
+        // 这里限制发行HPY为225000 个HPY 修改上限注意修改几个整形溢出的问题。
+        create(_self, asset(2250000000ll, HPY_SYMBOL));
     }
 }
  void happyeosslot::bet(const account_name account, asset eos, const checksum256& seed) {
