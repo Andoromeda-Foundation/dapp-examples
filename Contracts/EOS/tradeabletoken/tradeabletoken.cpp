@@ -55,7 +55,7 @@ void tradeableToken::test(const account_name account, asset eos) {
     auto beforebuyamount1 = get_balance(account, sym).amount;
     buy(account, eos);
     auto delta = get_balance(account, sym).amount - beforebuyamount1;
-    eosio_assert(delta > 0, "Delta should be positive.");
+    eosio_assert(delta > 0, "delta should be positive.");
 
     sell(account, asset(delta, HPY_SYMBOL));
     auto afterbuysell1 = get_balance(account, sym).amount;
