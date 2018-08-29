@@ -134,20 +134,20 @@ class tradeableToken : public token {
                 real_type balance_amount = sqrt(supply.amount * 2 * 250000 * 10000);
                 int64_t issued = balance_amount - c.balance.amount;
                 c.balance.amount = balance_amount;
-                supply.amount = (b.balance.amount * b.balance.amount) / 2 / 250000 / 10000;
+                supply.amount = (c.balance.amount * c.balance.amount) / 2 / 250000 / 10000;
 
                 return asset(issued, supply.symbol);
             }
 
             asset convert_from_exchange(connector &c, asset in) {
                 // 每出售250000个HPY价格提升1EOS
-                // (((b.balance.amount / 250000) 上底 + ((b.balance.amount - in.amount) /250000)下底))
+                // (((c.balance.amount / 250000) 上底 + ((c.balance.amount - in.amount) /250000)下底))
                 //  * (in.amount / 10000高) / 2 * 10000(EOS兑换)
                 // 现在限制发行250000 HPY 所以这里不会整数溢出
-                int64_t eos_return = ((b.balance.amount << 1 - in.amount) * in.amount / 500000 / 10000);
+                int64_t eos_return = (((c.balance.amount << 1) - in.amount) * in.amount / 500000 / 10000);
                 c.balance.amount -= in.amount;
                 //supply.amount -= eos_return;
-                supply.amount = (b.balance.amount * b.balance.amount) / 2 / 250000 / 10000;
+                supply.amount = (c.balance.amount * c.balance.amount) / 2 / 250000 / 10000;
                 return asset(eos_return, c.balance.symbol);
             }
 
