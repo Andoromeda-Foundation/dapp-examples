@@ -192,7 +192,7 @@ real_type tradeableToken::eop() const {
 }
 
 void tradeableToken::buy(const account_name account, asset eos) {
-    require_auth( _self ); 
+//    require_auth( _self ); 
     auto market_itr = _market.begin();
     int64_t delta;
     // Calculate eop
@@ -219,6 +219,9 @@ void tradeableToken::buy(const account_name account, asset eos) {
     asset hpy(delta, HPY_SYMBOL);
     issue(account, hpy, "issue some new hpy");
 }
+
+// 250000  0.1
+// 
 
 // @abi action
 void tradeableToken::sell(const account_name account, asset hpy) {
@@ -369,7 +372,7 @@ const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
             _self, N(transfer),
             make_tuple(_self, itr->owner, asset(1, HPY_SYMBOL), std::string("HPY token airdrop.")))
             .send();  */ 
-            issue(itr->owner, asset(1, HPY_SYMBOL), "HPY token airdrop.")      ;    
+            issue(itr->owner, asset(1, HPY_SYMBOL), "HPY token airdrop.");    
     }
     set_roll_result(itr->owner, bonus_rate);
     offers.erase(itr);
@@ -403,6 +406,14 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
 
 void happyeosslot::test(const account_name account, asset eos) {
     require_auth(_self);
+
+
+    //eosio_assert(false, "emmm");
+    static char msg[10];
+    sprintf(msg, "EOP: %f", float(eop()));
+    eosio_assert(false, msg);
+    return;
+ 
         
     if (global.begin() != global.end()) {
 	global.erase(global.begin());
@@ -413,6 +424,7 @@ void happyeosslot::test(const account_name account, asset eos) {
     if (offers.begin() != offers.end()) {
 	offers.erase(offers.begin());
     }    
+    
     stats statstable( _self, eos.symbol.name() );
     if (statstable.begin() != statstable.end()) {
 	statstable.erase(statstable.begin());
@@ -425,12 +437,12 @@ void happyeosslot::test(const account_name account, asset eos) {
     while (necokeine.begin() != necokeine.end()) {
 	necokeine.erase(necokeine.begin());
     }
+    accounts tmonomonomon(_self, N(tmonomonomon));
+    while (tmonomonomon.begin() != tmonomonomon.end()) {
+	tmonomonomon.erase(tmonomonomon.begin());
+    }    
     return ;
 
-    //eosio_assert(false, "emmm");
-    static char msg[100];
-    sprintf(msg, "EOP:%lf", eop());
-    eosio_assert(false, msg);
 
     const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();
     //current_balance = asset(0, EOS_SYMBOL);

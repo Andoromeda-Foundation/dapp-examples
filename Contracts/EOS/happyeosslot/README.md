@@ -118,6 +118,7 @@ cleos -u https://api-kylin.eosasia.one get table ceshiyongeos tmonomonomon accou
 // 
 
 
+cleos -u https://api-kylin.eosasia.one push action happyeosslot test '"tmonomonomon", ["33.6436 HPY"]' -p happyeosslot@active
 
 cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["tmonomonomon", "ceshiyongeos", "9.0000 EOS", "buy"]' -p tmonomonomon@active
 

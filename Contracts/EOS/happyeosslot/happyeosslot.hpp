@@ -124,28 +124,28 @@ class tradeableToken : public token {
 
             asset convert_to_exchange(connector &c, asset in) {
                 // 增加输入的EOS
-                supply.amount += in.amount;
-                // 计算增加输入之后的新balance, 按照公式
-                // supply.amount = (balance_amount / 250000 价格) * (balance_amount / 10000 数量) / 2
-                // supply.amount = balance_amount * balance_amount / 250000 / 10000 / 2.
-                // balance_amount = sqrt(supply.amount * 2 * 250000 * 10000);
-                int64_t balance_amount = int_sqrt(supply.amount * 2 * 250000 * 10000);
-                int64_t issued = balance_amount - c.balance.amount;
-                c.balance.amount = balance_amount;
-                supply.amount = (c.balance.amount * c.balance.amount) / 2 / 250000 / 10000;
+                c.balance.amount += in.amount;
+                // 计算增加输入之后的新supply, 按照公式
+                // c.balance.amount = (supply_amount / 250000 价格) * (supply_amount / 10000 数量) / 2
+                // c.balance.amount = supply_amount * supply_amount / 250000 / 10000 / 2.
+                // supply_amount = sqrt(c.balance.amount * 2 * 250000 * 10000);
+                int64_t supply_amount = sqrt(c.balance.amount * 2 * 250000 * 10000);
+                int64_t issued = supply_amount - supply.amount;
+                supply.amount = supply_amount;
 
+                c.balance.amount = (supply.amount * supply.amount) / 2 / 250000 / 10000;
                 return asset(issued, supply.symbol);
             }
 
             asset convert_from_exchange(connector &c, asset in) {
                 // 每出售250000个HPY价格提升1EOS
-                // (((c.balance.amount / 250000) 上底 + ((c.balance.amount - in.amount) /250000)下底))
+                // (((supply.amount / 250000) 上底 + ((supply.amount - in.amount) /250000)下底))
                 //  * (in.amount / 10000高) / 2 * 10000(EOS兑换)
                 // 现在限制发行250000 HPY 所以这里不会整数溢出
-                int64_t eos_return = (((c.balance.amount << 1) - in.amount) * in.amount / 500000 / 10000);
-                c.balance.amount -= in.amount;
+                int64_t eos_return = (((supply.amount << 1) - in.amount) * in.amount / 500000 / 10000);
+                supply.amount -= in.amount;
                 //supply.amount -= eos_return;
-                supply.amount = (c.balance.amount * c.balance.amount) / 2 / 250000 / 10000;
+                c.balance.amount = (supply.amount * supply.amount) / 2 / 250000 / 10000;
                 return asset(eos_return, c.balance.symbol);
             }
 
@@ -177,7 +177,7 @@ class tradeableToken : public token {
             uint64_t offerBalance; // All balance in offer list.
 
             uint64_t primary_key() const { return id; }
-            EOSLIB_SERIALIZE(global, (id)(hash)(offerBalance))
+            EOSLIB_SERIALIZE(global, (id)(hash)(offerBalance)) 
         };
         typedef eosio::multi_index<N(global), global> global_index;
         global_index global;  
