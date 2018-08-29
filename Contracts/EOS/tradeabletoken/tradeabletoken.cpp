@@ -13,47 +13,41 @@ void tradeableToken::init() {
     }
 }
 
-void tradeableToken::test() {    
+void tradeableToken::test(const account_name account, asset eos) {    
 
-    //eosio_assert(false, "emmm");
-    static char msg[100];
-    sprintf(msg, "EOP:%lf", eop());
-    eosio_assert(false, msg);
+    // //eosio_assert(false, "emmm");
+    // static char msg[100];
+    // eosio_assert(false, msg);
 
-    const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();
-    //current_balance = asset(0, EOS_SYMBOL);
-    current_balance = asset(10000, EOS_SYMBOL);
-    buy(account, asset(10000, EOS_SYMBOL));
-    eos.amount *=2;
+    // const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();
+    // //current_balance = asset(0, EOS_SYMBOL);
 
-    auto beforebuyamount1 = get_balance(account, sym).amount;
+    // buy(account, asset(10000, EOS_SYMBOL));
+    // eos.amount *=2;
 
-    current_balance += eos;
-    buy(account, eos);
-    auto delta = get_balance(account, sym).amount - beforebuyamount1;
+    // auto beforebuyamount1 = get_balance(account, sym).amount;
 
-    current_balance += asset(10000, EOS_SYMBOL);
+    // buy(account, eos);
+    // auto delta = get_balance(account, sym).amount - beforebuyamount1;
 
-    eosio_assert(delta > 0, "Delta should be positive.");
+    // eosio_assert(delta > 0, "Delta should be positive.");
 
-    //sell(account, asset(delta, HPY_SYMBOL));
-    //auto afterbuysell1 = get_balance(account, sym).amount;
+    // //sell(account, asset(delta, HPY_SYMBOL));
+    // //auto afterbuysell1 = get_balance(account, sym).amount;
 
-    //eosio_assert(beforebuyamount1 == afterbuysell1, "not equal after sell1");
+    // //eosio_assert(beforebuyamount1 == afterbuysell1, "not equal after sell1");
 
-    //auto beforebuyamount2 = get_balance(account, sym).amount;
-    eos.amount /= 2;
-    current_balance += eos;
-    buy(account, eos);
-    //auto dd = get_balance(account, sym).amount;
-    //auto d3 = dd - beforebuyamount1;
-    current_balance += eos;
-    buy(account, eos);
-    //auto delta2 = get_balance(account, sym).amount - dd;
+    // //auto beforebuyamount2 = get_balance(account, sym).amount;
+    // eos.amount /= 2;
+    // buy(account, eos);
+    // //auto dd = get_balance(account, sym).amount;
+    // //auto d3 = dd - beforebuyamount1;
+    // buy(account, eos);
+    // //auto delta2 = get_balance(account, sym).amount - dd;
     
-    //eosio_assert(delta >= delta2, "Buy one and Buy two");
-    //eosio_assert(delta - delta2 > 10, "not equal when buy 2 times.");
-    eosio_assert(false, "Test end");
+    // //eosio_assert(delta >= delta2, "Buy one and Buy two");
+    // //eosio_assert(delta - delta2 > 10, "not equal when buy 2 times.");
+    // eosio_assert(false, "Test end");
 }
 
 void tradeableToken::buy(const account_name account, asset eos) {    

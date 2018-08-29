@@ -25,7 +25,7 @@ class tradeableToken : public eosio::token {
         tradeableToken(account_name self) : token(self), _market(_self, _self) {}
 
         void init();
-        void test();
+        void test(const account_name account, asset eos);
         void buy(const account_name account, asset eos);
         void sell(const account_name account, asset hpy);
         void onTransfer(account_name from, account_name to, asset eos, std::string memo);
