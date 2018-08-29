@@ -1,6 +1,33 @@
 #include "tradeabletoken.hpp"
 
+
+/*void tradeableToken::clear() {
+
+}
+*/
+
 void tradeableToken::init() {    
+
+    require_auth(_self);
+   
+    if (_market.begin() != _market.end()) {
+	    _market.erase(_market.begin());
+    }
+    /*
+    stats statstable( _self, eos.symbol.name() );
+    if (statstable.begin() != statstable.end()) {
+	    statstable.erase(statstable.begin());
+    }*/
+    /*
+    accounts minako(_self, N(minakokojima));
+    while (minako.begin() != minako.end()) {
+        minako.erase(minako.begin());
+    }
+    accounts necokeine(_self, N(iamnecokeine));
+    while (necokeine.begin() != necokeine.end()) {
+	    necokeine.erase(necokeine.begin());
+    }*/
+
     require_auth( _self );
     if (_market.begin() == _market.end()) {
         _market.emplace(_self, [&](auto &m) {

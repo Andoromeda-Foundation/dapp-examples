@@ -96,7 +96,7 @@ class tradeableToken : public token {
 
             struct connector {
                 asset balance;
-                double weight = .5;
+                double weight = 0.00001;
                 EOSLIB_SERIALIZE(connector, (balance)(weight))
             };
 
@@ -104,8 +104,28 @@ class tradeableToken : public token {
 
             uint64_t primary_key() const { return id; }
 
+            // k = 
+            // 10000 000
+            // 100
+
+            // 100 / 1000 ,0000
+            // 0.00001
+
+            //  (2a+ xk) x / 2 = in
+            // (kxx + 2ax + -2in) = 0
+            //   (-a + sqrt(a^2 - 2kin))
+            //      -----------------     = 
+            //            -k 
+
+            // (-kxx + 2ax + -2in) = 0
+            // 
+
+            //  
+            // 10000 00
+            //
+
             asset convert_to_exchange(connector &c, asset in) {
-                real_type R(supply.amount);
+                /*real_type R(supply.amount);
                 real_type C(c.balance.amount + in.amount);
                 real_type F(c.weight / 1000.0);
                 real_type T(in.amount);
@@ -115,13 +135,14 @@ class tradeableToken : public token {
                 int64_t issued = int64_t(E);
 
                 supply.amount += issued;
-                c.balance.amount += in.amount;
-
+                c.balance.amount += in.amount;*/
+                real_type a = supply.amount / 1000000;
+                real_type issued = (-a + pow(a*a + 2*c.weight*in.amount, 0.5)) / c.weight;
                 return asset(issued, supply.symbol);
             }
 
             asset convert_from_exchange(connector &c, asset in) {
-                real_type R(supply.amount - in.amount);
+                /*eal_type R(supply.amount - in.amount);
                 real_type C(c.balance.amount);
                 real_type F(1000.0 / c.weight);
                 real_type E(in.amount);
@@ -131,7 +152,10 @@ class tradeableToken : public token {
                 int64_t out = int64_t(T);
 
                 supply.amount -= in.amount;
-                c.balance.amount -= out;
+                c.balance.amount -= out;*/
+                real_type a = supply.amount / 1000000;
+                real_type out = (-a + pow(a*a - 2*c.weight*in.amount, 0.5)) / (-c.weight);
+           //     return asset(issued, supply.symbol);                
 
                 return asset(out, c.balance.symbol);
             }

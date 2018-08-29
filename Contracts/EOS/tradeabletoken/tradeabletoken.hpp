@@ -40,13 +40,17 @@ class tradeableToken : public eosio::token {
             uint64_t id = 0;
             asset supply;
             struct connector {
-                asset balance;
+                asset balance;  
                 double weight = .0005;
                 EOSLIB_SERIALIZE(connector, (balance)(weight))
+                real_type price() {
+                    return balance.amount / 100000; 
+                }
             } deposit;
 
             uint64_t primary_key() const { return id; }
 
+            /*
             asset convert_to_exchange(connector &c, asset in) {
                 real_type R(supply.amount);
                 real_type C(c.balance.amount + in.amount);
@@ -62,8 +66,33 @@ class tradeableToken : public eosio::token {
 
                 return asset(issued, supply.symbol);
             }
+            */
+            asset convert_to_exchange(connector &c, asset in) {
+                real_type a = c.price();
+                real_type out = (-a + pow(a*a + 2*c.weight*in.amount, 0.5)) / (c.weight);
+                return asset(out, c.balance.symbol);
+            }
 
             asset convert_from_exchange(connector &c, asset in) {
+                real_type a = c.price();
+                real_type out = (-a + pow(a*a - 2*c.weight*in.amount, 0.5)) / (-c.weight);
+                return asset(out, c.balance.symbol);    
+                /*real_type R(supply.amount - in.amount);
+                real_type C(c.balance.amount);
+                real_type F(1.0 / c.weight);
+                real_type E(in.amount);
+                real_type ONE(1.0);
+
+                real_type T = C * (pow(ONE + E / R, F) - ONE);
+                int64_t out = int64_t(T);
+
+                supply.amount -= in.amount;
+                c.balance.amount -= out;
+
+                return asset(out, c.balance.symbol);*/
+            }            
+
+            /*asset convert_from_exchange(connector &c, asset in) {
                 real_type R(supply.amount - in.amount);
                 real_type C(c.balance.amount);
                 real_type F(1.0 / c.weight);
@@ -78,6 +107,7 @@ class tradeableToken : public eosio::token {
 
                 return asset(out, c.balance.symbol);
             }
+            */
 
             asset convert(asset from, symbol_type to) {
                 if (from.symbol == EOS_SYMBOL && to == HPY_SYMBOL) {
