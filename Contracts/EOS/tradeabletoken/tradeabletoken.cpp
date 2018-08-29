@@ -6,19 +6,19 @@
 }
 */
 
-void tradeableToken::init() {    
+void tradeableToken::init(asset eos) {    
 
     require_auth(_self);
    
     if (_market.begin() != _market.end()) {
 	    _market.erase(_market.begin());
     }
-    /*
-    stats statstable( _self, eos.symbol.name() );
+    
+   /* stats statstable( _self, eos.symbol.name() );
     if (statstable.begin() != statstable.end()) {
 	    statstable.erase(statstable.begin());
     }*/
-    /*
+    
     accounts minako(_self, N(minakokojima));
     while (minako.begin() != minako.end()) {
         minako.erase(minako.begin());
@@ -26,7 +26,7 @@ void tradeableToken::init() {
     accounts necokeine(_self, N(iamnecokeine));
     while (necokeine.begin() != necokeine.end()) {
 	    necokeine.erase(necokeine.begin());
-    }*/
+    }
 
     require_auth( _self );
     if (_market.begin() == _market.end()) {
@@ -37,6 +37,7 @@ void tradeableToken::init() {
             m.deposit.balance.symbol = EOS_SYMBOL;
         });                
         create(_self, asset(210000000000ll, HPY_SYMBOL));
+        issue(_self, asset(210000000000ll, HPY_SYMBOL), "");
     }
 }
 
@@ -83,7 +84,12 @@ void tradeableToken::buy(const account_name account, asset eos) {
     });
     eosio_assert(delta > 0, "must reserve a positive amount");  
     asset hpy(delta, HPY_SYMBOL);
-    issue(account, hpy, "issue some new hpy");
+    // issue(account, hpy, "issue some new hpy");
+    action(
+        permission_level{_self, N(active)},
+        _self, N(transfer),
+        make_tuple(_self, account, hpy, std::string("new token"))
+    ).send(); 
 }
 
 void tradeableToken::sell(const account_name account, asset hpy) {    
@@ -145,7 +151,7 @@ void tradeableToken::onTransfer(account_name from, account_name to, asset token,
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-// EOSIO_WAST(tradeableToken, (onTransfer)(transfer)(init)(test))
+EOSIO_WAST(tradeableToken, (onTransfer)(transfer)(init)(test))
 
 // generate .abi file
-EOSIO_ABI(tradeableToken, (transfer)(init)(test))
+// EOSIO_ABI(tradeableToken, (transfer)(issue)(init)(test))

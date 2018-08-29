@@ -3,11 +3,11 @@
  *  @copyright Andoromeda
  */
 #pragma once
-#include "../eosio.token/eosio.token.hpp"
+#include "../eosio.token/eosio.token.cpp"
 #include <cmath>
 
 #define EOS_SYMBOL S(4, EOS)
-#define HPY_SYMBOL S(4, HPY)
+#define HPY_SYMBOL S(4, HPY2)
 #define TOKEN_CONTRACT N(eosio.token)
 
 using std::string;
@@ -24,7 +24,7 @@ class tradeableToken : public eosio::token {
     public:
         tradeableToken(account_name self) : token(self), _market(_self, _self) {}
 
-        void init();
+        void init(asset eos);
         void test(const account_name account, asset eos);
         void buy(const account_name account, asset eos);
         void sell(const account_name account, asset hpy);
