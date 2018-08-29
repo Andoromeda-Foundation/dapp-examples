@@ -1,9 +1,71 @@
 #include "tradeabletoken.hpp"
 
 void tradeableToken::init() {    
+    require_auth( _self );
+    auto g = global.find(0);
+    if (g == global.end()) {
+        global.emplace(_self, [&](auto &g) {
+            g.id = 0;
+            g.hash = hash;
+            g.offerBalance = 0;
+        });
+    } else {
+        global.modify(g, 0, [&](auto &g) {
+            g.hash = hash;
+        });
+    }
+    if (_market.begin() == _market.end()) {
+        _market.emplace(_self, [&](auto &m) {
+            m.supply.amount = 2000000000000ll;
+            m.supply.symbol = HPY_SYMBOL;
+            m.deposit.balance.amount = init_quote_balance;
+            m.deposit.balance.symbol = EOS_SYMBOL;
+        });                
+        create(_self, asset(210000000000ll, HPY_SYMBOL));
+    }
 }
 
 void tradeableToken::test() {    
+
+    //eosio_assert(false, "emmm");
+    static char msg[100];
+    sprintf(msg, "EOP:%lf", eop());
+    eosio_assert(false, msg);
+
+    const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();
+    //current_balance = asset(0, EOS_SYMBOL);
+    current_balance = asset(10000, EOS_SYMBOL);
+    buy(account, asset(10000, EOS_SYMBOL));
+    eos.amount *=2;
+
+    auto beforebuyamount1 = get_balance(account, sym).amount;
+
+    current_balance += eos;
+    buy(account, eos);
+    auto delta = get_balance(account, sym).amount - beforebuyamount1;
+
+    current_balance += asset(10000, EOS_SYMBOL);
+
+    eosio_assert(delta > 0, "Delta should be positive.");
+
+    //sell(account, asset(delta, HPY_SYMBOL));
+    //auto afterbuysell1 = get_balance(account, sym).amount;
+
+    //eosio_assert(beforebuyamount1 == afterbuysell1, "not equal after sell1");
+
+    //auto beforebuyamount2 = get_balance(account, sym).amount;
+    eos.amount /= 2;
+    current_balance += eos;
+    buy(account, eos);
+    //auto dd = get_balance(account, sym).amount;
+    //auto d3 = dd - beforebuyamount1;
+    current_balance += eos;
+    buy(account, eos);
+    //auto delta2 = get_balance(account, sym).amount - dd;
+    
+    //eosio_assert(delta >= delta2, "Buy one and Buy two");
+    //eosio_assert(delta - delta2 > 10, "not equal when buy 2 times.");
+    eosio_assert(false, "Test end");
 }
 
 void tradeableToken::buy(const account_name account, asset eos) {    
