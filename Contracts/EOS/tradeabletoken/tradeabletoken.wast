@@ -77,7 +77,7 @@
  (data (i32.const 1520) "cannot increment end iterator\00")
  (data (i32.const 1552) "minakokojima\00")
  (data (i32.const 1568) "iamnecokeine\00")
- (data (i32.const 1600) "Delta should be positive.\00")
+ (data (i32.const 1600) "delta should be positive.\00")
  (data (i32.const 1632) "not equal after sell1\00")
  (data (i32.const 1664) "Must burn a positive amount\00")
  (data (i32.const 1696) "eosio.token\00")
