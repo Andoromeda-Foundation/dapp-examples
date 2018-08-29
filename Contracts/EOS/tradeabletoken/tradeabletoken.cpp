@@ -46,23 +46,19 @@ void tradeableToken::test(const account_name account, asset eos) {
     // static char msg[100];
     // eosio_assert(false, msg);
 
-    // const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();
-    // //current_balance = asset(0, EOS_SYMBOL);
+    const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();
+    auto current_balance = asset(0, EOS_SYMBOL);
+    buy(account, asset(10000, EOS_SYMBOL));
+    
+    eos.amount *=2;
+    auto beforebuyamount1 = get_balance(account, sym).amount;
+    buy(account, eos);
+    auto delta = get_balance(account, sym).amount - beforebuyamount1;
+    eosio_assert(delta > 0, "Delta should be positive.");
 
-    // buy(account, asset(10000, EOS_SYMBOL));
-    // eos.amount *=2;
-
-    // auto beforebuyamount1 = get_balance(account, sym).amount;
-
-    // buy(account, eos);
-    // auto delta = get_balance(account, sym).amount - beforebuyamount1;
-
-    // eosio_assert(delta > 0, "Delta should be positive.");
-
-    // //sell(account, asset(delta, HPY_SYMBOL));
-    // //auto afterbuysell1 = get_balance(account, sym).amount;
-
-    // //eosio_assert(beforebuyamount1 == afterbuysell1, "not equal after sell1");
+    sell(account, asset(delta, HPY_SYMBOL));
+    auto afterbuysell1 = get_balance(account, sym).amount;
+    eosio_assert(beforebuyamount1 == afterbuysell1, "not equal after sell1");
 
     // //auto beforebuyamount2 = get_balance(account, sym).amount;
     // eos.amount /= 2;
