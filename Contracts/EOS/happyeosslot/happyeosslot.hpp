@@ -108,7 +108,6 @@ class tradeableToken : public token {
                 uint64_t min = 0, max = 0x7FFFFFFF;
                 while (min < max) {
                     uint64_t mid = (min + max) >> 1;
-                    4 4 5
                     if (mid * mid <= number) {
                         if ((mid + 1) * (mid + 1) > number) {
                             return mid;
@@ -118,28 +117,10 @@ class tradeableToken : public token {
                     } else {
                         max = mid - 1;
                     }
-                    return min; // never excuted.
-                }
-            }
 
-            uint64_t int_sqrt(uint64_t number) {
-                uint64_t min = 0, max = 0x7FFFFFFF;
-                while (min < max) {
-                    uint64_t mid = (min + max) >> 1;
-                    //4 4 5
-                    if (mid * mid <= number) {
-                        if ((mid + 1) * (mid + 1) > number) {
-                            return mid;
-                        } else {
-                            min = mid + 1;
-                        }
-                    } else {
-                        max = mid - 1;
-                    }
                 }
-
                 return min; // never excuted.
-            }            
+            }     
 
             asset convert_to_exchange(connector &c, asset in) {
                 // 增加输入的EOS

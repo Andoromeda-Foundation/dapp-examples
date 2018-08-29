@@ -375,7 +375,7 @@ const int b[8] = {10000, 5000, 2000, 1000,  500,   200,    10,     1};
             _self, N(transfer),
             make_tuple(_self, itr->owner, asset(1, HPY_SYMBOL), std::string("HPY token airdrop.")))
             .send();  */ 
-            issue(itr->owner, asset(1, HPY_SYMBOL), "HPY token airdrop.");    
+        //    issue(itr->owner, asset(1, HPY_SYMBOL), "HPY token airdrop.");    
     }
     set_roll_result(itr->owner, bonus_rate);
     offers.erase(itr);
