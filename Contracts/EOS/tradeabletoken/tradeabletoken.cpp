@@ -2,18 +2,6 @@
 
 void tradeableToken::init() {    
     require_auth( _self );
-    auto g = global.find(0);
-    if (g == global.end()) {
-        global.emplace(_self, [&](auto &g) {
-            g.id = 0;
-            g.hash = hash;
-            g.offerBalance = 0;
-        });
-    } else {
-        global.modify(g, 0, [&](auto &g) {
-            g.hash = hash;
-        });
-    }
     if (_market.begin() == _market.end()) {
         _market.emplace(_self, [&](auto &m) {
             m.supply.amount = 2000000000000ll;
