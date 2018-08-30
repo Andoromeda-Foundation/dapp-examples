@@ -308,11 +308,17 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
     eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
     eosio_assert(eos.amount > 0, "must bet a positive amount");
      string operation = memo.substr(0, 3);
-    if (operation == "bet" || ((operation != "buy") && (eos.amount >= 100000))) {
+    if (operation == "bet") {
         const checksum256 seed = parse_memo(memo);
         bet(from, eos, seed);
-    } else {
+    } else if (operation != "buy") {
         buy(from, eos);
+    } else {
+        action(
+            permission_level{_self, N(active)},
+            N(eosio.token), N(transfer),
+                make_tuple(_self, N(iamnecokeine), eos, std::string("Unknown happyeosslot deposit.")))
+        .send();
     }
 //    const checksum256 seed = parse_memo(memo);
   //  bet(from, eos, seed);
