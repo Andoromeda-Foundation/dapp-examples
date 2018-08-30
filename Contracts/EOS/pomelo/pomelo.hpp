@@ -22,6 +22,8 @@ public:
     {
     }
 
+    void clean();
+    void test();
     void cancelsell(account_name account, uint64_t id);
     void cancelbuy(account_name account, uint64_t id);
     void buy(account_name account, asset quant, uint64_t total_eos);
