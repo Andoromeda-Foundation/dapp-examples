@@ -22,11 +22,12 @@ public:
     {
     }
 
+    void init();
     void clean();
     void test();
     void cancelsell(account_name account, uint64_t id);
     void cancelbuy(account_name account, uint64_t id);
-    void buy(account_name account, asset quant, uint64_t total_eos);
+    void buy(account_name account, string quant, uint64_t total_eos);
     void sell(account_name account, asset quant, uint64_t total_eos);
     void onTransfer(account_name from,
                     account_name to,
@@ -38,7 +39,8 @@ private:
     struct buyrecord {
         uint64_t id;
         account_name account;
-        asset asset;
+//        asset asset;
+        string target;
         uint64_t total_eos;
         double per;
 
@@ -235,10 +237,12 @@ private:
                     b.per = (double)b.asset.amount / (double)b.total_eos;
                     is_end = false;
                 }
+                /*
                 if (b.asset.amount == 0) {
                     is_end = true;
                     break;
                 }
+                */
             }
         } while (!is_end);
 

@@ -1,32 +1,40 @@
 ﻿#include "pomelo.hpp"
+
+/*
  #include <eosio/chain/asset.hpp>
 // #include <fc/reflect/variant.hpp>
 
-/*
+
 asset from_string(const string& from)
 {
-   try {
-      string s = from ; //fc::trim(from);
+   // try {
+    string s = from ; //fc::trim(from);
+    // Find space in order to split amount and symbol
+    auto space_pos = s.find(' ');
+    EOS_ASSERT((space_pos != string::npos), asset_type_exception, "Asset's amount and symbol should be separated with space");
+    auto symbol_str = s.substr(space_pos + 1);
+    auto amount_str = s.substr(0, space_pos);
 
-      // Find space in order to split amount and symbol
-      auto space_pos = s.find(' ');
-      EOS_ASSERT((space_pos != string::npos), asset_type_exception, "Asset's amount and symbol should be separated with space");
-      auto symbol_str = s.substr(space_pos + 1);
-      auto amount_str = s.substr(0, space_pos);
+    // Ensure that if decimal point is used (.), decimal fraction is specified
+    auto dot_pos = amount_str.find('.');
+    if (dot_pos != string::npos) {
+        EOS_ASSERT((dot_pos != amount_str.size() - 1), asset_type_exception, "Missing decimal fraction after decimal point");
+    }
 
-      // Ensure that if decimal point is used (.), decimal fraction is specified
-      auto dot_pos = amount_str.find('.');
-      if (dot_pos != string::npos) {
-         EOS_ASSERT((dot_pos != amount_str.size() - 1), asset_type_exception, "Missing decimal fraction after decimal point");
-      }
+    inline std::string to_string( uint32_t field ) {
+        return std::string("i32 : ")+std::to_string(field);
+    }
+    inline std::string to_string( uint64_t field ) {
+        return std::string("i64 : ")+std::to_string(field);
+    }
 
       // Parse symbol
-      string precision_digit_str;
-      if (dot_pos != string::npos) {
-         precision_digit_str = eosio::chain::to_string(amount_str.size() - dot_pos - 1);
-      } else {
-         precision_digit_str = "0";
-      }
+    string precision_digit_str;
+    if (dot_pos != string::npos) {
+        precision_digit_str = eosio::chain::to_string(amount_str.size() - dot_pos - 1);
+    } else {
+        precision_digit_str = "0";
+    }
 
       string symbol_part = precision_digit_str + ',' + symbol_str;
       symbol sym = symbol::from_string(symbol_part);
@@ -49,8 +57,14 @@ asset from_string(const string& from)
    }
    //FC_CAPTURE_LOG_AND_RETHROW( (from) )
 }
-*/
 
+
+
+asset from_string(const string& from)
+{
+
+}
+*/
 
 /// @abi action
 void pomelo::init()
@@ -87,11 +101,11 @@ void pomelo::cancelbuy(account_name account, uint64_t id)
 }
 
 /// @abi action
-void pomelo::buy(account_name account, asset quant, uint64_t total_eos)
+void pomelo::buy(account_name account, string quant, uint64_t total_eos)
 {
     require_auth(account);
-    eosio_assert(quant.is_valid(), "Invalid token transfer");
-    eosio_assert(quant.symbol != EOS, "Must buy non-EOS currency");
+//    eosio_assert(quant.is_valid(), "Invalid token transfer");
+  //  eosio_assert(quant.symbol != EOS, "Must buy non-EOS currency");
 
     eosio_assert(total_eos > 0, "");
 
@@ -106,7 +120,7 @@ void pomelo::buy(account_name account, asset quant, uint64_t total_eos)
     // 生成购买订单
     buyrecord b;
     b.account = account;
-    b.asset = quant;
+    b.target = quant;
     b.per = (double)total_eos / (double)quant.amount;
     b.total_eos = total_eos;
     do_buy_trade(b);
@@ -143,13 +157,20 @@ void pomelo::onTransfer(account_name from, account_name to, asset eos, std::stri
     eosio_assert(eos.amount > 0, "must bet a positive amount");
     if (memo.find("buy") != string::npos) {
         memo.erase(0, 4);
-        buy(from, from_string(memo), eos.amount);
+        buy(from, memo, eos.amount);
         // buy(from, eos, eos.amount);
     } else {	
         // sell 
     }
 }
 
+// "1.0000 EOS"
+
+// boost
+// fc
+
+// throw
+// webassmebly
 
 
 #define EOSIO_WAST(TYPE, MEMBERS)                                                                                  \

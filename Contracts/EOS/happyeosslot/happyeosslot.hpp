@@ -243,5 +243,4 @@ class happyeosslot : public tradeableToken {
         uint64_t get_bonus(uint64_t seed) const;
         uint64_t merge_seed(const checksum256& s1, const checksum256& s2) const;
         checksum256 parse_memo(const std::string &memo) const;
-
 };
