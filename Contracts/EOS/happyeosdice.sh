@@ -1,4 +1,6 @@
 /usr/local/eosio/bin/eosiocpp -o happyeosdice/happyeosdice.wast happyeosdice/happyeosdice.cpp
+
+/usr/local/eosio/bin/eosiocpp -g happyeosdice/happyeosdice.abi happyeosdice/happyeosdice.cpp
 cleos -u https://api-kylin.eosasia.one set contract happyeosdice happyeosdice -p happyeosdice@active
 
 
