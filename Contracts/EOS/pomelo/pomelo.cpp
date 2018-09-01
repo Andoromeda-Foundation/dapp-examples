@@ -109,6 +109,15 @@ uint64_t string_to_price(string s) {
     return z;
 }
 
+// @abi action
+void pomelo::match(uint64_t buy_id, uint64_t sell_id) {
+    _match(buyorders.find(buy_id), sellorders.find(sell_id));
+}
+
+void pomelo::transfer(account_name from, account_name to, asset bid, std::string memo) { 
+    return;
+}
+
 // memo [buy,issuer,HPY,1.23] EOS
 // memo [sell,issuer,HPY,1.23] HPY
 // @abi action
@@ -132,6 +141,7 @@ void pomelo::onTransfer(account_name from, account_name to, asset bid, std::stri
         // sell 
     }
 }
+
 
 #define EOSIO_WAST(TYPE, MEMBERS)                                                                                  \
     extern "C"                                                                                                       \
@@ -158,7 +168,7 @@ void pomelo::onTransfer(account_name from, account_name to, asset bid, std::stri
     }
 
 // generate .wasm and .wast file
-EOSIO_WAST(pomelo, (onTransfer)(cancelbuy)(cancelsell)(buy)(sell))
+//EOSIO_WAST(pomelo, (onTransfer)(cancelbuy)(cancelsell)(buy)(sell))
 
 // generate .abi file
-// EOSIO_ABI(pomelo, (cancelbuy)(cancelsell)(buy)(sell))
+EOSIO_ABI(pomelo, (transfer)(cancelbuy)(cancelsell)(buy)(sell)(match))

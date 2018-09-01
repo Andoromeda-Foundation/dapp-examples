@@ -29,12 +29,18 @@ public:
     void cancelbuy(account_name account, uint64_t id);
     void buy(account_name account, asset bid, asset ask, account_name issuer);
     void sell(account_name account, asset bid, asset ask, account_name issuer);
+    void match(uint64_t buy_id, uint64_t sell_id);
+
     void onTransfer(account_name from,
                     account_name to,
                     asset        quantity,
-                    string       memo);    
+                    string       memo);  
 
-private:
+    void transfer(account_name from,
+                  account_name to,
+                  asset        quantity,
+                  string       memo);                 
+
     /// @abi table
     struct buyorder {
         uint64_t id;
@@ -80,8 +86,7 @@ private:
     typedef eosio::multi_index<N(txlog), txlog, indexed_by<N(timestamp), const_mem_fun<txlog, uint64_t, &txlog::by_timestamp>>> txlogs_index;
     txlogs_index txlogs;
 
-
-    void match(buyorder_index::const_iterator buy_itr, sellorder_index::const_iterator sell_itr) {
+    void _match(buyorder_index::const_iterator buy_itr, sellorder_index::const_iterator sell_itr) {
         if (buy_itr->get_price() == sell_itr->get_price()) { // to be refine, avoid use div
 
             auto price = buy_itr->get_price();
@@ -108,7 +113,7 @@ private:
 
             return;
         }
-    }    
+    }        
 
     void do_sell_trade(sellorder s) {
     //     auto per_index = buyorder.get_index<N(per)>();
