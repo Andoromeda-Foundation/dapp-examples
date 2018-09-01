@@ -47,24 +47,26 @@ public:
         account_name account;
         asset bid;
         asset ask;
+        time request_timestamp;
 
         uint64_t primary_key() const {return id;}
         real_type get_price() const {return real_type(ask.amount) / real_type(bid.amount);}        
-        EOSLIB_SERIALIZE(buyorder, (id)(account)(bid)(ask))
+        EOSLIB_SERIALIZE(buyorder, (id)(account)(bid)(ask)(request_timestamp))
     };
     typedef eosio::multi_index<N(buyorder), buyorder, indexed_by<N(by_price), const_mem_fun<buyorder, real_type, &buyorder::get_price>>> buyorder_index;
     buyorder_index buyorders;
 
     /// @abi table
-    struct sellorder {
+    struct sellorder {  
         uint64_t id;
         account_name account;
         asset bid;
         asset ask;
+        time request_timestamp;        
 
         uint64_t primary_key() const {return id;}
         real_type get_price() const {return real_type(ask.amount) / real_type(bid.amount);}        
-        EOSLIB_SERIALIZE(sellorder, (id)(account)(bid)(ask))
+        EOSLIB_SERIALIZE(sellorder, (id)(account)(bid)(ask)(request_timestamp))
     };
     typedef eosio::multi_index<N(sellorder), sellorder, indexed_by<N(by_price), const_mem_fun<sellorder, real_type, &sellorder::get_price>>> sellorder_index;
     sellorder_index sellorders;
