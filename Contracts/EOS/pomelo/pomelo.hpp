@@ -16,8 +16,8 @@ class pomelo : public contract
 public:
     pomelo(account_name self)
         : contract(self),
-        buyrecords(_self, _self),
-        sellrecords(_self, _self),
+        buyorders(_self, _self),
+        sellorders(_self, _self),
         txlogs(_self, _self)
     {
     }
@@ -27,8 +27,8 @@ public:
     void test();
     void cancelsell(account_name account, uint64_t id);
     void cancelbuy(account_name account, uint64_t id);
-    void buy(account_name account, asset income, asset target);
-    void sell(account_name account, asset income, asset target);
+    void buy(account_name account, asset bid, asset ask, account_name issuer);
+    void sell(account_name account, asset bid, asset ask, account_name issuer);
     void onTransfer(account_name from,
                     account_name to,
                     asset        quantity,
@@ -36,34 +36,32 @@ public:
 
 private:
     /// @abi table
-    struct buyrecord {
+    struct buyorder {
         uint64_t id;
         account_name account;
-        asset income;
-        asset target;
+        asset bid;
+        asset ask;
 
-        real_type primary_key() const {return real_type(target.amount) / real_type(income.amount);}
-        uint128_t by_id() const { return id; }
-        EOSLIB_SERIALIZE(buyrecord, (id)(account)(income)(target))
+        uint64_t primary_key() const {return id;}
+        real_type get_price() const {return real_type(ask.amount) / real_type(bid.amount);}        
+        EOSLIB_SERIALIZE(buyorder, (id)(account)(bid)(ask))
     };
-
-    typedef eosio::multi_index<N(buyrecord), buyrecord> buyrecords_index;
-    buyrecords_index buyrecords;
+    typedef eosio::multi_index<N(buyorder), buyorder, indexed_by<N(by_price), const_mem_fun<buyorder, real_type, &buyorder::get_price>>> buyorder_index;
+    buyorder_index buyorders;
 
     /// @abi table
-    struct sellrecord {
+    struct sellorder {
         uint64_t id;
         account_name account;
-        asset income;
-        asset target;
+        asset bid;
+        asset ask;
 
-        real_type primary_key() const {return real_type(target.amount)  / real_type(income.amount);}
-        uint128_t by_id() const { return id; }
-        EOSLIB_SERIALIZE(sellrecord, (id)(account)(income)(target))
+        uint64_t primary_key() const {return id;}
+        real_type get_price() const {return real_type(ask.amount) / real_type(bid.amount);}        
+        EOSLIB_SERIALIZE(sellorder, (id)(account)(bid)(ask))
     };
-    //typedef eosio::multi_index<N(sellrecord), sellrecord, indexed_by<N(income), const_mem_fun<sellrecord, uint128_t, &sellrecord::by_target>>> sellrecords_index;
-    typedef eosio::multi_index<N(sellrecord), sellrecord> sellrecords_index;
-    sellrecords_index sellrecords;
+    typedef eosio::multi_index<N(sellorder), sellorder, indexed_by<N(by_price), const_mem_fun<sellorder, real_type, &sellorder::get_price>>> sellorder_index;
+    sellorder_index sellorders;
 
     /// @abi table
     struct txlog {
@@ -82,8 +80,38 @@ private:
     typedef eosio::multi_index<N(txlog), txlog, indexed_by<N(timestamp), const_mem_fun<txlog, uint64_t, &txlog::by_timestamp>>> txlogs_index;
     txlogs_index txlogs;
 
-    void do_sell_trade(sellrecord s) {
-    //     auto per_index = buyrecords.get_index<N(per)>();
+
+    void match(buyorder_index::const_iterator buy_itr, sellorder_index::const_iterator sell_itr) {
+        if (buy_itr->get_price() == sell_itr->get_price()) { // to be refine, avoid use div
+
+            auto price = buy_itr->get_price();
+
+            uint64_t delta = std::min(uint64_t(buy_itr->bid.amount), uint64_t(sell_itr->bid.amount * price)); 
+            
+            if (buy_itr->bid.amount - delta == 0) {
+                buyorders.erase(buy_itr);
+            } else {
+                buyorders.modify(buy_itr, 0, [&](auto &o) {
+                    o.bid.amount -= delta;
+                    o.ask.amount -= delta / price;
+                });
+            }
+
+            if (sell_itr->bid.amount - delta == 0) {
+                sellorders.erase(sell_itr);
+            } else {
+                sellorders.modify(sell_itr, 0, [&](auto &o) {
+                    o.bid.amount -= delta / price;
+                    o.ask.amount -= delta;
+                });
+            }            
+
+            return;
+        }
+    }    
+
+    void do_sell_trade(sellorder s) {
+    //     auto per_index = buyorder.get_index<N(per)>();
     //     for (auto itr = per_index.upper_bound(s.per - 0.000000001); itr != per_index.end(); ++itr) {
     //         // 币种不同则跳过
     //         if (itr->asset.symbol != s.asset.symbol) {
@@ -150,8 +178,8 @@ private:
     //         }
     //     }
     //     if (s.asset.amount > 0) {
-    //         sellrecords.emplace(_self, [&](auto& t) {
-    //             t.id = sellrecords.available_primary_key();
+    //         sellorder.emplace(_self, [&](auto& t) {
+    //             t.id = sellorder.available_primary_key();
     //             t.account = s.account;
     //             t.asset.symbol = s.asset.symbol;
     //             t.asset.amount = s.asset.amount;
@@ -161,11 +189,18 @@ private:
     //     }
     }
 
-    void do_buy_trade(buyrecord b) {
-        auto index = sellrecords.get_index<N(primary_key)>();
-        auto itr = index.lower_bound(b.primary_key());
-    //     bool is_end;
-    //     do {
+
+    void do_buy_trade(buyorder b) {
+//        auto index = sellorder.get_index<N(price)>();
+        /*bool is_end = true;
+        for (auto itr = index.lower_bound(b.price); itr != index.end(); ++itr) {
+            if (b.ask.symbol != itr->bid.symbol) continue;
+
+        }*/
+                
+        /*bool is_end;
+        do {
+        }*/
     //         is_end = true;
     //         for (auto itr = per_index.lower_bound(b.per); itr != per_index.end(); ++itr) {
     //             // 币种不同则跳过
@@ -243,8 +278,8 @@ private:
     //     } while (!is_end);
 
     //     if (b.asset.amount > 0) {
-    //         buyrecords.emplace(_self, [&](auto& t) {
-    //             t.id = buyrecords.available_primary_key();
+    //         buyorder.emplace(_self, [&](auto& t) {
+    //             t.id = buyorder.available_primary_key();
     //             t.account = b.account;
     //             t.asset.symbol = b.asset.symbol;
     //             t.asset.amount = b.asset.amount;
