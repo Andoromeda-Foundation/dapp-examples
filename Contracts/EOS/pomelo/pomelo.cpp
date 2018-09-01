@@ -38,12 +38,12 @@ void pomelo::cancelsell(account_name account, uint64_t id) {
 
 /// @abi action
 void pomelo::cancelbuy(account_name account, uint64_t id) {
-    require_auth(account);
+/*    require_auth(account);
     auto itr = buyorders.find(id);
     eosio_assert(itr->account == account, "Account does not match");
     eosio_assert(itr->id == id, "Trade id is not found");
     // TODO: 返还
-    buyorders.erase(itr);
+    buyorders.erase(itr);*/
 }
 
 /// @abi action
@@ -62,12 +62,13 @@ void pomelo::buy(account_name account, asset bid, asset ask, account_name issuer
     o.ask = ask;
     // do_buy_trade(b);
 
-    buyorders.emplace(issuer, [&](auto& t) {    
+    buyorder_index buyorders(_self, issuer);    
+    buyorders.emplace(_self, [&](auto& t) {    
         t.id = buyorders.available_primary_key();
         t.account = account;
         t.bid = bid;
         t.ask = ask;      
-        t.request_timestamp = now();
+        t.timestamp = now();
     });
 }
 
@@ -77,33 +78,6 @@ void pomelo::sell(account_name account, asset bid, asset ask, account_name issue
     o.account = account;
     o.bid = bid;
     o.ask = ask;
-
-    sellorders.emplace(_self, [&](auto& t) {    
-        t.id = sellorders.available_primary_key();
-        t.account = account;
-        t.bid = bid;
-        t.ask = ask; 
-        t.request_timestamp = now();
-    });
-
-    //require_auth(account);
-    /*
-    eosio_assert(quant.symbol != EOS, "Must sale non-EOS currency");
-    eosio_assert(total_eos > 0, "");
-
-    action(
-        permission_level{ account, N(active) },
-        TOKEN_CONTRACT, N(transfer),
-        make_tuple(account, _self, quant, string("transfer"))) // 由合约账号代为管理欲出售的代币
-        .send();
-
-    // 生成出售订单
-    sellorder s;
-    s.account = account;
-    s.asset = quant;
-    s.per = (double)total_eos / (double)quant.amount;
-    s.total_eos = total_eos;
-    do_sell_trade(s);*/
 }
 
 
@@ -120,8 +94,36 @@ uint64_t string_to_price(string s) {
 }
 
 // @abi action
-void pomelo::match(uint64_t buy_id, uint64_t sell_id) {
-    _match(buyorders.find(buy_id), sellorders.find(sell_id));
+void pomelo::match(account_name issuer, uint64_t buy_id, uint64_t sell_id) {
+
+    buyorder_index buyorders(_self, issuer);   
+    sellorder_index sellorders(_self, issuer);   
+    auto buy_itr = buyorders.find(buy_id);
+    auto sell_itr = sellorders.find(sell_id);   
+    
+    if (uint128_t(buy_itr->ask.amount) * sell_itr->bid.amount == uint128_t(sell_itr->ask.amount) * buy_itr->bid.amount) { // to be refine, avoid use div
+
+        auto price = buy_itr->get_price();
+        uint64_t delta = std::min(uint64_t(buy_itr->bid.amount), uint64_t(sell_itr->bid.amount * price)); 
+
+        if (buy_itr->bid.amount - delta == 0) {
+            buyorders.erase(buy_itr);
+        } else {
+            buyorders.modify(buy_itr, 0, [&](auto &o) {
+                o.bid.amount -= delta;
+                o.ask.amount -= delta / price;
+            });
+        }
+
+        if (sell_itr->bid.amount - delta == 0) {
+            sellorders.erase(sell_itr);
+        } else {
+            sellorders.modify(sell_itr, 0, [&](auto &o) {
+                o.bid.amount -= delta / price;
+                o.ask.amount -= delta;
+            });
+        }
+    }    
 }
 
 void pomelo::transfer(account_name from, account_name to, asset bid, std::string memo) { 
@@ -153,9 +155,6 @@ void pomelo::onTransfer(account_name from, account_name to, asset bid, std::stri
         auto issuer = string_to_name(memo.substr(0, p).c_str());
         memo.erase(0, p+1);
 
-
-
-
         p = memo.find(',');         
         auto ask_symbol = string_to_symbol(4, memo.substr(0, p).c_str());        
         memo.erase(0, p+1);
@@ -180,7 +179,7 @@ void pomelo::onTransfer(account_name from, account_name to, asset bid, std::stri
             }                                                                                                        \
             if (code == TOKEN_CONTRACT && action == N(transfer)) {                                                   \
                 action = N(onTransfer);                                                                              \
-            }                                            \
+            }                                                                                                        \
             if ((code == TOKEN_CONTRACT && action == N(onTransfer)) || code == self && action != N(onTransfer)) {                               \
                 TYPE thiscontract(self);                                                                             \
                 switch (action)                                                                                      \

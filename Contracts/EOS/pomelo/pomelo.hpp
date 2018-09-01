@@ -14,22 +14,17 @@ typedef double real_type;
 class pomelo : public contract
 {
 public:
-    pomelo(account_name self)
-        : contract(self),
-        buyorders(_self, _self),
-        sellorders(_self, _self),
-        txlogs(_self, _self)
-    {
+    pomelo(account_name self) : 
+        contract(self), 
+        txlogs(_self, _self) {
     }
 
-    void init();
-    void clean();
-    void test();
+    void init(); void clean(); void test();
     void cancelsell(account_name account, uint64_t id);
     void cancelbuy(account_name account, uint64_t id);
     void buy(account_name account, asset bid, asset ask, account_name issuer);
     void sell(account_name account, asset bid, asset ask, account_name issuer);
-    void match(uint64_t buy_id, uint64_t sell_id);
+    void match(account_name issuer, uint64_t buy_id, uint64_t sell_id);
 
     void onTransfer(account_name from,
                     account_name to,
@@ -47,75 +42,49 @@ public:
         account_name account;
         asset bid;
         asset ask;
-        time request_timestamp;
+        time timestamp;
 
         uint64_t primary_key() const {return id;}
         real_type get_price() const {return real_type(ask.amount) / real_type(bid.amount);}        
-        EOSLIB_SERIALIZE(buyorder, (id)(account)(bid)(ask)(request_timestamp))
+        EOSLIB_SERIALIZE(buyorder, (id)(account)(bid)(ask)(timestamp))
     };
-    typedef eosio::multi_index<N(buyorder), buyorder, indexed_by<N(by_price), const_mem_fun<buyorder, real_type, &buyorder::get_price>>> buyorder_index;
-    buyorder_index buyorders;
+    typedef eosio::multi_index<N(buyorder), buyorder, 
+        indexed_by<N(byprice), const_mem_fun<buyorder, real_type, &buyorder::get_price>>
+    > buyorder_index;
 
     /// @abi table
-    struct sellorder {  
+    struct sellorder {
         uint64_t id;
         account_name account;
         asset bid;
         asset ask;
-        time request_timestamp;        
+        time timestamp;        
 
         uint64_t primary_key() const {return id;}
         real_type get_price() const {return real_type(ask.amount) / real_type(bid.amount);}        
-        EOSLIB_SERIALIZE(sellorder, (id)(account)(bid)(ask)(request_timestamp))
+        EOSLIB_SERIALIZE(sellorder, (id)(account)(bid)(ask)(timestamp))
     };
-    typedef eosio::multi_index<N(sellorder), sellorder, indexed_by<N(by_price), const_mem_fun<sellorder, real_type, &sellorder::get_price>>> sellorder_index;
-    sellorder_index sellorders;
+    typedef eosio::multi_index<N(sellorder), sellorder, 
+        indexed_by<N(byprice), const_mem_fun<sellorder, real_type, &sellorder::get_price>>
+    > sellorder_index;
 
     /// @abi table
     struct txlog {
         uint64_t id;
-        uint64_t timestamp;
-        account_name seller;
-        account_name buyer;
-        asset asset;
-        uint64_t total_eos;
-        double per;
+        account_name buyer; // 买方 
+        account_name seller; // 卖方
+        asset bid; // 供
+        asset ask; // 需
+        time timestamp; // 时间戳         
 
-        uint64_t primary_key() const { return id; }
-        uint64_t by_timestamp() const { return timestamp; }
-        EOSLIB_SERIALIZE(txlog, (id)(timestamp)(seller)(buyer)(asset)(total_eos)(per))        
+        uint64_t primary_key() const {return id;}
+        uint64_t get_timestamp() const {return timestamp;} 
+        EOSLIB_SERIALIZE(txlog, (id)(buyer)(seller)(bid)(ask)(timestamp))        
     };
-    typedef eosio::multi_index<N(txlog), txlog, indexed_by<N(timestamp), const_mem_fun<txlog, uint64_t, &txlog::by_timestamp>>> txlogs_index;
+    typedef eosio::multi_index<N(txlog), txlog, 
+        indexed_by<N(bytimestamp), const_mem_fun<txlog, uint64_t, &txlog::get_timestamp>>
+    > txlogs_index;
     txlogs_index txlogs;
-
-    void _match(buyorder_index::const_iterator buy_itr, sellorder_index::const_iterator sell_itr) {
-        if (buy_itr->get_price() == sell_itr->get_price()) { // to be refine, avoid use div
-
-            auto price = buy_itr->get_price();
-
-            uint64_t delta = std::min(uint64_t(buy_itr->bid.amount), uint64_t(sell_itr->bid.amount * price)); 
-            
-            if (buy_itr->bid.amount - delta == 0) {
-                buyorders.erase(buy_itr);
-            } else {
-                buyorders.modify(buy_itr, 0, [&](auto &o) {
-                    o.bid.amount -= delta;
-                    o.ask.amount -= delta / price;
-                });
-            }
-
-            if (sell_itr->bid.amount - delta == 0) {
-                sellorders.erase(sell_itr);
-            } else {
-                sellorders.modify(sell_itr, 0, [&](auto &o) {
-                    o.bid.amount -= delta / price;
-                    o.ask.amount -= delta;
-                });
-            }            
-
-            return;
-        }
-    }        
 
     void do_sell_trade(sellorder s) {
     //     auto per_index = buyorder.get_index<N(per)>();
@@ -296,23 +265,22 @@ public:
     //     }
     }
 
-    void maintain_txlogs() {
-        // auto timestamp_index = txlogs.get_index<N(timestamp)>();
-        // for (auto itr = timestamp_index.lower_bound(current_time() - 1000 * 1000 * 60 * 60); itr != timestamp_index.end(); ++itr) {
-        //     timestamp_index.erase(itr);
-        // }
+    void maintain_txlogs(uint64_t cnt) {
+        auto timestamp_index = txlogs.get_index<N(bytimestamp)>();
+        while (timestamp_index.begin() != timestamp_index.end()) {
+            if (cnt-- == 0) return;
+	        timestamp_index.erase(timestamp_index.begin());
+        }
     }
 
-    void insert_txlog(account_name buyer, account_name seller, asset quant, uint64_t total_eos, double per) {
-        maintain_txlogs();
-        txlogs.emplace(_self, [&](auto& l) {/*
-            l.id = txlogs.available_primary_key();
-            l.timestamp = current_time();
-            l.buyer = buyer;
-            l.seller = seller;
-            l.asset = quant;
-            l.total_eos = total_eos; // 剩余的EOS
-            l.per = per;*/
+    void insert_txlog(account_name buyer, account_name seller, asset ask, asset bid) {
+        txlogs.emplace(_self, [&](auto& t){
+            t.id = txlogs.available_primary_key();
+            t.buyer = buyer;
+            t.seller = seller;    
+            t.ask = ask;
+            t.bid = bid;        
+            t.timestamp = current_time();
         });
     }
 };

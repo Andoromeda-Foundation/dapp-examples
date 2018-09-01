@@ -211,7 +211,7 @@ class slot_machine : public contract {
   }
 
 // generate .wasm and .wast file
-// EOSIO_ABI_PRO(slot_machine, (transfer)(init)(sell)(bet)(reveal))
+EOSIO_ABI_PRO(slot_machine, (transfer)(init)(sell)(bet)(reveal))
 
 // generate .abi file
-EOSIO_ABI(slot_machine, (transfer)(init)(sell)
+// EOSIO_ABI(slot_machine, (transfer)(init)(sell)(bet)(reveal))
