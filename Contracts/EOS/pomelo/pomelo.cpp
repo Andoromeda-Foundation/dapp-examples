@@ -46,16 +46,17 @@ void pomelo::cancelbuy(account_name account, uint64_t id) {
 }
 
 /// @abi action
-void pomelo::buy(account_name account, asset income, uint64_t target_symbol, uint64_t target_price) {
+void pomelo::buy(account_name account, asset income, asset target) {
     // 生成购买订单
     buyrecord b;
     b.account = account;
     b.income = income;
+    b.target = target;
     do_buy_trade(b);
 }
 
 /// @abi action
-void pomelo::sell(account_name account, asset quant, uint64_t total_eos)
+void pomelo::sell(account_name account, asset quant, asset target)
 {
     require_auth(account);
     /*
@@ -100,13 +101,13 @@ void pomelo::onTransfer(account_name from, account_name to, asset income, std::s
     eosio_assert(income.amount > 0, "must bet a positive amount");
 
     if (memo.substr(0, 3) == "buy") {
-        /*eosio_assert(income.symbol == EOS, "only EOS allowed");
+        eosio_assert(income.symbol == EOS, "only EOS allowed");
         memo.erase(0, 4);
         std::size_t p = memo.find(','); 
         auto target_symbol = string_to_symbol(4, memo.substr(0, p).c_str());        
-        memo.erase(0, p+1)
+        memo.erase(0, p+1);
         auto target_price = string_to_price(memo);
-        buy(from, income, target_symbol, target_price);*/
+        buy(from, income, asset(target_symbol, target_price));
     } else {	
         // sell 
     }

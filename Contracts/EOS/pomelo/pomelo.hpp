@@ -27,8 +27,8 @@ public:
     void test();
     void cancelsell(account_name account, uint64_t id);
     void cancelbuy(account_name account, uint64_t id);
-    void buy(account_name account, asset income, uint64_t target_symbol, uint64_t target_price);
-    void sell(account_name account, asset quant, uint64_t total_eos);
+    void buy(account_name account, asset income, asset target);
+    void sell(account_name account, asset income, asset target);
     void onTransfer(account_name from,
                     account_name to,
                     asset        quantity,
@@ -162,8 +162,8 @@ private:
     }
 
     void do_buy_trade(buyrecord b) {
-        // auto index = sellrecords.get_index<N(primary_key)>();
-    //     auto itr = per_index.lower_bound(b.per);
+        auto index = sellrecords.get_index<N(primary_key)>();
+        auto itr = index.lower_bound(b.primary_key());
     //     bool is_end;
     //     do {
     //         is_end = true;
