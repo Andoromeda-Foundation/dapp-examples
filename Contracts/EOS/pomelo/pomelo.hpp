@@ -39,32 +39,30 @@ private:
     struct buyrecord {
         uint64_t id;
         account_name account;
-        string target;
-        uint64_t total_eos;
-        double per;
+        asset income;
+        asset target;
 
-        uint64_t primary_key() const { return id; }
-        uint64_t by_per() const { return per; }
-        EOSLIB_SERIALIZE(buyrecord, (id)(account)(target)(total_eos)(per))
-
+        real_type primary_key() const {return real_type(target.amount) / real_type(income.amount);}
+        uint128_t by_id() const { return id; }
+        EOSLIB_SERIALIZE(buyrecord, (id)(account)(income)(target))
     };
-    typedef eosio::multi_index<N(buyrecord), buyrecord, indexed_by<N(per), const_mem_fun<buyrecord, uint64_t, &buyrecord::by_per>>> buyrecords_index;
+
+    typedef eosio::multi_index<N(buyrecord), buyrecord> buyrecords_index;
     buyrecords_index buyrecords;
 
     /// @abi table
     struct sellrecord {
         uint64_t id;
         account_name account;
-        asset asset;
-        uint64_t total_eos;
-        double per;
+        asset income;
+        asset target;
 
-        uint64_t primary_key() const { return id; }
-        uint64_t by_per() const { return per; }
-        EOSLIB_SERIALIZE(sellrecord, (id)(account)(asset)(total_eos)(per))
-
+        real_type primary_key() const {return real_type(target.amount)  / real_type(income.amount);}
+        uint128_t by_id() const { return id; }
+        EOSLIB_SERIALIZE(sellrecord, (id)(account)(income)(target))
     };
-    typedef eosio::multi_index<N(sellrecord), sellrecord, indexed_by<N(per), const_mem_fun<sellrecord, uint64_t, &sellrecord::by_per>>> sellrecords_index;
+    //typedef eosio::multi_index<N(sellrecord), sellrecord, indexed_by<N(income), const_mem_fun<sellrecord, uint128_t, &sellrecord::by_target>>> sellrecords_index;
+    typedef eosio::multi_index<N(sellrecord), sellrecord> sellrecords_index;
     sellrecords_index sellrecords;
 
     /// @abi table
@@ -79,8 +77,7 @@ private:
 
         uint64_t primary_key() const { return id; }
         uint64_t by_timestamp() const { return timestamp; }
-        EOSLIB_SERIALIZE(txlog, (id)(timestamp)(seller)(buyer)(asset)(total_eos)(per))
-
+        EOSLIB_SERIALIZE(txlog, (id)(timestamp)(seller)(buyer)(asset)(total_eos)(per))        
     };
     typedef eosio::multi_index<N(txlog), txlog, indexed_by<N(timestamp), const_mem_fun<txlog, uint64_t, &txlog::by_timestamp>>> txlogs_index;
     txlogs_index txlogs;
@@ -165,7 +162,7 @@ private:
     }
 
     void do_buy_trade(buyrecord b) {
-    //     auto per_index = sellrecords.get_index<N(per)>();
+        // auto index = sellrecords.get_index<N(primary_key)>();
     //     auto itr = per_index.lower_bound(b.per);
     //     bool is_end;
     //     do {
@@ -265,15 +262,15 @@ private:
     }
 
     void insert_txlog(account_name buyer, account_name seller, asset quant, uint64_t total_eos, double per) {
-        /*maintain_txlogs();
-        txlogs.emplace(_self, [&](auto& l) {
+        maintain_txlogs();
+        txlogs.emplace(_self, [&](auto& l) {/*
             l.id = txlogs.available_primary_key();
             l.timestamp = current_time();
             l.buyer = buyer;
             l.seller = seller;
             l.asset = quant;
             l.total_eos = total_eos; // 剩余的EOS
-            l.per = per;
-        });*/
+            l.per = per;*/
+        });
     }
 };

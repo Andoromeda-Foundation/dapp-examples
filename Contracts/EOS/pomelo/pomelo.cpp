@@ -1,5 +1,5 @@
 ﻿/**
- *  @dev minakokojima@andoromeda
+ *  @dev minakokojima
  */
 
 #include "pomelo.hpp"
@@ -49,10 +49,8 @@ void pomelo::cancelbuy(account_name account, uint64_t id) {
 void pomelo::buy(account_name account, asset income, uint64_t target_symbol, uint64_t target_price) {
     // 生成购买订单
     buyrecord b;
-    /*b.account = account;
-    b.target = quant;
-    b.per = target_price;
-    b.total_eos = total_eos;*/
+    b.account = account;
+    b.income = income;
     do_buy_trade(b);
 }
 
@@ -60,6 +58,7 @@ void pomelo::buy(account_name account, asset income, uint64_t target_symbol, uin
 void pomelo::sell(account_name account, asset quant, uint64_t total_eos)
 {
     require_auth(account);
+    /*
     eosio_assert(quant.symbol != EOS, "Must sale non-EOS currency");
     eosio_assert(total_eos > 0, "");
 
@@ -75,7 +74,7 @@ void pomelo::sell(account_name account, asset quant, uint64_t total_eos)
     s.asset = quant;
     s.per = (double)total_eos / (double)quant.amount;
     s.total_eos = total_eos;
-    do_sell_trade(s);
+    do_sell_trade(s);*/
 }
 
 
@@ -85,7 +84,7 @@ uint64_t string_to_price(string s) {
     for (int i=0;i<s.size();++i) {
         if ('0' <= s[i] && s[i] <= '9') {
             z *= 10; 
-            z += s[i];
+            z += s[i] - '0';
         }
     }
     return z;
@@ -101,13 +100,13 @@ void pomelo::onTransfer(account_name from, account_name to, asset income, std::s
     eosio_assert(income.amount > 0, "must bet a positive amount");
 
     if (memo.substr(0, 3) == "buy") {
-        eosio_assert(income.symbol == EOS, "only EOS allowed");
+        /*eosio_assert(income.symbol == EOS, "only EOS allowed");
         memo.erase(0, 4);
         std::size_t p = memo.find(','); 
         auto target_symbol = string_to_symbol(4, memo.substr(0, p).c_str());        
-        memo.erase(0, p+1);
+        memo.erase(0, p+1)
         auto target_price = string_to_price(memo);
-        buy(from, income, target_symbol, target_price);
+        buy(from, income, target_symbol, target_price);*/
     } else {	
         // sell 
     }
