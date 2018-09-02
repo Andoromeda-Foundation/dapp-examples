@@ -79,7 +79,8 @@ class happyeosdice : public contract {
         };
         typedef eosio::multi_index<N(result), result> results;
 
-        void bet(const account_name account, asset eos, const checksum256& seed, const uint64_t under);
+        void send_referal_bonus(const account_name referal, asset eos);
+        void bet(const account_name account, const account_name referal, asset eos, const checksum256& seed, const uint64_t bet_number);
         void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed);
         void set_roll_result(const account_name account, uint64_t roll_number);
 

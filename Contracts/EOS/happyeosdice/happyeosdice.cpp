@@ -1,5 +1,6 @@
 #include <eosiolib/crypto.h>
 #include "happyeosdice.hpp"
+#include <sstream>
 
 #include <cstdio>
 
@@ -29,12 +30,28 @@ void happyeosdice::init(const checksum256 &hash) {
         });
     }
 }
- void happyeosdice::bet(const account_name account, asset eos, const checksum256& seed, const uint64_t under) {
-//    require_auth( _self );
+
+void happyeosdice::send_referal_bonus(const account_name referal, asset eos) {
+    if (!is_account(referal)) return;
+    eos.amount /= 200; // 0.5%
+
+    action(
+        permission_level{_self, N(active)},
+        N(eosio.token), N(transfer),
+        make_tuple(_self, referal, eos,
+            std::string("Happy eos dice referal bonus. happyeosdice.com") ))
+    .send();
+}
+
+void happyeosdice::bet(const account_name account, const account_name referal, asset eos, const checksum256& seed, const uint64_t bet_number) {
+//  require_auth( _self );
+    // eosio_assert(bet_number >= 0, "Bet number should bigger or equal to 0."); always true.
+    eosio_assert(bet_number < 200, "Bet number should smaller than 100.");
+    send_referal_bonus(referal, eos);
     offers.emplace(_self, [&](auto& offer) {
         offer.id = offers.available_primary_key();
         offer.owner = account;
-        offer.under = under;
+        offer.under = bet_number;
         offer.bet = eos.amount;
         offer.seed = seed;
     });
@@ -63,16 +80,22 @@ void happyeosdice::onTransfer(account_name from, account_name to, asset eos, std
     eosio_assert(eos.is_valid(), "Invalid token transfer");
     eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
     eosio_assert(eos.amount > 0, "must bet a positive amount");
-    string operation = memo.substr(0, 3);
+    std::istringstream stream(memo);
+
+    string operation;
+    stream >> operation;
     if (operation == "bet" ) {
-        memo.erase(0, 4);
-
-        uint64_t t = 0; //memo.find(',') - memo.begin();
-
-        uint64_t under = string_to_int(memo.substr(0, t));
-        memo.erase(0, t);
-        const checksum256 seed = parse_memo(memo);
-        bet(from, eos, seed, under);
+        uint64_t under;
+        stream >> under;
+        string seed_string("");
+        stream >> seed_string;
+        const checksum256 seed = parse_memo(seed_string);
+        string referal_string("iamnecokeine");
+        if (!stream.eof()) {
+            stream >> referal_string;
+        }
+        account_name referal = N(referal_string);
+        bet(from, referal, eos, seed, under);
     } else if (operation == "buy") {
         //buy(from, eos);
     } else {
@@ -111,19 +134,22 @@ uint64_t happyeosdice::merge_seed(const checksum256 &s1, const checksum256 &s2) 
  void happyeosdice::deal_with(eosio::multi_index<N(offer), offer>::const_iterator itr, const checksum256 &seed) {
     uint64_t bonus_rate = get_bonus(merge_seed(seed, itr->seed));
 //    uint64_t bonus = bonus_rate * itr->bet / 100;
-    if (bonus_rate < itr->under ) {
-
-//          static char msg[100];
-//       sprintf(msg, "Happy eos slot bonus. happyeosdice.com: %d", bonus/10000);
-
+    if ((itr->under >= bonus_rate) && (itr->under <= bonus_rate + 100)) {
+        int return_rate;
+        if (itr->under < 100) { // 猜大
+            return_rate = (100 - itr->under); // 最小猜0 itr->under = 0 赔率...., 最大猜 99 itr->under = 99 赔率98倍。
+        } else { // 猜小
+            return_rate = (itr->under - 99); // 最小猜0 itr->under = 100 赔率98倍. 最大猜 99 itr->under = 199, 赔率...
+        }
         action(
                 permission_level{_self, N(active)},
                 N(eosio.token), N(transfer),
-                make_tuple(_self, itr->owner, asset(itr->bet * 98 / itr->under, EOS_SYMBOL),
+                make_tuple(_self, itr->owner, asset(itr->bet * 98 / return_rate, EOS_SYMBOL),
                     std::string("Happy eos dice bonus. happyeosdice.com") ))
             .send();
-   
-    }
+    };
+//          static char msg[100];
+//       sprintf(msg, "Happy eos slot bonus. happyeosdice.com: %d", bonus/10000); 
     set_roll_result(itr->owner, bonus_rate);
     offers.erase(itr);
 }
