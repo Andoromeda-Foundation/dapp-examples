@@ -59,6 +59,7 @@ class cryptoherooo : public contract {
     };
     typedef eosio::multi_index<N(card), card> card_index;
     card_index cards;    
+    
     // @abi table offer i64
     struct offer {
         uint64_t          id;
