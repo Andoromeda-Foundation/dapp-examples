@@ -311,7 +311,16 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
     if (operation == "bet") {
         const checksum256 seed = parse_memo(memo);
         bet(from, eos, seed);
-    } else if (operation != "buy") {
+    } else if (operation == "buy") {
+
+        if (memo.substr(4, 3) == "for"){
+            memo.erase(0, 8);
+            account_name t = eosio::string_to_name(memo.c_str());
+            if (is_account(t)) {
+                from = t;
+            }
+        }
+
         buy(from, eos);
     } else {
         action(
