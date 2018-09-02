@@ -1,6 +1,5 @@
 #include <eosiolib/crypto.h>
 #include "happyeosdice.hpp"
-#include <sstream>
 
 #include <cstdio>
 
@@ -14,6 +13,56 @@ using eosio::action;
 
 // using eosio::account_name;
 
+class stringSplitter {
+    public:
+      stringSplitter(const string& _str) : str(_str) {
+          current_position = 0;
+      }
+
+      bool eof() {
+          return current_position == str.length();
+      }
+
+      void skip_empty() {
+          while (!eof() && str[current_position] == ' ') current_position ++;
+      }
+
+      bool get_char(char* ch) {
+          if (!eof()) {
+              *ch  = str[current_position++];
+              if (*ch == ' ') return false;
+              else return true;
+          } else return false;
+      }
+
+      void get_string(string* result) {
+          result->clear();
+          skip_empty();
+          // if (eof()) return -1;
+          eosio_assert(!eof(), "No enough chars.");
+          char ch;
+          while (get_char(&ch)) {
+              *result+= ch;
+              current_position++;
+          }
+          skip_empty();
+      }
+
+      void get_uint(uint64_t* result) {
+          skip_empty();
+          *result = 0;
+          char ch;
+          while (get_char(&ch)) {
+              eosio_assert(ch >= '0' && ch <= '9', "Should be a valid number");
+              *result = *result * 10 + ch - '0';
+          }
+          skip_empty();
+      }
+      
+    private:
+      string str;
+      int current_position;
+};
  // @abi action
 void happyeosdice::init(const checksum256 &hash) {
     require_auth( _self );
@@ -80,19 +129,21 @@ void happyeosdice::onTransfer(account_name from, account_name to, asset eos, std
     eosio_assert(eos.is_valid(), "Invalid token transfer");
     eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
     eosio_assert(eos.amount > 0, "must bet a positive amount");
-    std::istringstream stream(memo);
+    stringSplitter stream(memo);
 
     string operation;
-    stream >> operation;
+    stream.get_string(&operation);
     if (operation == "bet" ) {
         uint64_t under;
-        stream >> under;
-        string seed_string("");
-        stream >> seed_string;
+        stream.get_uint(&under);
+        string seed_string;
+        if (!stream.eof()) {
+            stream.get_string(&seed_string);
+        }
         const checksum256 seed = parse_memo(seed_string);
         string referal_string("iamnecokeine");
         if (!stream.eof()) {
-            stream >> referal_string;
+            stream.get_string(&referal_string);
         }
         account_name referal = N(referal_string);
         bet(from, referal, eos, seed, under);
