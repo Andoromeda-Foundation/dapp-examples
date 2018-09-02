@@ -85,21 +85,34 @@ void happyeosdice::send_referal_bonus(const account_name referal, asset eos) {
     if (!is_account(referal)) return;
 
     
-    eos.amount /= 200; // 0.5%
+            eos.amount /= 200; // 0.5%
 
-            const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();
-            accounts eos_account(N(happyeosslot), _self);
-            auto old_balance = eos_account.get(sym).balance.amount;
+            /* old_balance 
+            if（eos_account.get(sym)
+            = eos_account.get(sym).balance.amount;*/
 
-/*
+            auto ref = eosio::name{referal}.to_string();
+
             action(
                 permission_level{_self, N(active)},
                 N(eosio.token), N(transfer),
                 make_tuple(_self, N(happyeosslot), asset(eos.amount, EOS_SYMBOL),
-                    std::string("buy") ))
+                    std::string("buy for " + ref)))
             .send();
 
-            uint64_t delta = old_balance - eos_account.get(sym).balance.amount;
+/*
+            const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();
+            accounts eos_account(N(happyeosslot), _self);
+            uint64_t delta = eos_account.get(sym).balance.amount;
+
+            action(
+                permission_level{_self, N(active)},
+                N(happyeosslot), N(transfer),
+                make_tuple(_self, referal, asset(delta, HPY_SYMBOL),
+                    std::string("Referal bonus.")  ))
+            .send();*/
+
+            /*
 
             action(
                 permission_level{_self, N(active)},
@@ -181,10 +194,7 @@ void happyeosdice::onTransfer(account_name from, account_name to, asset eos, std
         if (!stream.eof()) {
             stream.get_string(&referal_string);
         }
-        account_name referal = N(referal_string);
-
-
-
+        account_name referal = eosio::string_to_name(referal_string.c_str());
 
         bet(from, referal, eos, seed, under);
     } else if (operation == "buy") {
@@ -264,30 +274,15 @@ string int_to_string(uint64_t t) {
     } else {
 
         
-        /*
-            
-          const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();
-            accounts eos_account(N(happyeosslot), _self);
-            auto old_balance = eos_account.get(sym).balance.amount;
+        
+            auto tar = eosio::name{itr->owner}.to_string();
 
             action(
                 permission_level{_self, N(active)},
                 N(eosio.token), N(transfer),
-                make_tuple(_self, N(happyeosslot), asset(itr->bet  / 200 , EOS_SYMBOL),
-                    std::string("buy") ))
-            .send();
-
-    
-
-  
-            uint64_t delta = old_balance - eos_account.get(sym).balance.amount;
-
-            action(
-                permission_level{_self, N(active)},
-                N(happyeosslot), N(transfer),
-                make_tuple(_self, itr->owner, asset(delta, HPY_SYMBOL),
-                    std::string("HPY Airdrop, see you next time.")  ))
-            .send();     */
+                make_tuple(_self, N(happyeosslot), asset(itr->bet / 200 , EOS_SYMBOL),
+                    std::string("buy for " + tar)))
+            .send(); 
         /*
         action(
             permission_level{_self, N(active)},

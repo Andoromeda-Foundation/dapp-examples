@@ -48,14 +48,7 @@ class happyeosdice : public contract {
             asset    balance;
             uint64_t primary_key() const { return balance.symbol.name(); }
         };
-        struct currency_stats {
-            asset          supply;
-            asset          max_supply;
-            account_name   issuer;
-            uint64_t primary_key() const { return supply.symbol.name(); }
-        };
-        typedef eosio::multi_index<N(accounts), account> accounts;
-        typedef eosio::multi_index<N(stat), currency_stats> stats;        
+        typedef eosio::multi_index<N(accounts), account> accounts; 
 
     private:
         // @abi table global i64
