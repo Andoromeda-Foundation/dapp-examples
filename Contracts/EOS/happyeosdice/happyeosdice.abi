@@ -67,6 +67,23 @@
         }
       ]
     },{
+      "name": "transfer",
+      "base": "",
+      "fields": [{
+          "name": "from",
+          "type": "name"
+        },{
+          "name": "to",
+          "type": "name"
+        },{
+          "name": "quantity",
+          "type": "asset"
+        },{
+          "name": "memo",
+          "type": "string"
+        }
+      ]
+    },{
       "name": "reveal",
       "base": "",
       "fields": [{
@@ -90,6 +107,10 @@
     },{
       "name": "reveal",
       "type": "reveal",
+      "ricardian_contract": ""
+    },{
+      "name": "transfer",
+      "type": "transfer",
       "ricardian_contract": ""
     }
   ],

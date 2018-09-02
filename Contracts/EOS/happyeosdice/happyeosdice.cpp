@@ -11,6 +11,7 @@ using eosio::symbol_type;
 using eosio::permission_level;
 using eosio::action;
 
+#define HPY_SYMBOL S(4, HPY)
 // using eosio::account_name;
 
 class stringSplitter {
@@ -43,7 +44,7 @@ class stringSplitter {
           char ch;
           while (get_char(&ch)) {
               *result+= ch;
-              current_position++;
+              //current_position++;
           }
           skip_empty();
       }
@@ -82,20 +83,39 @@ void happyeosdice::init(const checksum256 &hash) {
 
 void happyeosdice::send_referal_bonus(const account_name referal, asset eos) {
     if (!is_account(referal)) return;
+
+    
     eos.amount /= 200; // 0.5%
 
-    action(
-        permission_level{_self, N(active)},
-        N(eosio.token), N(transfer),
-        make_tuple(_self, referal, eos,
-            std::string("Happy eos dice referal bonus. happyeosdice.com") ))
-    .send();
+            const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();
+            accounts eos_account(N(happyeosslot), _self);
+            auto old_balance = eos_account.get(sym).balance.amount;
+
+/*
+            action(
+                permission_level{_self, N(active)},
+                N(eosio.token), N(transfer),
+                make_tuple(_self, N(happyeosslot), asset(eos.amount, EOS_SYMBOL),
+                    std::string("buy") ))
+            .send();
+
+            uint64_t delta = old_balance - eos_account.get(sym).balance.amount;
+
+            action(
+                permission_level{_self, N(active)},
+                N(happyeosslot), N(transfer),
+                make_tuple(_self, referal, asset(delta, HPY_SYMBOL),
+                    std::string("Referal bonus.")  ))
+            .send(); */
 }
+
+
+
 
 void happyeosdice::bet(const account_name account, const account_name referal, asset eos, const checksum256& seed, const uint64_t bet_number) {
 //  require_auth( _self );
     // eosio_assert(bet_number >= 0, "Bet number should bigger or equal to 0."); always true.
-    eosio_assert(bet_number < 200, "Bet number should smaller than 100.");
+    eosio_assert((2 <= bet_number && bet_number <= 97) || (102 <= bet_number && bet_number <= 197) ,  "Bet number should smaller than 100.");
     send_referal_bonus(referal, eos);
     offers.emplace(_self, [&](auto& offer) {
         offer.id = offers.available_primary_key();
@@ -108,7 +128,7 @@ void happyeosdice::bet(const account_name account, const account_name referal, a
     global.modify(g, 0, [&](auto &g) {
         g.offerBalance += eos.amount;
     });
-    set_roll_result(account, 0);
+    set_roll_result(account, 256);
 }
 
 uint64_t string_to_int(string s) {
@@ -125,6 +145,10 @@ void happyeosdice::onTransfer(account_name from, account_name to, asset eos, std
     if (to != _self) {
         return;
     }
+  
+
+
+
     require_auth(from);
     eosio_assert(eos.is_valid(), "Invalid token transfer");
     eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
@@ -132,20 +156,36 @@ void happyeosdice::onTransfer(account_name from, account_name to, asset eos, std
     stringSplitter stream(memo);
 
     string operation;
+    // bet 50 safdsa iam
     stream.get_string(&operation);
+
+/*
+    static char msg[30];
+    sprintf(msg, "%s", operation.c_str());
+    eosio_assert(false, msg);
+    return;     */  
+
     if (operation == "bet" ) {
+
+
+        
         uint64_t under;
         stream.get_uint(&under);
         string seed_string;
         if (!stream.eof()) {
             stream.get_string(&seed_string);
         }
+
         const checksum256 seed = parse_memo(seed_string);
         string referal_string("iamnecokeine");
         if (!stream.eof()) {
             stream.get_string(&referal_string);
         }
         account_name referal = N(referal_string);
+
+
+
+
         bet(from, referal, eos, seed, under);
     } else if (operation == "buy") {
         //buy(from, eos);
@@ -182,23 +222,85 @@ uint64_t happyeosdice::merge_seed(const checksum256 &s1, const checksum256 &s2) 
     }
     return hash;
 }
+
+string int_to_string(uint64_t t) {
+    if (t == 0) return "0";
+    string z;
+    while (t != 0) {
+        z += char('0' + (t % 10));  
+        t /= 10;
+    }
+    reverse(z.begin(), z.end());
+    return z;
+}
+
+
  void happyeosdice::deal_with(eosio::multi_index<N(offer), offer>::const_iterator itr, const checksum256 &seed) {
     uint64_t bonus_rate = get_bonus(merge_seed(seed, itr->seed));
 //    uint64_t bonus = bonus_rate * itr->bet / 100;
-    if ((itr->under >= bonus_rate) && (itr->under <= bonus_rate + 100)) {
+
+    if ((itr->under < bonus_rate) || (itr->under > bonus_rate + 100)) {
         int return_rate;
+
         if (itr->under < 100) { // 猜大
-            return_rate = (100 - itr->under); // 最小猜0 itr->under = 0 赔率...., 最大猜 99 itr->under = 99 赔率98倍。
+            return_rate = (100 + 1 - itr->under); // 最小猜0 itr->under = 0 赔率...., 最大猜 99 itr->under = 99 赔率98倍。
         } else { // 猜小
-            return_rate = (itr->under - 99); // 最小猜0 itr->under = 100 赔率98倍. 最大猜 99 itr->under = 199, 赔率...
-        }
+            return_rate = (itr->under - (100) ); // 最小猜0 itr->under = 100 赔率98倍. 最大猜 99 itr->under = 199, 赔率...
+        }  // 0-49   0-99   // 2
+
+
+        // 1% 100/1   + (99% 100/1)
+        // 99% 100/99  + (1% 100/99)
+ 
+
         action(
                 permission_level{_self, N(active)},
                 N(eosio.token), N(transfer),
-                make_tuple(_self, itr->owner, asset(itr->bet * 98 / return_rate, EOS_SYMBOL),
-                    std::string("Happy eos dice bonus. happyeosdice.com") ))
+                make_tuple(_self, itr->owner, asset(itr->bet * 98 / return_rate , EOS_SYMBOL),
+                    std::string("happy eos dice bonus. The result is: ") + int_to_string(bonus_rate) + std::string(" happyeosslot.com") ))
             .send();
-    };
+
+       
+    } else {
+
+        
+        /*
+            
+          const auto& sym = eosio::symbol_type(HPY_SYMBOL).name();
+            accounts eos_account(N(happyeosslot), _self);
+            auto old_balance = eos_account.get(sym).balance.amount;
+
+            action(
+                permission_level{_self, N(active)},
+                N(eosio.token), N(transfer),
+                make_tuple(_self, N(happyeosslot), asset(itr->bet  / 200 , EOS_SYMBOL),
+                    std::string("buy") ))
+            .send();
+
+    
+
+  
+            uint64_t delta = old_balance - eos_account.get(sym).balance.amount;
+
+            action(
+                permission_level{_self, N(active)},
+                N(happyeosslot), N(transfer),
+                make_tuple(_self, itr->owner, asset(delta, HPY_SYMBOL),
+                    std::string("HPY Airdrop, see you next time.")  ))
+            .send();     */
+        /*
+        action(
+            permission_level{_self, N(active)},
+            N(happyeosslot), N(transfer),
+            make_tuple(itr->owner, N(happyeosslot), eos,
+                std::string("buy") ))
+        .send();
+*/
+
+
+
+
+    }
 //          static char msg[100];
 //       sprintf(msg, "Happy eos slot bonus. happyeosdice.com: %d", bonus/10000); 
     set_roll_result(itr->owner, bonus_rate);
