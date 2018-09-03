@@ -199,6 +199,12 @@ class happyeosslot : public tradeableToken {
                         asset        quantity,
                         string       memo);
 
+        // EOS transfer event.
+        void onSell    (account_name from,
+                        account_name to,
+                        asset        quantity,
+                        string       memo);                        
+
         void transfer( account_name from,
                        account_name to,
                        asset        quantity,

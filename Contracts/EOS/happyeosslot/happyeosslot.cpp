@@ -298,6 +298,24 @@ void happyeosslot::init(const checksum256 &hash) {
     });
     set_roll_result(account, 0);
 }
+
+ // @abi action
+void happyeosslot::onSell(account_name from, account_name to, asset hpy, std::string memo) {        
+    if (to != _self) {
+        return;
+    }
+    require_auth(from);
+    eosio_assert(hpy.is_valid(), "Invalid token transfer");
+    eosio_assert(hpy.symbol == HPY_SYMBOL, "only HPY token allowed");
+    eosio_assert(hpy.amount > 0, "must sell a positive amount");
+    string operation = memo.substr(0, 4);
+    if (operation == "sell") {
+        sell(from, hpy);
+    }
+//    const checksum256 seed = parse_memo(memo);
+  //  bet(from, eos, seed);
+}
+
  // @abi action
 void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
     if (to != _self) {
@@ -508,7 +526,11 @@ void happyeosslot::test(const account_name account, asset eos) {
             if (action == N(onerror))                                                                                \
             {                                                                                                        \
                 eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account"); \
-            }                                                                                                        \
+            }                       \
+                    \
+            if (code == N(happyeosslot) && action == N(transfer)) {                                                      \
+                action = N(onSell);                                                                                     \
+            }                                                                                                                                                               \
             if (code == TOKEN_CONTRACT && action == N(transfer)) {                                                   \
                 action = N(onTransfer);                                                                              \
             }                                                                                                        \
@@ -522,7 +544,7 @@ void happyeosslot::test(const account_name account, asset eos) {
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-MY_EOSIO_ABI(happyeosslot, (onTransfer)(transfer)(init)(sell)(reveal)(test))
+MY_EOSIO_ABI(happyeosslot, (onTransfer)(onSell)(transfer)(init)(sell)(reveal)(test))
 
 // generate .abi file
 // EOSIO_ABI(happyeosslot, (transfer)(init)(sell)(reveal)(test))
