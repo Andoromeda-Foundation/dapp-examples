@@ -109,7 +109,19 @@ void pomelo::match(account_name issuer, uint64_t buy_id, uint64_t sell_id) {
         auto price = buy_itr->get_price();
         uint64_t delta = std::min(uint64_t(buy_itr->bid.amount), uint64_t(sell_itr->bid.amount * price)); 
 
-        
+        action(
+            permission_level{_self, N(active)},
+            N(eosio.token), N(transfer),
+            make_tuple(_self, N(sell_itr->owner), asset(delta, EOS_SYMBOL),
+                std::string("trade success"))
+        ).send();
+
+        action(
+            permission_level{_self, N(active)},
+            N(buy_itr->issuer), N(transfer),
+            make_tuple(_self, N(buy_itr->owner), asset(delta, sell_itr->bid.symbol_name),
+                std::string("trade success"))
+        ).send();        
 
         if (buy_itr->bid.amount - delta == 0) {
             buyorders.erase(buy_itr);
