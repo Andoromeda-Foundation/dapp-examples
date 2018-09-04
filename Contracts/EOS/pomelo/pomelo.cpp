@@ -27,7 +27,7 @@ void pomelo::test() {
 }
 
 /// @abi action
-void pomelo::cancelsell(account_name account, uint64_t id) {
+void pomelo::cancelsell(account_name issuer, account_name account, uint64_t id) {
    /* require_auth(account);
     auto itr = sellorders.find(id);
     eosio_assert(itr->account == account, "Account does not match");
@@ -37,14 +37,19 @@ void pomelo::cancelsell(account_name account, uint64_t id) {
 }
 
 /// @abi action
-void pomelo::cancelbuy(account_name account, uint64_t id) {
+void pomelo::cancelbuy(account_name issuer, account_name account, uint64_t id) {
     require_auth(account);
-    auto itr = buyorders.find(id);
-    eosio_assert(itr != nullptr, "Trade id is not found");
+    buyorder_index buyorders(_self, issuer);    
+    auto itr = buyorders.find(id); 
+    eosio_assert(itr != buyorders.end(), "Trade id is not found");
     eosio_assert(itr->account == account, "Account does not match");
 
-    
-
+    action(
+        permission_level{_self, N(active)},
+        N(eosio.token), N(transfer),
+        make_tuple(_self, itr->account, itr->bid,
+            std::string("trade success"))
+    ).send();    
 
     buyorders.erase(itr);
 }
@@ -112,14 +117,14 @@ void pomelo::match(account_name issuer, uint64_t buy_id, uint64_t sell_id) {
         action(
             permission_level{_self, N(active)},
             N(eosio.token), N(transfer),
-            make_tuple(_self, N(sell_itr->owner), asset(delta, EOS_SYMBOL),
+            make_tuple(_self, sell_itr->account, asset(delta, EOS),
                 std::string("trade success"))
         ).send();
 
         action(
             permission_level{_self, N(active)},
             N(buy_itr->issuer), N(transfer),
-            make_tuple(_self, N(buy_itr->owner), asset(delta, sell_itr->bid.symbol_name),
+            make_tuple(_self, buy_itr->account, asset(delta, sell_itr->bid.symbol),
                 std::string("trade success"))
         ).send();        
 

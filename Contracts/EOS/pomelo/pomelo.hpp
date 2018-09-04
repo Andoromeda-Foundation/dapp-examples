@@ -20,8 +20,8 @@ public:
     }
 
     void init(); void clean(); void test();
-    void cancelsell(account_name account, uint64_t id);
-    void cancelbuy(account_name account, uint64_t id);
+    void cancelsell(account_name issuer, account_name account, uint64_t id);
+    void cancelbuy(account_name issuer, account_name account, uint64_t id);
     void buy(account_name account, asset bid, asset ask, account_name issuer);
     void sell(account_name account, asset bid, asset ask, account_name issuer);
     void match(account_name issuer, uint64_t buy_id, uint64_t sell_id);
