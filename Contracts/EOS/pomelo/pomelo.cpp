@@ -38,12 +38,15 @@ void pomelo::cancelsell(account_name account, uint64_t id) {
 
 /// @abi action
 void pomelo::cancelbuy(account_name account, uint64_t id) {
-/*    require_auth(account);
+    require_auth(account);
     auto itr = buyorders.find(id);
+    eosio_assert(itr != nullptr, "Trade id is not found");
     eosio_assert(itr->account == account, "Account does not match");
-    eosio_assert(itr->id == id, "Trade id is not found");
-    // TODO: 返还
-    buyorders.erase(itr);*/
+
+    
+
+
+    buyorders.erase(itr);
 }
 
 /// @abi action
@@ -105,6 +108,8 @@ void pomelo::match(account_name issuer, uint64_t buy_id, uint64_t sell_id) {
 
         auto price = buy_itr->get_price();
         uint64_t delta = std::min(uint64_t(buy_itr->bid.amount), uint64_t(sell_itr->bid.amount * price)); 
+
+        
 
         if (buy_itr->bid.amount - delta == 0) {
             buyorders.erase(buy_itr);
