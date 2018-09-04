@@ -10932,7 +10932,7 @@
          (set_local $12
           (select
            (i64.sub
-            (i64.const 101)
+            (i64.const 99)
             (get_local $10)
            )
            (i64.add

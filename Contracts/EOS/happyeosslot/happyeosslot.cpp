@@ -299,10 +299,11 @@ void happyeosslot::init(const checksum256 &hash) {
     set_roll_result(account, 0);
 }
 
+/*
  // @abi action
 void happyeosslot::onSell(account_name from, account_name to, asset hpy, std::string memo) {        
     if (to != _self) {
-        return;
+        transfer()
     }
     require_auth(from);
     eosio_assert(hpy.is_valid(), "Invalid token transfer");
@@ -314,7 +315,7 @@ void happyeosslot::onSell(account_name from, account_name to, asset hpy, std::st
     }
 //    const checksum256 seed = parse_memo(memo);
   //  bet(from, eos, seed);
-}
+}*/
 
  // @abi action
 void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
@@ -325,20 +326,20 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
     eosio_assert(eos.is_valid(), "Invalid token transfer");
     eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
     eosio_assert(eos.amount > 0, "must bet a positive amount");
-     string operation = memo.substr(0, 3);
+    string operation = memo.substr(0, 3);
     if (operation == "bet") {
         const checksum256 seed = parse_memo(memo);
         bet(from, eos, seed);
     } else if (operation == "buy") {
-
-        if (memo.substr(4, 3) == "for"){
-            memo.erase(0, 8);
-            account_name t = eosio::string_to_name(memo.c_str());
-            if (is_account(t)) {
-                from = t;
+        if (memo.size() > 7){
+            if (memo.substr(4, 3) == "for") {
+                memo.erase(0, 8);
+                account_name t = eosio::string_to_name(memo.c_str());
+                if (is_account(t)) {
+                    from = t;
+                }
             }
         }
-
         buy(from, eos);
     } else {
         action(
@@ -347,11 +348,10 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
                 make_tuple(_self, N(iamnecokeine), eos, std::string("Unknown happyeosslot deposit.")))
         .send();
     }
-//    const checksum256 seed = parse_memo(memo);
-  //  bet(from, eos, seed);
 }
  // @abi action
 void happyeosslot::transfer(account_name from, account_name to, asset quantity, std::string memo) {        
+    if (to == _self) sell(from, quantity);
     _transfer(from, to, quantity, memo);
 }
  // @abi action
@@ -527,10 +527,7 @@ void happyeosslot::test(const account_name account, asset eos) {
             {                                                                                                        \
                 eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account"); \
             }                       \
-                    \
-            if (code == N(happyeosslot) && action == N(transfer)) {                                                      \
-                action = N(onSell);                                                                                     \
-            }                                                                                                                                                               \
+                                                                                                                                                                             \
             if (code == TOKEN_CONTRACT && action == N(transfer)) {                                                   \
                 action = N(onTransfer);                                                                              \
             }                                                                                                        \
@@ -544,7 +541,7 @@ void happyeosslot::test(const account_name account, asset eos) {
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-MY_EOSIO_ABI(happyeosslot, (onTransfer)(onSell)(transfer)(init)(sell)(reveal)(test))
+MY_EOSIO_ABI(happyeosslot, (onTransfer)(transfer)(init)(sell)(reveal)(test))
 
 // generate .abi file
 // EOSIO_ABI(happyeosslot, (transfer)(init)(sell)(reveal)(test))

@@ -244,6 +244,7 @@ string int_to_string(uint64_t t) {
     return z;
 }
 
+//bet 50 ludufutemp minakokojima
 
  void happyeosdice::deal_with(eosio::multi_index<N(offer), offer>::const_iterator itr, const checksum256 &seed) {
     uint64_t bonus_rate = get_bonus(merge_seed(seed, itr->seed));
@@ -253,16 +254,10 @@ string int_to_string(uint64_t t) {
         int return_rate;
 
         if (itr->under < 100) { // 猜大
-            return_rate = (100 + 1 - itr->under); // 最小猜0 itr->under = 0 赔率...., 最大猜 99 itr->under = 99 赔率98倍。
+            return_rate = (99 - itr->under); // 最小猜0 itr->under = 0 赔率...., 最大猜 99 itr->under = 99 赔率98倍。
         } else { // 猜小
             return_rate = (itr->under - (100) ); // 最小猜0 itr->under = 100 赔率98倍. 最大猜 99 itr->under = 199, 赔率...
-        }  // 0-49   0-99   // 2
-
-
-        // 1% 100/1   + (99% 100/1)
-        // 99% 100/99  + (1% 100/99)
- 
-
+        }  
         action(
                 permission_level{_self, N(active)},
                 N(eosio.token), N(transfer),
