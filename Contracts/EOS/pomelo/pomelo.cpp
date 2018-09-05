@@ -33,12 +33,11 @@ void pomelo::cancelsell(account_name issuer, account_name account, uint64_t id) 
     eosio_assert(itr->account == account, "Account does not match");
     eosio_assert(itr->id == id, "Trade id is not found");
     // TODO: 返还 DONE:@yukiexe
-    uint64_t delta = uint64_t(itr->bid.amount); 
 
             action(
             permission_level{_self, N(active)},
             N(eosio.token), N(transfer),
-            make_tuple(_self, sell_itr->account, asset(delta, EOS),
+            make_tuple(_self, sell_itr->account, itr->bid,
                 std::string("trade cancel successed"))
         ).send(); 
 /*
@@ -65,7 +64,7 @@ void pomelo::cancelbuy(account_name issuer, account_name account, uint64_t id) {
         permission_level{_self, N(active)},
         N(eosio.token), N(transfer),
         make_tuple(_self, itr->account, itr->bid,
-            std::string("trade success"))
+            std::string("trade cancel successed"))
     ).send();    
 
     buyorders.erase(itr);
