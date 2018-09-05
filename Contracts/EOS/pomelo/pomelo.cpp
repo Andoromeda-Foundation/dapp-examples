@@ -28,12 +28,29 @@ void pomelo::test() {
 
 /// @abi action
 void pomelo::cancelsell(account_name issuer, account_name account, uint64_t id) {
-   /* require_auth(account);
+    require_auth(account);
     auto itr = sellorders.find(id);
     eosio_assert(itr->account == account, "Account does not match");
     eosio_assert(itr->id == id, "Trade id is not found");
-    // TODO: 返还
-    sellorders.erase(itr);*/
+    // TODO: 返还 DONE:@yukiexe
+    uint64_t delta = uint64_t(itr->bid.amount); 
+
+            action(
+            permission_level{_self, N(active)},
+            N(eosio.token), N(transfer),
+            make_tuple(_self, sell_itr->account, asset(delta, EOS),
+                std::string("trade cancel successed"))
+        ).send(); 
+/*
+    action(
+        permission_level{_self, N(active)},
+        N(eosio.token), N(transfer),
+        make_tuple(_self, itr->account, itr->bid,
+            std::string("trade success"))
+    ).send();*/
+
+    
+    sellorders.erase(itr);
 }
 
 /// @abi action
