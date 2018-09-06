@@ -2,9 +2,6 @@
 #include <vector>
 #include "happyeos21pt.hpp"
 
-
-
-
 class stringSplitter {
     public:
       stringSplitter(const string& _str) : str(_str) {
@@ -60,7 +57,6 @@ void happyeos21pt::send_referal_bonus(const account_name referal, asset eos) {
     if (!is_account(referal)) return;
 }
 
-
  // @abi action
 void happyeos21pt::init(const checksum256 &hash) {
     require_auth(_self);
@@ -82,28 +78,30 @@ void happyeos21pt::test() {
     require_auth(_self);
 }
 
-void happyeos21pt::add_bet(const account_name player, const asset eos ) {
-    /*
-    games.emplace(_self, [&](auto& offer) {
-        game.id = offers.available_primary_key();
-        game.owner = player; 
-        game.bid = eos.amount;
-        game.seed = seed;
-    });
 
-    auto g = global.find(0);
-    global.modify(g, 0, [&](auto &g) {
-        g.offerBalance += eos.amount;
-    });
-    */
+void happyeos21pt::add_bet(const account_name player, const checksum256& seed, const asset eos) {    
+    //send_referal_bonus(referal, eos);
+    auto itr = games.find(0);
+    if (itr == games.end()) {
+        games.emplace(_self, [&](auto& g) {
+            g.id = games.available_primary_key();
+            g.player = player; 
+            g.bid = eos.amount;
+            g.seed = seed;
+        });
+    } else {
+        games.modify(itr, 0, [&](auto &g) {
+            g.bid += eos.amount;
+        });
+    }
 }
-
 
 void happyeos21pt::join(const account_name player, const account_name referal, asset eos, const checksum256& seed) {
 //  require_auth( _self );
     // eosio_assert(bet_number >= 0, "Bet number should bigger or equal to 0."); always true.
-  add_bet( player, eos ) ;
-  send_referal_bonus(referal, eos);
+    eosio_assert(games.begin() == games.end(), "game already exist.");
+    add_bet(player, seed, eos);
+    send_referal_bonus(referal, eos);
 }
 
 void happyeos21pt::hit(const account_name player) {
@@ -139,7 +137,7 @@ void happyeos21pt::deal_with(game_index::const_iterator itr, const uint32_t dPoi
             permission_level{_self, N(active)},
             N(eosio.token), N(transfer),
             make_tuple(_self, itr->player, itr->bid * 2,
-                std::string("trade cancel successed"))
+                std::string("win, congraduation!"))
         ).send(); 
     }
     games.erase(itr);
@@ -157,7 +155,6 @@ uint32_t getPointById(uint32_t id){
 }
 
 bool happyeos21pt::verify(const checksum256 &seed, const uint32_t dPoints, const uint32_t pPoints){
-
     uint32_t dP = 0, cur = 0;
     std::vector<uint32_t> desk;
     for (int i=0;i<52;++i){
@@ -170,7 +167,8 @@ bool happyeos21pt::verify(const checksum256 &seed, const uint32_t dPoints, const
         dP += getPointById(desk.back());
     }
 
-    eosio_assert(dP == dPoints, "there was a problem with dPoints");    
+    eosio_assert(dP == dPoints, "there was a problem with dPoints");  
+    // todo(minakokojima): verify pPoints;   
     return true;
 }
 
@@ -193,22 +191,6 @@ void happyeos21pt::reveal(checksum256 &seed, const uint32_t dPoints, const uint3
     });    
 }        
 
- // @abi action
-void happyeos21pt::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
-    if (to != _self) return;
-    
-    require_auth(from);
-    auto player = from ；
-
-    eosio_assert(eos.is_valid(), "Invalid token transfer");
-    eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
-    eosio_assert(eos.amount > 0, "must bet a positive amount");
-    
-    stringSplitter stream(memo);
-
-    string operation;
-    // bet 50 safdsa iam
-    stream.get_string(&operation);
 
     // Rules of play
     // On their turn, players must choose whether to
@@ -218,18 +200,45 @@ void happyeos21pt::onTransfer(account_name from, account_name to, asset eos, std
     // "split" (if the two cards have the same value, separate them to make two hands) or
     // "surrender" (give up a half-bet and retire from the game). 
 
-    if (memo == "join") {
-        join( player, referal, eos, seed) ；
-
+checksum256 happyeos21pt::parse_memo(const std::string &memo) const {
+    checksum256 checksum;
+    memset(&checksum, 0, sizeof(checksum256));
+    for (int i = 0; i < memo.length(); i++) {
+        checksum.hash[i & 31] ^= memo[i];
     }
+    return checksum;
+}
 
-    if (memo == "hit") {
-        hit( player ) ；
-
-    }
+ // @abi action
+void happyeos21pt::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
+    if (to != _self) return;
     
-    if (memo == "stand") {
-        stand( player ) ；
+    require_auth(from);
+    auto player = from;
+
+    eosio_assert(eos.is_valid(), "Invalid token transfer");
+    eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
+    eosio_assert(eos.amount > 0, "must bet a positive amount");
+    
+    stringSplitter stream(memo);
+
+    string operation;
+    // join safdsa minakokojima
+    stream.get_string(&operation);
+
+    if (operation == "join" ) {        
+        string seed_string;
+        if (!stream.eof()) {
+            stream.get_string(&seed_string);
+        }
+        const checksum256 seed = parse_memo(seed_string);
+        string referal_string("minakokojima");
+
+        if (!stream.eof()) {
+            stream.get_string(&referal_string);
+        }
+        account_name referal = eosio::string_to_name(referal_string.c_str());
+        join(player, referal, eos, seed);
     }
 }
 
@@ -257,9 +266,7 @@ void happyeos21pt::onTransfer(account_name from, account_name to, asset eos, std
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-// EOSIO_WAST(happyeos21pt, (init)(reveal)(test))
+// EOSIO_WAST(happyeos21pt, (onTransfer)(init)(test)(hit)(stand)(reveal))
 
 // generate .abi file 
-// EOSIO_ABI(happyeosdice, (init)(reveal)(test))
-
-
+// EOSIO_ABI(happyeosdice, (init)(test)(hit)(stand)(reveal))
