@@ -87,6 +87,8 @@ void happyeosdice::send_referal_bonus(const account_name referal, asset eos) {
     
             eos.amount /= 200; // 0.5%
 
+            if (eos.amount == 0) return;
+
             /* old_balance 
             if（eos_account.get(sym)
             = eos_account.get(sym).balance.amount;*/
@@ -267,9 +269,7 @@ string int_to_string(uint64_t t) {
 
        
     } else {
-
-        
-        
+        if (itr->bet / 200 > 0) {        
             auto tar = eosio::name{itr->owner}.to_string();
 
             action(
@@ -278,18 +278,7 @@ string int_to_string(uint64_t t) {
                 make_tuple(_self, N(happyeosslot), asset(itr->bet / 200 , EOS_SYMBOL),
                     std::string("buy for " + tar)))
             .send(); 
-        /*
-        action(
-            permission_level{_self, N(active)},
-            N(happyeosslot), N(transfer),
-            make_tuple(itr->owner, N(happyeosslot), eos,
-                std::string("buy") ))
-        .send();
-*/
-
-
-
-
+        }        
     }
 //          static char msg[100];
 //       sprintf(msg, "Happy eos slot bonus. happyeosdice.com: %d", bonus/10000); 
