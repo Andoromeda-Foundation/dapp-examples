@@ -269,4 +269,4 @@ void happyeos21pt::onTransfer(account_name from, account_name to, asset eos, std
 // EOSIO_WAST(happyeos21pt, (onTransfer)(init)(test)(hit)(stand)(reveal))
 
 // generate .abi file 
-// EOSIO_ABI(happyeosdice, (init)(test)(hit)(stand)(reveal))
+EOSIO_ABI(happyeos21pt, (init)(test)(hit)(stand)(reveal))
