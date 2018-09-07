@@ -12,15 +12,16 @@ class stringSplitter {
           return current_position == str.length();
       }
 
-      void skip_empty() {
+      inline void skip_empty() {
           while (!eof() && str[current_position] == ' ') current_position ++;
       }
 
-      bool get_char(char* ch) {
+      inline bool get_char(char* ch) {
           if (!eof()) {
               *ch  = str[current_position++];
-              if (*ch == ' ') return false;
-              else return true;
+              return *ch != ' ' ;
+              // if (*ch == ' ') return false;
+              // else return true;
           } else return false;
       }
 
@@ -120,7 +121,7 @@ void happyeos21pt::merge_seed(checksum256 &s1, checksum256 s2) {
 }
 
 
-bool happyeos21pt::player_win( const uint32_t dPoints, const uint32_t pPoints ) {
+bool happyeos21pt::isplayer_win( const uint32_t dPoints, const uint32_t pPoints ) {
     if ( pPoints > 21 ) {
       return false;
     }    
@@ -130,16 +131,16 @@ bool happyeos21pt::player_win( const uint32_t dPoints, const uint32_t pPoints ) 
     return pPoints > dPoints;
 }
 void happyeos21pt::deal_with(game_index::const_iterator itr, const uint32_t dPoints, const uint32_t pPoints) {
-    if (player_win(dPoints, pPoints)) {
-        // send
-    } else {
-        // player.bets
+    if (isplayer_win(dPoints, pPoints)) {
+        // send Winnings
         action(
             permission_level{_self, N(active)},
             N(eosio.token), N(transfer),
             make_tuple(_self, itr->player, itr->bid * 2,
                 std::string("win, congraduation!"))
         ).send(); 
+    } else {
+
     }
     games.erase(itr);
 }
@@ -152,7 +153,7 @@ uint32_t getPointById(uint32_t id) {
     if (id < 10) {
         return id + 1;
     }
-    return 10;
+    return 10; // 10, J, Q, K
 }
 
 bool happyeos21pt::verify(const checksum256 &seed, const uint32_t dPoints, const uint32_t pPoints){
@@ -194,13 +195,13 @@ void happyeos21pt::reveal(checksum256 &seed, const uint32_t dPoints, const uint3
 }        
 
 
-    // Rules of play
-    // On their turn, players must choose whether to
-    // "hit" (take a card),
-    // "stand" (end their turn),
-    // "double" (double wager, take a single card and finish),
-    // "split" (if the two cards have the same value, separate them to make two hands) or
-    // "surrender" (give up a half-bet and retire from the game). 
+// Rules of play
+// On their turn, players must choose whether to
+// "hit" (take a card),
+// "stand" (end their turn),
+// "double" (double wager, take a single card and finish),
+// "split" (if the two cards have the same value, separate them to make two hands) or
+// "surrender" (give up a half-bet and retire from the game). 
 
 checksum256 happyeos21pt::parse_memo(const std::string &memo) const {
     checksum256 checksum;
