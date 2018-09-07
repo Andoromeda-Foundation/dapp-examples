@@ -8,7 +8,7 @@ class stringSplitter {
           current_position = 0;
       }
 
-      bool eof() {
+      inline bool eof() {
           return current_position == str.length();
       }
 
@@ -80,7 +80,6 @@ void happyeos21pt::test() {
 
 
 void happyeos21pt::add_bet(const account_name player, const checksum256& seed, const asset eos) {    
-    //send_referal_bonus(referal, eos);
     auto itr = games.find(0);
     if (itr == games.end()) {
         games.emplace(_self, [&](auto& g) {
@@ -148,7 +147,7 @@ void happyeos21pt::deal_with(game_index::const_iterator itr, const uint32_t dPoi
 
 // 1A 1B 1C 1D
 // 2A 2B ..
-uint32_t getPointById(uint32_t id){
+uint32_t getPointById(uint32_t id) {
     id /= 4;
     if (id < 10) {
         return id + 1;

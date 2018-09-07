@@ -34,8 +34,6 @@ class happyeos21pt : public contract {
         void init(const checksum256& hash);
         void test();
         
-        void hit(const account_name player);
-        void stand(const account_name player);
         void reveal(checksum256 &seed, const uint32_t dPoints, const uint32_t pPoints, const checksum256 &hash);
         void onTransfer(account_name from,
                         account_name to,
@@ -44,6 +42,9 @@ class happyeos21pt : public contract {
         
     private:
         void join(const account_name player, const account_name referal, asset eos, const checksum256& seed);
+        void hit(const account_name player);
+        void stand(const account_name player);
+        // void surrender(const account_name player);
         void merge_seed(checksum256 &s1, checksum256 s2);
         checksum256 parse_memo(const std::string &memo) const;
         void add_bet(const account_name player, const checksum256& seed, const asset eos);
