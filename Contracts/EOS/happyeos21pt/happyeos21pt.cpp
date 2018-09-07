@@ -57,7 +57,7 @@ void happyeos21pt::send_referal_bonus(const account_name referal, asset eos) {
     if (!is_account(referal)) return;
 }
 
- // @abi action
+// @abi action
 void happyeos21pt::init(const checksum256 &hash) {
     require_auth(_self);
     auto g = global.find(0);
@@ -104,10 +104,12 @@ void happyeos21pt::join(const account_name player, const account_name referal, a
     send_referal_bonus(referal, eos);
 }
 
+// @abi action
 void happyeos21pt::hit(const account_name player) {
     
 }
 
+// @abi action
 void happyeos21pt::stand(const account_name player) {
 
 }
@@ -172,6 +174,7 @@ bool happyeos21pt::verify(const checksum256 &seed, const uint32_t dPoints, const
     return true;
 }
 
+// @abi action
 void happyeos21pt::reveal(checksum256 &seed, const uint32_t dPoints, const uint32_t pPoints, const checksum256 &hash) {
     require_auth(_self);
     assert_sha256((char *)&seed, sizeof(seed), (const checksum256 *)&global.begin()->hash);
@@ -242,7 +245,7 @@ void happyeos21pt::onTransfer(account_name from, account_name to, asset eos, std
     }
 }
 
-#define MY_EOSIO_ABI(TYPE, MEMBERS)                                                                                  \
+#define EOSIO_WAST(TYPE, MEMBERS)                                                                                  \
     extern "C"                                                                                                       \
     {                                                                                                                \
         void apply(uint64_t receiver, uint64_t code, uint64_t action)                                                \
