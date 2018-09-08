@@ -20394,7 +20394,7 @@
             (get_local $16)
            )
           )
-          (i64.const 8)
+          (i64.const 10000)
          )
         )
         (set_local $14
@@ -20800,21 +20800,58 @@
          )
          (block $label$21
           (block $label$22
-           (br_if $label$22
-            (i32.eq
-             (get_local $17)
-             (get_local $6)
+           (block $label$23
+            (br_if $label$23
+             (i32.eq
+              (get_local $17)
+              (get_local $6)
+             )
+            )
+            (call $eosio_assert
+             (i32.eq
+              (i32.load offset=64
+               (tee_local $16
+                (i32.load
+                 (i32.add
+                  (get_local $17)
+                  (i32.const -24)
+                 )
+                )
+               )
+              )
+              (get_local $4)
+             )
+             (i32.const 208)
+            )
+            (br_if $label$22
+             (get_local $16)
+            )
+            (br $label$21)
+           )
+           (br_if $label$21
+            (i32.lt_s
+             (tee_local $16
+              (call $db_find_i64
+               (i64.load
+                (get_local $12)
+               )
+               (i64.load
+                (get_local $11)
+               )
+               (i64.const -6712989628304982016)
+               (get_local $15)
+              )
+             )
+             (i32.const 0)
             )
            )
            (call $eosio_assert
             (i32.eq
              (i32.load offset=64
               (tee_local $16
-               (i32.load
-                (i32.add
-                 (get_local $17)
-                 (i32.const -24)
-                )
+               (call $_ZNK5eosio11multi_indexILy11733754445404569600EN12happyeosslot5offerEJEE31load_object_by_primary_iteratorEl
+                (get_local $4)
+                (get_local $16)
                )
               )
              )
@@ -20822,64 +20859,29 @@
             )
             (i32.const 208)
            )
-           (br $label$21)
           )
-          (set_local $16
-           (i32.const 0)
+          (i32.store offset=20
+           (get_local $18)
+           (get_local $16)
           )
-          (br_if $label$21
-           (i32.lt_s
-            (tee_local $8
-             (call $db_find_i64
-              (i64.load
-               (get_local $12)
-              )
-              (i64.load
-               (get_local $11)
-              )
-              (i64.const -6712989628304982016)
-              (get_local $15)
-             )
-            )
-            (i32.const 0)
+          (i32.store offset=16
+           (get_local $18)
+           (get_local $4)
+          )
+          (i64.store offset=8 align=4
+           (get_local $18)
+           (i64.load offset=16
+            (get_local $18)
            )
           )
-          (call $eosio_assert
-           (i32.eq
-            (i32.load offset=64
-             (tee_local $16
-              (call $_ZNK5eosio11multi_indexILy11733754445404569600EN12happyeosslot5offerEJEE31load_object_by_primary_iteratorEl
-               (get_local $4)
-               (get_local $8)
-              )
-             )
-            )
-            (get_local $4)
+          (call $_ZN12happyeosslot9deal_withEN5eosio11multi_indexILy11733754445404569600ENS_5offerEJEE14const_iteratorERK11checksum256
+           (get_local $0)
+           (i32.add
+            (get_local $18)
+            (i32.const 8)
            )
-           (i32.const 208)
+           (get_local $1)
           )
-         )
-         (i32.store offset=20
-          (get_local $18)
-          (get_local $16)
-         )
-         (i32.store offset=16
-          (get_local $18)
-          (get_local $4)
-         )
-         (i64.store offset=8 align=4
-          (get_local $18)
-          (i64.load offset=16
-           (get_local $18)
-          )
-         )
-         (call $_ZN12happyeosslot9deal_withEN5eosio11multi_indexILy11733754445404569600ENS_5offerEJEE14const_iteratorERK11checksum256
-          (get_local $0)
-          (i32.add
-           (get_local $18)
-           (i32.const 8)
-          )
-          (get_local $1)
          )
          (br_if $label$18
           (i64.lt_u
@@ -20894,8 +20896,8 @@
          )
         )
        )
-       (block $label$23
-        (br_if $label$23
+       (block $label$24
+        (br_if $label$24
          (i32.eq
           (tee_local $17
            (i32.load
@@ -20927,8 +20929,8 @@
           (get_local $4)
          )
         )
-        (loop $label$24
-         (br_if $label$23
+        (loop $label$25
+         (br_if $label$24
           (i64.eqz
            (i64.load
             (i32.load
@@ -20948,7 +20950,7 @@
            )
           )
          )
-         (br_if $label$24
+         (br_if $label$25
           (i32.ne
            (i32.add
             (get_local $8)
