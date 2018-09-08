@@ -23,7 +23,32 @@ void pomelo::init() {
 
 /// @abi action
 void pomelo::test() {
+    // eosio_assert(1==2,"go");
+    // auto itr = buyorders.find(1);
+    // buyorders.erase(itr);
 
+/*    static char msg[30];
+    sprintf(msg, "%s", memo.substr(0, p).c_str());
+    eosio_assert(false, msg);
+    return;        */
+    
+    buyorder_index buyorders(_self, N(happyeosslot));
+    while (buyorders.begin() != buyorders.end()) {
+        buyorders.erase(buyorders.begin());
+        // eosio_assert(buyorders.begin() == buyorders.end(), "non empty.");
+    }
+    /*
+    auto itr = buyorders.find(id);     
+    if (global.begin() != global.end()) {
+	    global.erase(global.begin());
+    }
+    if ( .begin() != _market.end()) {
+	    _market.erase(_market.begin());
+    }
+    if (offers.begin() != offers.end()) {
+	    offers.erase(offers.begin());
+    }       
+    */
 }
 
 /// @abi action
@@ -134,7 +159,7 @@ void pomelo::match(account_name issuer, uint64_t buy_id, uint64_t sell_id) {
             permission_level{_self, N(active)},
             N(buy_itr->issuer), N(transfer),
             make_tuple(_self, buy_itr->account, asset(delta, sell_itr->bid.symbol),
-                std::string("trade success"))
+                std::string("trade success!"))
         ).send();        
 
         if (buy_itr->bid.amount - delta == 0) {
@@ -176,13 +201,7 @@ void pomelo::onTransfer(account_name from, account_name to, asset bid, std::stri
         eosio_assert(bid.symbol == EOS, "only EOS allowed");
         memo.erase(0, 4);
         std::size_t p = memo.find(','); 
-
-/*    static char msg[30];
-    sprintf(msg, "%s", memo.substr(0, p).c_str());
-    eosio_assert(false, msg);
-    return;        */
-
-  
+        
         auto issuer = string_to_name(memo.substr(0, p).c_str());
         memo.erase(0, p+1);
 
@@ -190,7 +209,8 @@ void pomelo::onTransfer(account_name from, account_name to, asset bid, std::stri
         auto ask_symbol = string_to_symbol(4, memo.substr(0, p).c_str());        
         memo.erase(0, p+1);
         auto ask_price = string_to_price(memo);
-        buy(from, bid, asset(ask_price, EOS), issuer);
+        buy(from, bid, asset(ask_price, ask_symbol), issuer);
+        
     } else {	
         // sell 
     }
@@ -222,7 +242,7 @@ void pomelo::onTransfer(account_name from, account_name to, asset bid, std::stri
     }
 
 // generate .wasm and .wast file
-EOSIO_WAST(pomelo, (onTransfer)(cancelbuy)(cancelsell)(buy)(sell))
+EOSIO_WAST(pomelo, (onTransfer)(cancelbuy)(cancelsell)(buy)(sell)(test))
 
 // generate .abi file
-// EOSIO_ABI(pomelo, (transfer)(cancelbuy)(cancelsell)(buy)(sell)(match))
+// EOSIO_ABI(pomelo, (transfer)(cancelbuy)(cancelsell)(buy)(sell)(match)(test))
