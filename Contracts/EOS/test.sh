@@ -5,6 +5,8 @@ eosiocpp -g slot_machine/slot_machine.abi slot_machine/slot_machine.cpp
 cleos set contract slot slot_machine -p slot@active
 
 
+cleos -u http://api-direct.eosasia.one push action happyeosslot transfer '[ "minakokojima", "rukamoemoe51", "100.0000 HPY", "Old laws are rarely able to resist new technologies." ]' -p minakokojima@active
+
 cleos -u http://api-direct.eosasia.one  set contract happyeosslot slot_machine -p happyeosslot@active
 
 cleos -u http://api-direct.eosasia.one  get table happyeosslot happyeosslot player

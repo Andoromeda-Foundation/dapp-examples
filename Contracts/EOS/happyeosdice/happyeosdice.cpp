@@ -180,10 +180,7 @@ void happyeosdice::onTransfer(account_name from, account_name to, asset eos, std
     eosio_assert(false, msg);
     return;     */  
 
-    if (operation == "bet" ) {
-
-
-        
+    if (operation == "bet" ) {        
         uint64_t under;
         stream.get_uint(&under);
         string seed_string;

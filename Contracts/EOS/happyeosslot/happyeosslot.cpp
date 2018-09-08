@@ -359,6 +359,21 @@ void happyeosslot::reveal(const checksum256 &seed, const checksum256 &hash) {
     require_auth(_self);
     assert_sha256((char *)&seed, sizeof(seed), (const checksum256 *)&global.begin()->hash);
     auto n = offers.available_primary_key();
+
+    if (n > 8){
+        uint64_t delta = 0;
+        for (int i = n-1; i >= n-8; --i) {
+            auto itr = offers.find(i);
+            delta += itr->bet;
+            deal_with(itr, seed);
+        }
+        auto itr = global.find(0);
+        global.modify(itr, 0, [&](auto &g) {
+            g.offerBalance -= delta;
+         });
+        return;
+    }
+
     for (int i = 0; i < n; ++i) {
         auto itr = offers.find(i);
         deal_with(itr, seed);

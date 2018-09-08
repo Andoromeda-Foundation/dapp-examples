@@ -84,7 +84,7 @@ cleos push action happyeosslot sell '["tmonomonomon", "10.0000 HPY"]' -p tmonomo
 
 cleos -u https://api-kylin.eosasia.one push action happyeosdice init '["9993a3fa2e1f0d628a1bb9b27b7522ad29aa72881a1a36e39c2af301e86228d3"]' -p happyeosdice@active
 
-cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["tmonomonomon", "ceshiyongeos", "1.0000 EOS", "buy"]' -p tmonomonomon@active
+cleos -u https://api-kylin.eosasia.one push action happyeosslot transfer '["cryptobuffff", "ceshiyongeos", "200.0000 HPY", "happy weekend"]' -p minakokojima@active
 
 cleos -u https://api-kylin.eosasia.one push action happyeosslot issue '["tmonomonomon", "1.0000 HPY"]' -p happyeosslot@active
 
@@ -123,3 +123,8 @@ cleos -u https://api-kylin.eosasia.one push action happyeosslot test '"tmonomono
 cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["tmonomonomon", "ceshiyongeos", "9.0000 EOS", "buy"]' -p tmonomonomon@active
 
 cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '["tmonomonomon", "ceshiyongeos", "90.0000 EOS", "buy"]' -p tmonomonomon@active
+
+
+
+
+cleos -u http://api-direct.eosasia.one push action happyeosslot transfer '["minakokojima", "cryptobuffff", "200.0000 HPY", "happy weekends"]' -p minakokojima@active
