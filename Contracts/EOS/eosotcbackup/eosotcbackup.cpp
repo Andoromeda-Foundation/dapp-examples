@@ -105,15 +105,23 @@ void eosotcbackup::onTransfer(account_name from, account_name to, extended_asset
     require_auth(from);
     eosio_assert(bid.is_valid(), "invalid token transfer");
     eosio_assert(bid.amount > 0, "must bet a positive amount");
-
     if (memo.substr(0, 3) == "ask") {
-        eosio_assert(bid.symbol == EOS, "only EOS allowed");
         memo.erase(0, 4);
+
         std::size_t p = memo.find(',');
-        auto ask_asset = asset(1, EOS); // memo.substr(0, p).c_str());
+        std::size_t f = memo.find('.');  
+        std::size_t s = memo.find(' ');   
+
+        extended_asset _ask;
+        _ask.amount = string_to_price(memo.substr(0, s));
+        _ask.symbol = string_to_symbol(s-f-1, memo.substr(s+1, memo.size()).c_str());
+
+        eosio_assert(_ask.is_valid(), "invalid token transfer");
+        eosio_assert(_ask.amount > 0, "must bet a positive amount");
         memo.erase(0, p+1);
         auto issuer = string_to_name(memo.c_str());
-        ask(from, bid, extended_asset(ask_asset, issuer));
+        _ask.contract = issuer;
+        ask(from, bid, _ask);
     } else if (memo.substr(0, 4) == "take"){	
         
     }      
