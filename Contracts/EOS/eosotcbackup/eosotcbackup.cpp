@@ -128,16 +128,25 @@ struct transfer_args
     string memo;
 };
 
+struct retrieve_args
+{
+    account_name owner;
+    uint64_t order_id;
+    extended_asset ask;
+};
+
 extern "C"
 {
     void apply(uint64_t receiver, uint64_t code, uint64_t action)
     {
         auto self = receiver;
-        eosotcbbackup thiscontract(self);
-        if (action == N(transfer))
-        {
+        eosotcbackup thiscontract(self);
+        if (action == N(transfer)) {
             auto transfer_data = unpack_action_data<transfer_args>();
-            thiscontract.ontransfer(transfer_data.from, transfer_data.to, extended_asset(transfer_data.quantity, code), transfer_data.memo);
+            thiscontract.onTransfer(transfer_data.from, transfer_data.to, extended_asset(transfer_data.quantity, code), transfer_data.memo);
+        } else if (action == N(retrieve)) {
+            auto retrieve_data = unpack_action_data<retrieve_args>();
+            thiscontract.retrieve(retrieve_data.owner, retrieve_data.order_id, retrieve_data.ask);
         }
     }
 } 
