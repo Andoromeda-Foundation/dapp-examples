@@ -83,7 +83,12 @@ void eosotcbackup::take(account_name owner, uint64_t order_id, extended_asset as
     auto itr = orders.find(order_id);    
     eosio_assert(itr != orders.end(), "order is not exist.");
     eosio_assert(itr->ask == ask, "ask is not equal.");
-    // todo(minakokojima): 打钱
+    action(
+        permission_level{_self, N(active)},
+        itr->bid.contract, N(transfer),
+        make_tuple(_self, owner, itr->bid,
+            std::string("trade success"))
+    ).send();
     orders.erase(itr);
 }
 
@@ -93,7 +98,12 @@ void eosotcbackup::retrieve(account_name owner, uint64_t order_id, extended_asse
     eosio_assert(itr != orders.end(), "order is not exist.");
     eosio_assert(itr->owner == owner, "not the owner.");
     eosio_assert(itr->ask == ask, "ask is not equal.");
-    // todo(minakokojima): 打钱
+    action(
+        permission_level{_self, N(active)},
+        itr->bid.contract, N(transfer),
+        make_tuple(_self, itr->owner, itr->bid,
+            std::string("order retrieve"))
+    ).send();
     orders.erase(itr);    
 }
 
