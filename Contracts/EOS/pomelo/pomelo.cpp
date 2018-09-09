@@ -190,6 +190,7 @@ void pomelo::match(account_name issuer, uint64_t buy_id, uint64_t sell_id) {
     }    
 }
 
+
 void pomelo::transfer(account_name from, account_name to, asset bid, std::string memo) { 
     return;
 }
@@ -203,6 +204,11 @@ void pomelo::onTransfer(account_name from, account_name to, asset bid, std::stri
     eosio_assert(bid.is_valid(), "invalid token transfer");
     eosio_assert(bid.amount > 0, "must bet a positive amount");
 
+    /*
+    if (memo.substr(0, 4) == "take") {
+
+        return;
+    }*/
 
     if (memo.substr(0, 3) == "buy") {
 
