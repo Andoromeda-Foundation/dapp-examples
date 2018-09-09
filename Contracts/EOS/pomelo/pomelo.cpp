@@ -58,7 +58,6 @@ void pomelo::cancelsell(account_name issuer, account_name account, uint64_t id) 
     auto itr = sellorders.find(id);
     eosio_assert(itr->account == account, "Account does not match");
     eosio_assert(itr->id == id, "Trade id is not found");
-    // TODO: 返还 DONE:@yukiexe
 
     action(
         permission_level{_self, N(active)},
@@ -120,6 +119,15 @@ void pomelo::sell(account_name account, asset bid, asset ask, account_name issue
     o.account = account;
     o.bid = bid;
     o.ask = ask;
+
+    sellorder_index sellorders(_self, issuer);    
+    sellorders.emplace(_self, [&](auto& t) {    
+        t.id = sellorders.available_primary_key();
+        t.account = account;
+        t.bid = bid;
+        t.ask = ask;      
+        t.timestamp = now();
+    });
 }
 
 

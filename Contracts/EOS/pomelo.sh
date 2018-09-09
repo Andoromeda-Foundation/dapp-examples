@@ -3,8 +3,8 @@ cleos wallet unlock --password PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4
 # /usr/local/eosio/bin/eosiocpp -g pomelo/pomelo.abi pomelo/pomelo.cpp
 /usr/local/eosio/bin/eosiocpp -o pomelo/pomelo.wast pomelo/pomelo.cpp
 
-cleos -u https://api-kylin.eosasia.one set contract pomelodex111 pomelo -p pomelodex111@active
-cleos -u https://api-kylin.eosasia.one push action pomelodex111 test '[]' -p minakokojima@active
+# cleos -u https://api-kylin.eosasia.one set contract pomelodex111 pomelo -p pomelodex111@active
+# cleos -u https://api-kylin.eosasia.one push action pomelodex111 test '[]' -p minakokojima@active
 
 
 # cleos -u https://api-kylin.eosasia.one set contract pomelodex111 pomelo -p pomelodex111@active
