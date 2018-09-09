@@ -20,8 +20,8 @@ public:
 
     void init(); void clean(); void test();
     void ask(account_name owner, extended_asset bid, extended_asset ask);
-    void take(account_name owner, uint64_t order_id, extended_asset ask);
-    void retrieve(account_name owner, uint64_t order_id, extended_asset ask);
+    void take(account_name owner, uint64_t order_id, extended_asset bid, extended_asset ask);
+    void retrieve(account_name owner, uint64_t order_id);
 
     void onTransfer(account_name   from,
                     account_name   to,
