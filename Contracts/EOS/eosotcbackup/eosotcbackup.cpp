@@ -40,27 +40,57 @@ void eosotcbackup::take(account_name owner, uint64_t order_id, extended_asset bi
     auto itr = orders.find(order_id);  
     
     eosio_assert(itr != orders.end(), "order is not exist.");
-    eosio_assert(itr->bid == ask, "ask is not equal to order bid.");
-    eosio_assert(itr->ask == bid, "bid is not equal to order ask.");
+    //eosio_assert(itr->bid == ask, "ask is not equal to order bid.");
+    //eosio_assert(itr->ask == bid, "bid is not equal to order ask.");
+
+    // partial take
+    eosio_assert( uint128_t(itr->bid.amount) * ask.amount == uint128_t(itr->ask.amount) * bid.amount, 
+        "the price is not equal.");
         
     // extended_asset can only be used in eosio.token.
-    asset _bid = bid;
-    asset _ask = ask;
 
-    action(
-        permission_level{_self, N(active)},
-        ask.contract, N(transfer),
-        make_tuple(_self, owner, _ask,
-            std::string("trade success"))
-    ).send();
+    if (itr->bid <= bid) {
+        asset _bid = itr->bid;
+        asset _ask = itr->ask;
 
-    action(
-        permission_level{_self, N(active)},
-        bid.contract, N(transfer),
-        make_tuple(_self, itr->owner, _bid,
-            std::string("trade success"))
-    ).send();
-    orders.erase(itr);
+        action(
+            permission_level{_self, N(active)},
+            ask.contract, N(transfer),
+            make_tuple(_self, owner, _ask,
+                std::string("trade success"))
+        ).send();
+
+        action(
+            permission_level{_self, N(active)},
+            bid.contract, N(transfer),
+            make_tuple(_self, itr->owner, _bid,
+                std::string("trade success"))
+        ).send();
+
+        orders.erase(itr);
+    } else {
+        asset _bid = bid;
+        asset _ask = ask;
+
+        action(
+            permission_level{_self, N(active)},
+            ask.contract, N(transfer),
+            make_tuple(_self, owner, _ask,
+                std::string("trade success"))
+        ).send();
+
+        action(
+            permission_level{_self, N(active)},
+            bid.contract, N(transfer),
+            make_tuple(_self, itr->owner, _bid,
+                std::string("trade success"))
+        ).send();
+
+        orders.modify(itr, 0, [&](auto &o) {
+            o.bid.amount -= _ask.amount;
+            o.ask.amount -= _bid.amount;
+        });
+    }  
 }
 
 // @abi action
