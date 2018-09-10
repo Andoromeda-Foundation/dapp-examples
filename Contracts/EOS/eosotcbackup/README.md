@@ -3,8 +3,6 @@
 #
 cleos -u https://api-kylin.eosasia.one get table pomelodex111 happyeosslot buyorder
 
-
-
 cleos wallet unlock --password PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4LZ1u
 
 5JvpqdwPb1k8QQud1Yq7BGXJXrK1eLLyAJXEoX2mZQ4egimRGxe
@@ -25,4 +23,4 @@ cleos wallet unlock --password PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4
 
 
 # Permission
-# cleos -u https://api-kylin.eosasia.one set account permission eosotcbackup active '{"threshold": 1,"keys": [{"key": "EOS74dQ6NPbtytet1yWdm79bczHo9QA1WvP9Fn7cSpb6CakqwbrkZ","weight": 1}],"accounts": [{"permission":{"actor":"eosotcbackup","permission":"eosio.code"},"weight":1}]}' owner -p eosotcbackup
+# cleos -u https://api-kylin.eosasia.one set account permission eosotcbackup active '{"threshold": 1,"keys": [{"key": "EOS74dQ6NPbtytet1yWdm79bczHo9QA1WvP9Fn7cSpb6CakqwbrkZ","weight": 1}],"accounts": [{"permission":{"actor":"eosotcbackup","permission":"happyeosslot.code"},"weight":1}]}' owner -p eosotcbackup

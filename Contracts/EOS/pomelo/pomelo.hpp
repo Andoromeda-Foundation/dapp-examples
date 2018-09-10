@@ -25,6 +25,7 @@ public:
     void buy(account_name account, asset bid, asset ask, account_name issuer);
     void sell(account_name account, asset bid, asset ask, account_name issuer);
     void match(account_name issuer, uint64_t buy_id, uint64_t sell_id);
+    void (account_name issuer, uint64_t buy_id);
 
     void onTransfer(account_name from,
                     account_name to,

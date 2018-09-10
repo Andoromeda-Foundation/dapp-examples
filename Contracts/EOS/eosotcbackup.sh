@@ -1,5 +1,5 @@
 cleos wallet unlock --password PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4LZ1u
-/usr/local/eosio/bin/eosiocpp -g eosotcbackup/eosotcbackup.abi eosotcbackup/eosotcbackup.cpp
+# /usr/local/eosio/bin/eosiocpp -g eosotcbackup/eosotcbackup.abi eosotcbackup/eosotcbackup.cpp
 /usr/local/eosio/bin/eosiocpp -o eosotcbackup/eosotcbackup.wast eosotcbackup/eosotcbackup.cpp
 
 # Set Contract
@@ -8,7 +8,7 @@ cleos -u https://api-kylin.eosasia.one set contract eosotcbackup eosotcbackup -p
 
 
 # ask order
-cleos -u https://api-kylin.eosasia.one push action happyeosslot transfer '[ "minakokojima", "eosotcbackup", "1.0000 HPY", "ask,0.5000 EOS,eosio.token" ]' -p minakokojima@active
+# cleos -u https://api-kylin.eosasia.one push action happyeosslot transfer '[ "minakokojima", "eosotcbackup", "1.0000 HPY", "ask,0.5000 EOS,eosio.token" ]' -p minakokojima@active
 
 # take order
 # cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '[ "minakokojima", "eosotcbackup", "0.5000 EOS", "take,1.0000 HPY,happyeosslot,0" ]' -p minakokojima@active

@@ -51,7 +51,8 @@ void eosotcbackup::take(account_name owner, uint64_t order_id, extended_asset bi
     orders.erase(itr);
 }
 
-void eosotcbackup::retrieve(account_name owner, uint64_t order_id) {
+// @abi action
+void eosotcbackup::retrieve(account_name owner, uint64_t order_id, extended_asset ask) {
     order_index orders(_self, ask.contract); 
     auto itr = orders.find(order_id);    
     eosio_assert(itr != orders.end(), "order is not exist.");
@@ -62,7 +63,7 @@ void eosotcbackup::retrieve(account_name owner, uint64_t order_id) {
         make_tuple(_self, itr->owner, itr->bid,
             std::string("order retrieve."))
     ).send();
-    orders.erase(itr);    
+    orders.erase(itr); 
 }
 
 // memo [ask,0.5000 HPY,happyeosslot]
@@ -115,7 +116,6 @@ void eosotcbackup::onTransfer(account_name from, account_name to, extended_asset
     }
 }
 
-
 struct transfer_args
 {
     account_name from;
@@ -128,6 +128,7 @@ struct retrieve_args
 {
     account_name owner;
     uint64_t order_id;
+    extended_asset ask;
 };
 
 extern "C"
@@ -141,10 +142,12 @@ extern "C"
             thiscontract.onTransfer(transfer_data.from, transfer_data.to, extended_asset(transfer_data.quantity, code), transfer_data.memo);
         } else if (action == N(retrieve)) {
             auto retrieve_data = unpack_action_data<retrieve_args>();
-            thiscontract.retrieve(retrieve_data.owner, retrieve_data.order_id);
+            thiscontract.retrieve(retrieve_data.owner, retrieve_data.order_id, retrieve_data.ask);
         }
     }
 } 
+
+
 // #define EOSIO_WAST(TYPE, MEMBERS) apply(uint64_t receiver, uint64_t code, uint64_t action)
 /*
 #define EOSIO_WAST(TYPE, MEMBERS)                                                                                  \
@@ -177,5 +180,6 @@ extern "C"
 // generate .wasm and .wast file
 /// EOSIO_WAST(eosotcbackup, (onTransfer)(retrieve)(init)(test))
 
+
 // generate .abi file
-// EOSIO_ABI(eosotcbackup, (transfer)(init)(test))
+// EOSIO_ABI(eosotcbackup, (transfer)(retrieve)(init)(test))
