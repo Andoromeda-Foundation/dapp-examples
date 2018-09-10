@@ -20040,13 +20040,12 @@
   )
  )
  (func $_ZN12happyeosslot8transferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE (type $FUNCSIG$vijjii) (param $0 i32) (param $1 i64) (param $2 i64) (param $3 i32) (param $4 i32)
-  (local $5 i64)
+  (local $5 i32)
   (local $6 i64)
   (local $7 i32)
-  (local $8 i32)
   (i32.store offset=4
    (i32.const 0)
-   (tee_local $8
+   (tee_local $7
     (i32.sub
      (i32.load offset=4
       (i32.const 0)
@@ -20056,134 +20055,135 @@
    )
   )
   (block $label$0
-   (br_if $label$0
-    (i64.ne
-     (i64.load
-      (get_local $0)
+   (block $label$1
+    (br_if $label$1
+     (i64.ne
+      (i64.load
+       (get_local $0)
+      )
+      (get_local $2)
      )
-     (get_local $2)
     )
-   )
-   (i64.store
-    (i32.add
+    (i64.store
      (i32.add
-      (get_local $8)
-      (i32.const 64)
-     )
-     (i32.const 8)
-    )
-    (tee_local $5
-     (i64.load
       (i32.add
-       (get_local $3)
-       (i32.const 8)
+       (get_local $7)
+       (i32.const 64)
+      )
+      (i32.const 8)
+     )
+     (tee_local $2
+      (i64.load
+       (i32.add
+        (get_local $3)
+        (i32.const 8)
+       )
       )
      )
     )
+    (set_local $6
+     (i64.load
+      (get_local $3)
+     )
+    )
+    (i64.store
+     (i32.add
+      (get_local $7)
+      (i32.const 8)
+     )
+     (get_local $2)
+    )
+    (i64.store offset=64
+     (get_local $7)
+     (get_local $6)
+    )
+    (i32.store offset=4
+     (get_local $7)
+     (i32.load offset=68
+      (get_local $7)
+     )
+    )
+    (i32.store
+     (get_local $7)
+     (i32.load offset=64
+      (get_local $7)
+     )
+    )
+    (call $_ZN14tradeableToken4sellEyN5eosio5assetE
+     (get_local $0)
+     (get_local $1)
+     (get_local $7)
+    )
+    (br $label$0)
    )
-   (set_local $6
+   (i64.store
+    (tee_local $5
+     (i32.add
+      (i32.add
+       (get_local $7)
+       (i32.const 48)
+      )
+      (i32.const 8)
+     )
+    )
+    (i64.load
+     (i32.add
+      (get_local $3)
+      (i32.const 8)
+     )
+    )
+   )
+   (i64.store offset=48
+    (get_local $7)
     (i64.load
      (get_local $3)
     )
    )
+   (drop
+    (call $_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEC2ERKS5_
+     (i32.add
+      (get_local $7)
+      (i32.const 32)
+     )
+     (get_local $4)
+    )
+   )
    (i64.store
     (i32.add
      (i32.add
-      (get_local $8)
+      (get_local $7)
       (i32.const 16)
      )
      (i32.const 8)
     )
-    (get_local $5)
-   )
-   (i64.store offset=64
-    (get_local $8)
-    (get_local $6)
-   )
-   (i32.store offset=20
-    (get_local $8)
-    (i32.load offset=68
-     (get_local $8)
+    (i64.load
+     (get_local $5)
     )
    )
-   (i32.store offset=16
-    (get_local $8)
-    (i32.load offset=64
-     (get_local $8)
+   (i64.store offset=16
+    (get_local $7)
+    (i64.load offset=48
+     (get_local $7)
     )
    )
-   (call $_ZN14tradeableToken4sellEyN5eosio5assetE
+   (call $_ZN5token9_transferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE
     (get_local $0)
     (get_local $1)
+    (get_local $2)
     (i32.add
-     (get_local $8)
+     (get_local $7)
      (i32.const 16)
     )
-   )
-  )
-  (i64.store
-   (tee_local $7
     (i32.add
-     (i32.add
-      (get_local $8)
-      (i32.const 48)
-     )
-     (i32.const 8)
-    )
-   )
-   (i64.load
-    (i32.add
-     (get_local $3)
-     (i32.const 8)
-    )
-   )
-  )
-  (i64.store offset=48
-   (get_local $8)
-   (i64.load
-    (get_local $3)
-   )
-  )
-  (drop
-   (call $_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEC2ERKS5_
-    (i32.add
-     (get_local $8)
+     (get_local $7)
      (i32.const 32)
     )
-    (get_local $4)
    )
-  )
-  (i64.store
-   (i32.add
-    (get_local $8)
-    (i32.const 8)
-   )
-   (i64.load
-    (get_local $7)
-   )
-  )
-  (i64.store
-   (get_local $8)
-   (i64.load offset=48
-    (get_local $8)
-   )
-  )
-  (call $_ZN5token9_transferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE
-   (get_local $0)
-   (get_local $1)
-   (get_local $2)
-   (get_local $8)
-   (i32.add
-    (get_local $8)
-    (i32.const 32)
-   )
-  )
-  (block $label$1
-   (br_if $label$1
+   (br_if $label$0
     (i32.eqz
      (i32.and
       (i32.load8_u offset=32
-       (get_local $8)
+       (get_local $7)
       )
       (i32.const 1)
      )
@@ -20191,14 +20191,14 @@
    )
    (call $_ZdlPv
     (i32.load offset=40
-     (get_local $8)
+     (get_local $7)
     )
    )
   )
   (i32.store offset=4
    (i32.const 0)
    (i32.add
-    (get_local $8)
+    (get_local $7)
     (i32.const 80)
    )
   )

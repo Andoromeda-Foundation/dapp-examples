@@ -13,6 +13,7 @@ void eosotcbackup::init() {
 void eosotcbackup::test() {
 }
 
+
 uint64_t string_to_price(string s) {
     uint64_t z = 0;
     for (int i=0;i<s.size();++i) {
@@ -35,17 +36,28 @@ void eosotcbackup::ask(account_name owner, extended_asset bid, extended_asset as
     });
 }
 void eosotcbackup::take(account_name owner, uint64_t order_id, extended_asset bid, extended_asset ask) {
-    order_index orders(_self, ask.contract); 
-    auto itr = orders.find(order_id);    
+    order_index orders(_self, bid.contract); 
+    auto itr = orders.find(order_id);  
+    
     eosio_assert(itr != orders.end(), "order is not exist.");
-
     eosio_assert(itr->bid == ask, "ask is not equal to order bid.");
     eosio_assert(itr->ask == bid, "bid is not equal to order ask.");
+        
+    // extended_asset can only be used in eosio.token.
+    asset _bid = bid;
+    asset _ask = ask;
 
     action(
         permission_level{_self, N(active)},
-        itr->bid.contract, N(transfer),
-        make_tuple(_self, owner, itr->bid,
+        ask.contract, N(transfer),
+        make_tuple(_self, owner, _ask,
+            std::string("trade success"))
+    ).send();
+
+    action(
+        permission_level{_self, N(active)},
+        bid.contract, N(transfer),
+        make_tuple(_self, itr->owner, _bid,
             std::string("trade success"))
     ).send();
     orders.erase(itr);
@@ -57,11 +69,14 @@ void eosotcbackup::retrieve(account_name owner, uint64_t order_id, extended_asse
     auto itr = orders.find(order_id);    
     eosio_assert(itr != orders.end(), "order is not exist.");
     eosio_assert(itr->owner == owner, "not the owner.");
+
+    asset _bid = itr->bid;
+
     action(
         permission_level{_self, N(active)},
         itr->bid.contract, N(transfer),
-        make_tuple(_self, itr->owner, itr->bid,
-            std::string("order retrieve."))
+        make_tuple(_self, owner, _bid,
+            std::string("order retrieve"))
     ).send();
     orders.erase(itr); 
 }
@@ -145,7 +160,7 @@ extern "C"
             thiscontract.retrieve(retrieve_data.owner, retrieve_data.order_id, retrieve_data.ask);
         }
     }
-} 
+}
 
 
 // #define EOSIO_WAST(TYPE, MEMBERS) apply(uint64_t receiver, uint64_t code, uint64_t action)

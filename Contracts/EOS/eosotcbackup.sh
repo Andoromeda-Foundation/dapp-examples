@@ -3,15 +3,19 @@ cleos wallet unlock --password PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4
 /usr/local/eosio/bin/eosiocpp -o eosotcbackup/eosotcbackup.wast eosotcbackup/eosotcbackup.cpp
 
 # Set Contract
-cleos -u https://api-kylin.eosasia.one set contract eosotcbackup eosotcbackup -p eosotcbackup@active
-
-
+cleos -u http://api-direct.eosasia.one set contract eosotcbackup eosotcbackup -p eosotcbackup@active
 
 # ask order
-# cleos -u https://api-kylin.eosasia.one push action happyeosslot transfer '[ "minakokojima", "eosotcbackup", "1.0000 HPY", "ask,0.5000 EOS,eosio.token" ]' -p minakokojima@active
+#cleos -u http://api-direct.eosasia.one push action eosio.token transfer '[ "minakokojima", "eosotcbackup", "0.0001 EOS", "ask,0.0010 HPY,happyeosslot" ]' -p minakokojima@active
 
 # take order
 # cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '[ "minakokojima", "eosotcbackup", "0.5000 EOS", "take,1.0000 HPY,happyeosslot,0" ]' -p minakokojima@active
+
+# cleos -u https://api-kylin.eosasia.one push action happyeosslot transfer '[ "minakokojima", "eosotcbackup", "0.0001 HPY", "ask,0.0001 EOS,eosio.token" ]' -p minakokojima@active
+
+# cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '[ "minakokojima", "eosotcbackup", "0.0001 EOS", "take,0.0001 HPY,happyeosslot,2" ]' -p minakokojima@active
+#// take,1.0000 HPY,happyeosslot,0
+
 
 # cleos -u https://api-kylin.eosasia.one push action happyeosslot transfer '[ "minakokojima", "eosotcbackup", "0.4999 HPY", "take,1.0000 EOS,eosio.token,1" ]' -p minakokojima@active
 
@@ -19,6 +23,8 @@ cleos -u https://api-kylin.eosasia.one set contract eosotcbackup eosotcbackup -p
 # cleos -u https://api-kylin.eosasia.one get table happyeosslot happyeosslot accounts
 
 # cleos -u https://api-kylin.eosasia.one get table eosotcbackup happyeosslot order
+
+# cleos -u https://api-kylin.eosasia.one get table eosotcbackup eosio.token order
 
 # /usr/local/eosio/bin/eosiocpp -g pomelo/pomelo.abi pomelo/pomelo.cpp
 # 

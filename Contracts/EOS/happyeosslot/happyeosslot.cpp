@@ -351,8 +351,11 @@ void happyeosslot::onTransfer(account_name from, account_name to, asset eos, std
 }
  // @abi action
 void happyeosslot::transfer(account_name from, account_name to, asset quantity, std::string memo) {        
-    if (to == _self) sell(from, quantity);
-    _transfer(from, to, quantity, memo);
+    if (to == _self) {
+        sell(from, quantity);
+    } else {
+        _transfer(from, to, quantity, memo);
+    }
 }
  // @abi action
 void happyeosslot::reveal(const checksum256 &seed, const checksum256 &hash) {

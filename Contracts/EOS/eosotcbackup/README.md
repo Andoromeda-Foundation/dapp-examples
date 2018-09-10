@@ -10,6 +10,8 @@ cleos wallet unlock --password PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4
 /usr/local/eosio/bin/eosiocpp -o pomelo/pomelo.wast pomelo/pomelo.cpp
 
 
+cleos -u https://api-kylin.eosasia.one set account permission eosotcbackup active '{"threshold": 1,"keys": [{"key": "EOS74dQ6NPbtytet1yWdm79bczHo9QA1WvP9Fn7cSpb6CakqwbrkZ","weight": 1}],"accounts": [{"permission":{"actor":"eosotcbackup","permission":"eosio.code"},"weight":1}]}' owner -p eosotcbackup
+
 
 # cleos -u https://api-kylin.eosasia.one set contract pomelodex111 pomelo -p pomelodex111@active
 

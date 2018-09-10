@@ -2,6 +2,8 @@
 cleos wallet unlock --password PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4LZ1u
 /usr/local/eosio/bin/eosiocpp -o happyeosslot/happyeosslot.wast happyeosslot/happyeosslot.cpp
 cleos -u http://api-direct.eosasia.one set contract happyeosslot happyeosslot -p happyeosslot@active
+
+# cleos -u http://api-direct.eosasia.one set contract happyeosslot happyeosslot -p happyeosslot@active
 # cleos -u https://api-kylin.eosasia.one push action happyeosslot init '["0196d5b5d9ec1bc78ba927d2db2cb327d836f002601c77bd8c3f144a07ddc737"]' -p happyeosslot@active
 
 
@@ -22,3 +24,4 @@ cleos -u http://api-direct.eosasia.one set contract happyeosslot happyeosslot -p
 
 
 # cleos -u https://api-kylin.eosasia.one set account permission happyeosdice active '{"threshold": 1,"keys": [{"key": "EOS79mZ2pseEgc7cR4rPFoTUe3DBrLj8jmf3FGZqQCBwazUYioGZh","weight": 1}],"accounts": [{"permission":{"actor":"happyeosdice","permission":"eosio.code"},"weight":1}]}' owner -p happyeosdice
+#
