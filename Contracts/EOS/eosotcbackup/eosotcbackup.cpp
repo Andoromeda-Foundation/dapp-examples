@@ -71,7 +71,7 @@ void eosotcbackup::take(account_name owner, uint64_t order_id, extended_asset bi
                 std::string("trade success"))
         ).send();        
 
-        //insert_txlog(itr->owner, owner, itr->bid, itr->ask);
+        insert_txlog(itr->owner, owner, itr->bid, itr->ask);
         orders.erase(itr);
     } else {
         asset _bid = ask;
@@ -97,7 +97,7 @@ void eosotcbackup::take(account_name owner, uint64_t order_id, extended_asset bi
             o.bid.amount -= _ask.amount;
             o.ask.amount -= _bid.amount;
         });
-        // insert_txlog(itr->owner, owner, bid, ask);
+        insert_txlog(itr->owner, owner, bid, ask);
     }  
 }
 
