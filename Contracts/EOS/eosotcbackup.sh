@@ -1,9 +1,13 @@
+# Network
+# -u http://api-direct.eosasia.one 
+# -u https://api-kylin.eosasia.one
+
 cleos wallet unlock --password PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4LZ1u
 # /usr/local/eosio/bin/eosiocpp -g eosotcbackup/eosotcbackup.abi eosotcbackup/eosotcbackup.cpp
 /usr/local/eosio/bin/eosiocpp -o eosotcbackup/eosotcbackup.wast eosotcbackup/eosotcbackup.cpp
 
 # Set Contract
-cleos -u http://api-direct.eosasia.one set contract eosotcbackup eosotcbackup -p eosotcbackup@active
+cleos -u https://api-kylin.eosasia.one set contract eosotcbackup eosotcbackup -p eosotcbackup@active
 
 # ask order
 #cleos -u http://api-direct.eosasia.one push action eosio.token transfer '[ "minakokojima", "eosotcbackup", "0.0001 EOS", "ask,0.0010 HPY,happyeosslot" ]' -p minakokojima@active

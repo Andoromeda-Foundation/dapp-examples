@@ -15,8 +15,7 @@ class eosotcbackup : public contract
 {
 public:
     eosotcbackup(account_name self) : 
-        contract(self),
-        txlogs(_self, _self) {
+        contract(self) {
     }
 
     void init(); void clean(); void test();
@@ -34,7 +33,7 @@ public:
                   asset        quantity,
                   string       memo);                 
 
-    // @abi table
+    /// @abi table
     struct order {
         uint64_t id;
         account_name owner; // 发起者
@@ -50,25 +49,4 @@ public:
     typedef eosio::multi_index<N(order), order, 
         indexed_by<N(byprice), const_mem_fun<order, real_type, &order::get_price>>
     > order_index;
-
-    // @abi table
-    struct txlog {
-        uint64_t id;
-        account_name bidder; // 买方 
-        account_name asker; // 卖方
-        extended_asset bid; // 提供
-        extended_asset ask; // 需求
-        time timestamp; // 时间戳         
-
-        uint64_t primary_key() const {return id;}
-        uint64_t get_timestamp() const {return timestamp;} 
-        EOSLIB_SERIALIZE(txlog, (id)(bidder)(asker)(bid)(ask)(timestamp))        
-    };
-    typedef eosio::multi_index<N(txlog), txlog, 
-        indexed_by<N(bytimestamp), const_mem_fun<txlog, uint64_t, &txlog::get_timestamp>>
-    > txlogs_index;
-    txlogs_index txlogs;
-
-    void cleantxlogs(uint64_t cnt);
-    void insert_txlog(account_name bidder, account_name asker, extended_asset bid, extended_asset ask);   
 };

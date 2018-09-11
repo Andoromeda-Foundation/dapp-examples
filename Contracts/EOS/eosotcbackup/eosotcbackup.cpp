@@ -161,6 +161,26 @@ void eosotcbackup::onTransfer(account_name from, account_name to, extended_asset
     }
 }
 
+// @abi action
+void eosotcbackup::cleantxlogs(uint64_t cnt) {
+    auto timestamp_index = txlogs.get_index<N(bytimestamp)>();
+    while (timestamp_index.begin() != timestamp_index.end()) {
+        if (cnt-- == 0) return;
+        timestamp_index.erase(timestamp_index.begin());
+    }
+}
+
+void eosotcbackup::insert_txlog(account_name bidder, account_name asker, extended_asset bid, extended_asset ask) {
+    txlogs.emplace(_self, [&](auto& t){
+        t.id = txlogs.available_primary_key();
+        t.bidder = bidder;
+        t.asker = asker;    
+        t.bid = bid;
+        t.ask = ask;        
+        t.timestamp = current_time();
+    });
+}
+
 struct transfer_args
 {
     account_name from;
@@ -185,9 +205,11 @@ extern "C"
         if (action == N(transfer)) {
             auto transfer_data = unpack_action_data<transfer_args>();
             thiscontract.onTransfer(transfer_data.from, transfer_data.to, extended_asset(transfer_data.quantity, code), transfer_data.memo);
-        } else if (action == N(retrieve)) {
-            auto retrieve_data = unpack_action_data<retrieve_args>();
-            thiscontract.retrieve(retrieve_data.owner, retrieve_data.order_id, retrieve_data.ask);
+        } else {                                                                          
+            switch (action)                                                                                      
+            {                                                                                                    
+                EOSIO_API(eosotcbackup, (retrieve)(init)(test)(cleantxlogs))                         
+            }              
         }
     }
 }
@@ -223,8 +245,7 @@ extern "C"
     */
 
 // generate .wasm and .wast file
-/// EOSIO_WAST(eosotcbackup, (onTransfer)(retrieve)(init)(test))
-
+/// EOSIO_WAST(eosotcbackup, (onTransfer)(retrieve)(init)(test)(cleantxlogs))
 
 // generate .abi file
-// EOSIO_ABI(eosotcbackup, (transfer)(retrieve)(init)(test))
+// EOSIO_ABI(eosotcbackup, (transfer)(retrieve)(init)(test)(cleantxlogs))
