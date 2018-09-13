@@ -91,7 +91,7 @@ void happyeosdice::sell(const account_name account, asset hpy) {
        s.supply -= hpy;
     });
 
-    sub_balance(account, hpy);
+    //token::sub_balance(account, hpy);
 
     asset eos(delta, EOS_SYMBOL);
     action(
@@ -175,9 +175,6 @@ void happyeosdice::onTransfer(account_name from, account_name to, asset eos, std
     if (to != _self) {
         return;
     }
-  
-
-
 
     require_auth(from);
     eosio_assert(eos.is_valid(), "Invalid token transfer");
@@ -218,6 +215,20 @@ void happyeosdice::onTransfer(account_name from, account_name to, asset eos, std
 }
 
  // @abi action
+void happyeosdice::onSell(account_name from, account_name to, asset hpy, std::string memo) {        
+    if (to != _self) return;
+
+    require_auth(from);
+    eosio_assert(hpy.is_valid(), "Invalid token transfer");
+    eosio_assert(hpy.symbol == HPY_SYMBOL, "only HPY token allowed");
+    eosio_assert(hpy.amount > 0, "must sell a positive amount");
+    string operation = memo.substr(0, 4);
+    if (operation == "sell") {
+        sell(from, hpy);
+    }
+}
+
+ // @abi action
 void happyeosdice::reveal(const checksum256 &seed, const checksum256 &hash) {
     require_auth(_self);
     assert_sha256((char *)&seed, sizeof(seed), (const checksum256 *)&global.begin()->hash);
@@ -231,6 +242,15 @@ void happyeosdice::reveal(const checksum256 &seed, const checksum256 &hash) {
         g.hash = hash;
         g.offerBalance = 0;
     });
+}
+
+ // @abi action
+void happyeosdice::transfer(account_name from, account_name to, asset quantity, std::string memo) {        
+    if (to == _self) {
+        sell(from, quantity);
+    } else {
+        transfer(from, to, quantity, memo);
+    }
 }
 
 uint64_t happyeosdice::get_bonus(uint64_t seed) const {
@@ -311,34 +331,7 @@ void happyeosdice::set_roll_result(const account_name account, uint64_t roll_num
     }
 }
 
-
-
-
-#define MY_EOSIO_ABI(TYPE, MEMBERS)                                                                                  \
-    extern "C"                                                                                                       \
-    {                                                                                                                \
-        void apply(uint64_t receiver, uint64_t code, uint64_t action)                                                \
-        {                                                                                                            \
-                                                                                                                     \
-            auto self = receiver;                                                                                    \
-            if (action == N(onerror))                                                                                \
-            {                                                                                                        \
-                eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account"); \
-            }                                                                                                        \
-            if (code == N(eosio.token) && action == N(transfer)) {                                                   \
-                action = N(onTransfer);                                                                              \
-            }                                                                                                        \
-            if ((code == N(eosio.token) && action == N(onTransfer)) || code == self && action != N(onTransfer)) {                               \
-                TYPE thiscontract(self);                                                                             \
-                switch (action)                                                                                      \
-                {                                                                                                    \
-                    EOSIO_API(TYPE, MEMBERS)                                                                         \
-                }                                                                                                     \
-            }                                                                                                        \
-        }                                                                                                            \
-    }
-// generate .wasm and .wast file
-// MY_EOSIO_ABI(happyeosdice, (onTransfer)(init)(reveal)(test))
-
 // generate .abi file
-// EOSIO_ABI(happyeosdice, (init)(reveal)(test))
+
+//EOSIO_ABI( eosio::token, (create)(issue)(transfer) )
+//EOSIO_ABI(happyeosdice, (init)(test)(reveal))

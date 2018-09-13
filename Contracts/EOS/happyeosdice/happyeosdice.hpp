@@ -21,6 +21,17 @@ class happyeosdice : public kyubey {
             global(_self, _self),
             offers(_self, _self) {}
 
+        // @abi action    
+        void create( account_name issuer,
+                      asset        maximum_supply);
+        // @abi action            
+        void issue( account_name to, asset quantity, string memo );
+        // @abi action  
+        void transfer(account_name from,
+                        account_name to,
+                        asset        quantity,
+                        string       memo);    
+
         // @abi action
         void init(const checksum256& hash);
         // @abi action
@@ -28,13 +39,19 @@ class happyeosdice : public kyubey {
         // @abi action
         void buy(const account_name account, asset eos);
         // @abi action        
-        void sell(const account_name account, asset hpy);        
+        void sell(const account_name account, asset hpy); 
         
         // EOS transfer event.
         void onTransfer(account_name from,
                         account_name to,
                         asset        quantity,
-                        string       memo);                  
+                        string       memo);     
+        
+        // HPY transfer event.
+        void onSell    (account_name from,
+                        account_name to,
+                        asset        quantity,
+                        string       memo);                                       
 
         void reveal( const checksum256 &seed, const checksum256 &hash);
 
@@ -90,3 +107,21 @@ class happyeosdice : public kyubey {
         uint64_t merge_seed(const checksum256& s1, const checksum256& s2) const;
         checksum256 parse_memo(const std::string &memo) const;
 };
+
+extern "C" {
+void apply(uint64_t receiver, uint64_t code, uint64_t action) {
+    happyeosdice thiscontract(receiver);
+    if ((code == N(eosio.token)) && (action == N(transfer))) {
+        execute_action(&thiscontract, &happyeosdice::onTransfer);
+        return;
+    }
+    if ((code == receiver) && (action == N(transfer))) {
+        execute_action(&thiscontract, &happyeosdice::onSell);
+        return;
+    }    
+    if (code != receiver) return;
+
+    switch (action) { EOSIO_API(happyeosdice, (create)(issue)(transfer)(init)(test)(reveal) ) };
+    eosio_exit(0);
+}
+}
