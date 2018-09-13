@@ -168,9 +168,24 @@ void happyeosdice::bet(const account_name account, const account_name referal, a
         g.offerBalance += eos.amount;
     });
     set_roll_result(account, 256);
+
+    const st_bet _bet{.player = from,
+                      .referrer = referrer,
+                      .amount = quantity,
+                      .roll_above = 0,                      
+                      .roll_under = roll_under,
+                      .server_hash = g->hash,
+                      .client_seed = seed,
+                      };    
+    action(permission_level{_self, N(active)},
+        _self, N(bet_receipt), _bet)
+    .send();                      
 }
 
- // @abi action
+void happyeosdice::bet_receipt(const st_bet& bet) {
+    require_auth(_self);
+}
+
 void happyeosdice::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
     if (to != _self) {
         return;
@@ -301,14 +316,10 @@ uint64_t happyeosdice::merge_seed(const checksum256 &s1, const checksum256 &s2) 
                 make_tuple(_self, itr->owner, asset(itr->bet * 98 / return_rate , EOS_SYMBOL),
                     std::string("happy eos dice bonus. The result is: ") + int_to_string(bonus_rate) + std::string(" happyeosslot.com") ))
             .send();
-            */
-
+    */
         tx.delay_sec = 10;
-        // Sending a deferred transaction requires both a uint64_t sender_id to reference the transaction,
-        // and an account_name payer which will provide the RAM to store our delayed transaction until it’s executed.
         tx.send((uint64_t)seed, _self); // need set sender_id
-
-       
+                  
     } else {
         if (itr->bet / 200 > 0) {        
             auto tar = eosio::name{itr->owner}.to_string();

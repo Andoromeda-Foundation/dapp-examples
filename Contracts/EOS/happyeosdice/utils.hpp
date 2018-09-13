@@ -76,3 +76,47 @@ class stringSplitter {
       string str;
       int current_position;
 };
+
+// @abi table bets i64
+struct rec_bet {
+    uint64_t receipt_id;
+    account_name player;
+    account_name referrer;
+    asset amount;
+//    uint8_t only_odd;
+//    uint8_t only_even;    
+    uint8_t roll_above;
+    uint8_t roll_under;
+    checksum256 server_hash;
+    checksum256 client_seed;
+};
+
+struct rec_reveal {
+    uint64_t receipt_id;
+    account_name player;
+    asset amount;
+//    uint8_t only_odd;
+//    uint8_t only_even;    
+    uint8_t roll_above;
+    uint8_t roll_under;
+    uint8_t random_roll;
+    checksum256 server_seed;
+    checksum256 client_seed;
+    asset payout;  
+};
+
+struct rec_buy {
+    uint64_t receipt_id;
+    account_name buyer;
+    asset eos;
+    asset hpy;
+    uint32_t average_price;
+};
+
+struct rec_sell {
+    uint64_t receipt_id;
+    account_name seller;
+    asset hpy;    
+    asset eos;
+    uint32_t average_price;
+};

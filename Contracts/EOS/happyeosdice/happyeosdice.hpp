@@ -40,7 +40,7 @@ class happyeosdice : public kyubey {
         void buy(const account_name account, asset eos);
         // @abi action        
         void sell(const account_name account, asset hpy); 
-        
+
         // EOS transfer event.
         void onTransfer(account_name from,
                         account_name to,
@@ -53,8 +53,17 @@ class happyeosdice : public kyubey {
                         asset        quantity,
                         string       memo);                                       
 
+        // @abi action
         void reveal( const checksum256 &seed, const checksum256 &hash);
 
+        // @abi action
+        void bet_receipt(const rec_bet& rec);
+        // @abi action
+        void sell_receipt(const rec_sell& rec);        
+        // @abi action
+        void buy_receipt(const rec_buy& rec);
+        // @abi action
+        void sell_receipt(const rec_sell& rec);
 
         struct account {
             asset    balance;
