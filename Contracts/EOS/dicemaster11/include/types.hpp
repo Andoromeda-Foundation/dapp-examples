@@ -1,12 +1,17 @@
 #include "utils.hpp"
 
 #define EOS_SYMBOL S(4, EOS)
-#define REVEALER N(gamerevealer)
-#define LOG N(fairdicelogs)
+// new 
+#define DMT_SYMBOL S(4, DMT)
+#define TOKEN_CONTRACT N(eosio.token)
+// #define REVEALER N(gamerevealer)
+// #define LOG N(fairdicelogs)
 
-static const string PUB_KEY =
-    "EOS4wpa8kRBbZof9JEpPAAgbnN65NhbBobW4x5gyxQoFfamhQCAMX";
+typedef double real_type;
 
+
+
+/*
 // @abi table bets i64
 struct st_bet {
     uint64_t id;
@@ -62,3 +67,4 @@ typedef multi_index<
     indexed_by<N(by_expiration),
                const_mem_fun<st_hash, uint64_t, &st_hash::by_expiration>>>
     tb_hash;
+*/

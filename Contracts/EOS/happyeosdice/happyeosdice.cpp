@@ -300,22 +300,43 @@ uint64_t happyeosdice::merge_seed(const checksum256 &s1, const checksum256 &s2) 
         } else { // 猜小
             return_rate = (itr->under - (100) ); // 最小猜0 itr->under = 100 赔率98倍. 最大猜 99 itr->under = 199, 赔率...
         }  
+
+        eosio::transaction tx;
+
+        tx.actions.emplace_back(
+            permission_level{_self, N(active)},
+            N(eosio.token), N(transfer),
+            make_tuple(_self, itr->owner, asset(itr->bet * 98 / return_rate , EOS_SYMBOL),
+                std::string("happy eos dice bonus. The result is: ") + int_to_string(bonus_rate) + std::string(" happyeosslot.com") )
+            );
+            /*
         action(
                 permission_level{_self, N(active)},
                 N(eosio.token), N(transfer),
                 make_tuple(_self, itr->owner, asset(itr->bet * 98 / return_rate , EOS_SYMBOL),
                     std::string("happy eos dice bonus. The result is: ") + int_to_string(bonus_rate) + std::string(" happyeosslot.com") ))
-            .send();       
+            .send();
+    */
+        tx.delay_sec = 10;
+        tx.send((uint64_t)seed, _self); // need set sender_id
+                  
     } else {
         if (itr->bet / 200 > 0) {        
             auto tar = eosio::name{itr->owner}.to_string();
 
-            action(
+            eosio::transaction tx;
+
+            tx.actions.emplace_back(
                 permission_level{_self, N(active)},
                 N(eosio.token), N(transfer),
                 make_tuple(_self, N(happyeosslot), asset(itr->bet / 200 , EOS_SYMBOL),
-                    std::string("buy for " + tar)))
-            .send(); 
+                    std::string("buy for " + tar))
+            );
+            
+            tx.delay_sec = 10;
+            // Sending a deferred transaction requires both a uint64_t sender_id to reference the transaction,
+            // and an account_name payer which will provide the RAM to store our delayed transaction until it’s executed.
+            tx.send((uint64_t)seed, _self); // need set sender_id
         }        
     }
 //          static char msg[100];

@@ -1,4 +1,4 @@
-#include <eosiolib/crypto.h>
+#include <eosiolib/crypto.h> // same
 #include <eosiolib/asset.hpp>
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/singleton.hpp>
@@ -6,8 +6,75 @@
 #include <eosiolib/types.hpp>
 #include <iostream>
 
-using namespace eosio;
-using namespace std;
+#include <eosiolib/eosio.hpp>
+#include <eosiolib/asset.hpp>
+#include <eosiolib/contract.hpp>
+//#include "../eosio.token/eosio.token.hpp"
+#include <cmath>
+#include <string>
+#include <cstdio>
+
+using std::string;
+using eosio::symbol_name;
+using eosio::asset;
+using eosio::symbol_type;
+using eosio::permission_level;
+using eosio::action;
+
+// using namespace eosio;
+// using namespace std;
+class stringSplitter {
+    public:
+      stringSplitter(const string& _str) : str(_str) {
+          current_position = 0;
+      }
+
+      bool eof() {
+          return current_position == str.length();
+      }
+
+      void skip_empty() {
+          while (!eof() && str[current_position] == ' ') current_position ++;
+      }
+
+      bool get_char(char* ch) {
+          if (!eof()) {
+              *ch  = str[current_position++];
+              if (*ch == ' ') return false;
+              else return true;
+          } else return false;
+      }
+
+      void get_string(string* result) {
+          result->clear();
+          skip_empty();
+          // if (eof()) return -1;
+          eosio_assert(!eof(), "No enough chars.");
+          char ch;
+          while (get_char(&ch)) {
+              *result+= ch;
+              //current_position++;
+          }
+          skip_empty();
+      }
+
+      void get_uint(uint64_t* result) {
+          skip_empty();
+          *result = 0;
+          char ch;
+          while (get_char(&ch)) {
+              eosio_assert(ch >= '0' && ch <= '9', "Should be a valid number");
+              *result = *result * 10 + ch - '0';
+          }
+          skip_empty();
+      }
+      
+    private:
+      string str;
+      int current_position;
+};
+
+
 
 string uint64_string(uint64_t input) {
     string result;
