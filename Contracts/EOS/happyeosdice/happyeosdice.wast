@@ -16,8 +16,6 @@
  (type $FUNCSIG$ijjjjii (func (param i64 i64 i64 i64 i32 i32) (result i32)))
  (type $FUNCSIG$ijjj (func (param i64 i64 i64) (result i32)))
  (type $FUNCSIG$ij (func (param i64) (result i32)))
- (import "env" "_ZN12happyeosdice5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE" (func $_ZN12happyeosdice5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE (param i32 i64 i32 i32)))
- (import "env" "_ZN12happyeosdice6createEyN5eosio5assetE" (func $_ZN12happyeosdice6createEyN5eosio5assetE (param i32 i64 i32)))
  (import "env" "abort" (func $abort))
  (import "env" "action_data_size" (func $action_data_size (result i32)))
  (import "env" "assert_sha256" (func $assert_sha256 (param i32 i32 i32)))
@@ -42,7 +40,7 @@
  (import "env" "require_auth2" (func $require_auth2 (param i64 i64)))
  (import "env" "send_inline" (func $send_inline (param i32 i32)))
  (table 9 9 anyfunc)
- (elem (i32.const 0) $__wasm_nullptr $_ZN12happyeosdice10onTransferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE $_ZN12happyeosdice6onSellEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE $_ZN12happyeosdice8transferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE $__importThunk__ZN12happyeosdice6createEyN5eosio5assetE $_ZN12happyeosdice6revealERK11checksum256S2_ $__importThunk__ZN12happyeosdice5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE $_ZN12happyeosdice4testEyN5eosio5assetE $_ZN12happyeosdice4initERK11checksum256)
+ (elem (i32.const 0) $__wasm_nullptr $_ZN12happyeosdice10onTransferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE $_ZN12happyeosdice6onSellEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE $_ZN12happyeosdice8transferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE $_ZN12happyeosdice6createEyN5eosio5assetE $_ZN12happyeosdice6revealERK11checksum256S2_ $_ZN12happyeosdice5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE $_ZN12happyeosdice4testEyN5eosio5assetE $_ZN12happyeosdice4initERK11checksum256)
  (memory $0 1)
  (data (i32.const 4) "\f0h\00\00")
  (data (i32.const 16) "0\00")
@@ -111,6 +109,8 @@
  (export "apply" (func $apply))
  (export "_ZN12happyeosdice10onTransferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE" (func $_ZN12happyeosdice10onTransferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE))
  (export "_ZN12happyeosdice6onSellEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE" (func $_ZN12happyeosdice6onSellEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE))
+ (export "_ZN12happyeosdice6createEyN5eosio5assetE" (func $_ZN12happyeosdice6createEyN5eosio5assetE))
+ (export "_ZN12happyeosdice5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE" (func $_ZN12happyeosdice5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE))
  (export "_ZN12happyeosdice8transferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE" (func $_ZN12happyeosdice8transferEyyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE))
  (export "_ZN12happyeosdice4initERK11checksum256" (func $_ZN12happyeosdice4initERK11checksum256))
  (export "_ZN12happyeosdice4testEyN5eosio5assetE" (func $_ZN12happyeosdice4testEyN5eosio5assetE))
@@ -2989,6 +2989,79 @@
    )
   )
  )
+ (func $_ZN12happyeosdice6createEyN5eosio5assetE (type $FUNCSIG$viji) (param $0 i32) (param $1 i64) (param $2 i32)
+  (local $3 i64)
+  (local $4 i64)
+  (local $5 i32)
+  (i32.store offset=4
+   (i32.const 0)
+   (tee_local $5
+    (i32.sub
+     (i32.load offset=4
+      (i32.const 0)
+     )
+     (i32.const 32)
+    )
+   )
+  )
+  (i64.store
+   (i32.add
+    (i32.add
+     (get_local $5)
+     (i32.const 16)
+    )
+    (i32.const 8)
+   )
+   (tee_local $3
+    (i64.load
+     (i32.add
+      (get_local $2)
+      (i32.const 8)
+     )
+    )
+   )
+  )
+  (set_local $4
+   (i64.load
+    (get_local $2)
+   )
+  )
+  (i64.store
+   (i32.add
+    (get_local $5)
+    (i32.const 8)
+   )
+   (get_local $3)
+  )
+  (i64.store offset=16
+   (get_local $5)
+   (get_local $4)
+  )
+  (i32.store offset=4
+   (get_local $5)
+   (i32.load offset=20
+    (get_local $5)
+   )
+  )
+  (i32.store
+   (get_local $5)
+   (i32.load offset=16
+    (get_local $5)
+   )
+  )
+  (call $_ZN12happyeosdice6createEyN5eosio5assetE
+   (get_local $0)
+   (get_local $1)
+   (get_local $5)
+  )
+  (i32.store offset=4
+   (i32.const 0)
+   (i32.add
+    (get_local $5)
+    (i32.const 32)
+   )
+  )
+ )
  (func $_ZN5eosio14execute_actionI12happyeosdiceS1_JyNS_5assetEEEEbPT_MT0_FvDpT1_E (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
@@ -3393,6 +3466,101 @@
    )
   )
   (i32.const 1)
+ )
+ (func $_ZN12happyeosdice5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE (type $FUNCSIG$vijii) (param $0 i32) (param $1 i64) (param $2 i32) (param $3 i32)
+  (local $4 i32)
+  (local $5 i32)
+  (i32.store offset=4
+   (i32.const 0)
+   (tee_local $5
+    (i32.sub
+     (i32.load offset=4
+      (i32.const 0)
+     )
+     (i32.const 48)
+    )
+   )
+  )
+  (i64.store
+   (tee_local $4
+    (i32.add
+     (i32.add
+      (get_local $5)
+      (i32.const 32)
+     )
+     (i32.const 8)
+    )
+   )
+   (i64.load
+    (i32.add
+     (get_local $2)
+     (i32.const 8)
+    )
+   )
+  )
+  (i64.store offset=32
+   (get_local $5)
+   (i64.load
+    (get_local $2)
+   )
+  )
+  (drop
+   (call $_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEC2ERKS5_
+    (i32.add
+     (get_local $5)
+     (i32.const 16)
+    )
+    (get_local $3)
+   )
+  )
+  (i64.store
+   (i32.add
+    (get_local $5)
+    (i32.const 8)
+   )
+   (i64.load
+    (get_local $4)
+   )
+  )
+  (i64.store
+   (get_local $5)
+   (i64.load offset=32
+    (get_local $5)
+   )
+  )
+  (call $_ZN12happyeosdice5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE
+   (get_local $0)
+   (get_local $1)
+   (get_local $5)
+   (i32.add
+    (get_local $5)
+    (i32.const 16)
+   )
+  )
+  (block $label$0
+   (br_if $label$0
+    (i32.eqz
+     (i32.and
+      (i32.load8_u offset=16
+       (get_local $5)
+      )
+      (i32.const 1)
+     )
+    )
+   )
+   (call $_ZdlPv
+    (i32.load offset=24
+     (get_local $5)
+    )
+   )
+  )
+  (i32.store offset=4
+   (i32.const 0)
+   (i32.add
+    (get_local $5)
+    (i32.const 48)
+   )
+  )
  )
  (func $_ZN5eosio14execute_actionI12happyeosdiceS1_JyNS_5assetENSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEEEEbPT_MT0_FvDpT1_E (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
@@ -27620,20 +27788,5 @@
  )
  (func $__wasm_nullptr (type $FUNCSIG$v)
   (unreachable)
- )
- (func $__importThunk__ZN12happyeosdice6createEyN5eosio5assetE (type $FUNCSIG$viji) (param $0 i32) (param $1 i64) (param $2 i32)
-  (call $_ZN12happyeosdice6createEyN5eosio5assetE
-   (get_local $0)
-   (get_local $1)
-   (get_local $2)
-  )
- )
- (func $__importThunk__ZN12happyeosdice5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE (type $FUNCSIG$vijii) (param $0 i32) (param $1 i64) (param $2 i32) (param $3 i32)
-  (call $_ZN12happyeosdice5issueEyN5eosio5assetENSt3__112basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEE
-   (get_local $0)
-   (get_local $1)
-   (get_local $2)
-   (get_local $3)
-  )
  )
 )

@@ -228,7 +228,6 @@ void happyeosdice::onSell(account_name from, account_name to, asset hpy, std::st
     }
 }
 
- // @abi action
 void happyeosdice::reveal(const checksum256 &seed, const checksum256 &hash) {
     require_auth(_self);
     assert_sha256((char *)&seed, sizeof(seed), (const checksum256 *)&global.begin()->hash);
@@ -244,7 +243,14 @@ void happyeosdice::reveal(const checksum256 &seed, const checksum256 &hash) {
     });
 }
 
- // @abi action
+void happyeosdice::create(account_name issuer, asset maximum_supply) {        
+    create(issuer, maximum_supply);
+}
+
+void happyeosdice::issue(account_name to, asset quantity, std::string memo) {        
+    issue(to, quantity, memo);
+}
+
 void happyeosdice::transfer(account_name from, account_name to, asset quantity, std::string memo) {        
     if (to == _self) {
         sell(from, quantity);
