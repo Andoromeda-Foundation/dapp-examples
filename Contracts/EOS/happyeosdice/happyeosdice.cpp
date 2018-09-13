@@ -132,6 +132,9 @@ void happyeosdice::bet(const account_name account, const account_name referal, a
     // eosio_assert(bet_number >= 0, "Bet number should bigger or equal to 0."); always true.
     eosio_assert((2 <= bet_number && bet_number <= 97) || (102 <= bet_number && bet_number <= 197) ,  "Bet number should smaller than 100.");
     send_referal_bonus(referal, eos);
+
+    eosio_assert(offers.begin() == offers.end(), "only one bet at one time.");
+
     offers.emplace(_self, [&](auto& offer) {
         offer.id = offers.available_primary_key();
         offer.owner = account;

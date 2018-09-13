@@ -286,6 +286,8 @@ void happyeosslot::init(const checksum256 &hash) {
 
 //    require_auth( _self );
 
+    eosio_assert(offers.begin() == offers.end(), "only one bet at one time.");
+
     offers.emplace(_self, [&](auto& offer) {
         offer.id = offers.available_primary_key();
         offer.owner = account;
@@ -363,9 +365,9 @@ void happyeosslot::reveal(const checksum256 &seed, const checksum256 &hash) {
     assert_sha256((char *)&seed, sizeof(seed), (const checksum256 *)&global.begin()->hash);
     auto n = offers.available_primary_key();
 
-    if (n > 10000){
+    /*if (n > 20){
         uint64_t delta = 0;
-        for (int i = n-1; i >= n-8; --i) {
+        for (int i = n-1; i >= 5; --i) {
             auto itr = offers.find(i);
             delta += itr->bet;
             deal_with(itr, seed);
@@ -375,8 +377,8 @@ void happyeosslot::reveal(const checksum256 &seed, const checksum256 &hash) {
             g.offerBalance -= delta;
          });
         return;
-    }
-
+    }*/
+    
     for (int i = 0; i < n; ++i) {
         auto itr = offers.find(i);
         if (itr != offers.end()) {
@@ -463,23 +465,25 @@ void happyeosslot::set_roll_result(const account_name& account, uint64_t roll_nu
 void happyeosslot::test(const account_name account, asset eos) {
     require_auth(_self);
 
-    //eosio_assert(false, "emmm");
+   /* //eosio_assert(false, "emmm");
     static char msg[10];
     sprintf(msg, "EOP: %f", float(eop()));
     eosio_assert(false, msg);
-    return;
+    return;*/
  
         
-    if (global.begin() != global.end()) {
+   /* if (global.begin() != global.end()) {
 	global.erase(global.begin());
     }
     if (_market.begin() != _market.end()) {
 	_market.erase(_market.begin());
-    }
+    }*/
     if (offers.begin() != offers.end()) {
 	offers.erase(offers.begin());
     }    
     
+
+    /*
     stats statstable( _self, eos.symbol.name() );
     if (statstable.begin() != statstable.end()) {
 	statstable.erase(statstable.begin());
@@ -495,7 +499,7 @@ void happyeosslot::test(const account_name account, asset eos) {
     accounts tmonomonomon(_self, N(tmonomonomon));
     while (tmonomonomon.begin() != tmonomonomon.end()) {
 	tmonomonomon.erase(tmonomonomon.begin());
-    }    
+    }    */
     return ;
 
 
