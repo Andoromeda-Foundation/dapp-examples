@@ -1,66 +1,7 @@
 #include <eosiolib/crypto.h>
+#include <cstdio>
 #include "happyeosdice.hpp"
 
-#include <cstdio>
-
-using std::string;
-using eosio::symbol_name;
-using eosio::asset;
-using eosio::symbol_type;
-using eosio::permission_level;
-using eosio::action;
-
-class stringSplitter {
-    public:
-      stringSplitter(const string& _str) : str(_str) {
-          current_position = 0;
-      }
-
-      bool eof() {
-          return current_position == str.length();
-      }
-
-      void skip_empty() {
-          while (!eof() && str[current_position] == ' ') current_position ++;
-      }
-
-      bool get_char(char* ch) {
-          if (!eof()) {
-              *ch  = str[current_position++];
-              if (*ch == ' ') return false;
-              else return true;
-          } else return false;
-      }
-
-      void get_string(string* result) {
-          result->clear();
-          skip_empty();
-          // if (eof()) return -1;
-          eosio_assert(!eof(), "No enough chars.");
-          char ch;
-          while (get_char(&ch)) {
-              *result+= ch;
-              //current_position++;
-          }
-          skip_empty();
-      }
-
-      void get_uint(uint64_t* result) {
-          skip_empty();
-          *result = 0;
-          char ch;
-          while (get_char(&ch)) {
-              eosio_assert(ch >= '0' && ch <= '9', "Should be a valid number");
-              *result = *result * 10 + ch - '0';
-          }
-          skip_empty();
-      }
-      
-    private:
-      string str;
-      int current_position;
-};
- // @abi action
 void happyeosdice::init(const checksum256 &hash) {
     require_auth( _self );
     auto g = global.find(0);
@@ -85,6 +26,10 @@ void happyeosdice::init(const checksum256 &hash) {
         // 这里限制发行HPY为225000 个HPY 修改上限注意修改几个整形溢出的问题。
         create(_self, asset(2250000000ll, HPY_SYMBOL));
     }
+}
+
+void happyeosdice::test(const account_name account, asset eos) {
+    require_auth(_self);
 }
 
 void happyeosdice::buy(const account_name account, asset eos) {
@@ -225,15 +170,6 @@ void happyeosdice::bet(const account_name account, const account_name referal, a
     set_roll_result(account, 256);
 }
 
-uint64_t string_to_int(string s) {
-    uint64_t z = 0;
-    for (int i=0;i<s.size();++i) {
-        z += s[i] - '0';
-        z *= 10;
-    }
-    return z;
-}
-
  // @abi action
 void happyeosdice::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
     if (to != _self) {
@@ -311,19 +247,6 @@ uint64_t happyeosdice::merge_seed(const checksum256 &s1, const checksum256 &s2) 
     return hash;
 }
 
-string int_to_string(uint64_t t) {
-    if (t == 0) return "0";
-    string z;
-    while (t != 0) {
-        z += char('0' + (t % 10));  
-        t /= 10;
-    }
-    reverse(z.begin(), z.end());
-    return z;
-}
-
-//bet 50 ludufutemp minakokojima
-
  void happyeosdice::deal_with(eosio::multi_index<N(offer), offer>::const_iterator itr, const checksum256 &seed) {
     uint64_t bonus_rate = get_bonus(merge_seed(seed, itr->seed));
 //    uint64_t bonus = bonus_rate * itr->bet / 100;
@@ -388,9 +311,7 @@ void happyeosdice::set_roll_result(const account_name account, uint64_t roll_num
     }
 }
 
-void happyeosdice::test(const account_name account, asset eos) {
-    require_auth(_self);
-}
+
 
 
 #define MY_EOSIO_ABI(TYPE, MEMBERS)                                                                                  \

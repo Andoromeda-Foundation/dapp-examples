@@ -7,19 +7,12 @@
 #include <eosiolib/asset.hpp>
 #include <eosiolib/contract.hpp>
 #include "kyubey.hpp"
+#include "utils.hpp"
 
 #include <cmath>
 #include <string>
 
 typedef double real_type;
-
-using std::string;
-using eosio::symbol_name;
-using eosio::asset;
-using eosio::symbol_type;
-using eosio::contract;
-using eosio::permission_level;
-using eosio::action;
 
 class happyeosdice : public kyubey {
     public:
@@ -28,7 +21,9 @@ class happyeosdice : public kyubey {
             global(_self, _self),
             offers(_self, _self) {}
 
+        // @abi action
         void init(const checksum256& hash);
+        // @abi action
         void test(const account_name account, asset eos);
         // @abi action
         void buy(const account_name account, asset eos);
