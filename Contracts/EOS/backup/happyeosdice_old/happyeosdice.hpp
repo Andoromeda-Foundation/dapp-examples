@@ -6,10 +6,13 @@
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/contract.hpp>
-#include "kyubey.hpp"
-
+//#include "../eosio.token/eosio.token.hpp"
 #include <cmath>
 #include <string>
+
+#define EOS_SYMBOL S(4, EOS)
+#define HPY_SYMBOL S(4, HPY)
+#define TOKEN_CONTRACT N(eosio.token)
 
 typedef double real_type;
 
@@ -21,19 +24,16 @@ using eosio::contract;
 using eosio::permission_level;
 using eosio::action;
 
-class happyeosdice : public kyubey {
+class happyeosdice : public contract {
     public:
         happyeosdice(account_name self):
-            kyubey(self),
+            contract(self),
             global(_self, _self),
             offers(_self, _self) {}
 
         void init(const checksum256& hash);
+        // For test only.
         void test(const account_name account, asset eos);
-        // @abi action
-        void buy(const account_name account, asset eos);
-        // @abi action        
-        void sell(const account_name account, asset hpy);        
         
         // EOS transfer event.
         void onTransfer(account_name from,
@@ -43,13 +43,14 @@ class happyeosdice : public kyubey {
 
         void reveal( const checksum256 &seed, const checksum256 &hash);
 
-
+    public:  
         struct account {
             asset    balance;
             uint64_t primary_key() const { return balance.symbol.name(); }
         };
         typedef eosio::multi_index<N(accounts), account> accounts; 
 
+    private:
         // @abi table global i64
         struct global {
             uint64_t id = 0;
@@ -85,7 +86,6 @@ class happyeosdice : public kyubey {
         };
         typedef eosio::multi_index<N(result), result> results;
 
-        
         void send_referal_bonus(const account_name referal, asset eos);
         void bet(const account_name account, const account_name referal, asset eos, const checksum256& seed, const uint64_t bet_number);
         void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed);

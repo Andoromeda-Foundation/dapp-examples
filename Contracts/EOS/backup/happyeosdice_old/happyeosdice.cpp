@@ -3,12 +3,16 @@
 
 #include <cstdio>
 
+
 using std::string;
 using eosio::symbol_name;
 using eosio::asset;
 using eosio::symbol_type;
 using eosio::permission_level;
 using eosio::action;
+
+#define HPY_SYMBOL S(4, HPY)
+// using eosio::account_name;
 
 class stringSplitter {
     public:
@@ -75,87 +79,7 @@ void happyeosdice::init(const checksum256 &hash) {
             g.hash = hash;
         });
     }
-    if (_market.begin() == _market.end()) {
-        _market.emplace(_self, [&](auto &m) {
-            m.supply.amount = 25000ll * 10000ll; // 最初25000个HPY是沉默资金
-            m.supply.symbol = HPY_SYMBOL;
-            m.deposit.balance.amount = init_quote_balance; // 
-            m.deposit.balance.symbol = EOS_SYMBOL;
-        });
-        // 这里限制发行HPY为225000 个HPY 修改上限注意修改几个整形溢出的问题。
-        create(_self, asset(2250000000ll, HPY_SYMBOL));
-    }
 }
-
-void happyeosdice::buy(const account_name account, asset eos) {
-//    require_auth( _self ); 
-    auto market_itr = _market.begin();
-    int64_t delta;
-    // Calculate eop
-    const auto& sym = eosio::symbol_type(EOS_SYMBOL).name();
-    accounts eos_account(N(eosio.token), _self);
-    auto old_balance = eos_account.get(sym).balance - eos;
-
-    auto g = global.find(0);
-    old_balance.amount -= g->offerBalance;
-
-    //auto old_balance = current_balance - eos;
-
-    const auto& deposit = get_deposit();
-    if (deposit > 0 && old_balance.amount > 0) {
-        eos.amount = eos.amount * deposit / old_balance.amount;
-    }
-
-    eosio_assert(eos.amount > 0, "Must buy with positive Eos.");
-
-    _market.modify(market_itr, 0, [&](auto &es) {
-        delta = es.convert(eos, HPY_SYMBOL).amount;
-    });
-    eosio_assert(delta > 0, "must reserve a positive amount");  
-    asset hpy(delta, HPY_SYMBOL);
-    issue(account, hpy, "issue some new hpy");
-}
-
-void happyeosdice::sell(const account_name account, asset hpy) {
-    require_auth(account);
-    auto market_itr = _market.begin();
-    int64_t delta;
-    // Calculate eop
-    const auto& sym = eosio::symbol_type(EOS_SYMBOL).name();
-    accounts eos_account(N(eosio.token), _self);
-    auto old_balance = eos_account.get(sym).balance;
-
-    auto g = global.find(0);
-    old_balance.amount -= g->offerBalance;
-    //auto old_balance = current_balance;
-    const auto& deposit = get_deposit();
-
-    _market.modify(market_itr, 0, [&](auto &es) {
-        delta = es.convert(hpy, EOS_SYMBOL).amount;
-    });
-
-    delta = delta * old_balance.amount / deposit;
-    eosio_assert(delta > 0, "Must burn a positive amount");
-
-    stats statstable( _self, sym );
-    auto existing = statstable.find( sym );
-    eosio_assert(existing != statstable.end(), "token with symbol does not exist, create token before issue");
-    const auto& st = *existing;
-
-    statstable.modify( st, 0, [&]( auto& s ) {
-       s.supply -= hpy;
-    });
-
-    sub_balance(account, hpy);
-
-    asset eos(delta, EOS_SYMBOL);
-    action(
-        permission_level{_self, N(active)},
-        N(eosio.token), N(transfer),
-                make_tuple(_self, account, eos, std::string("Sell happyeosslot.com share HPY.")))
-        .send();
-}
-
 
 void happyeosdice::send_referal_bonus(const account_name referal, asset eos) {
     if (!is_account(referal)) return;
@@ -276,7 +200,7 @@ void happyeosdice::onTransfer(account_name from, account_name to, asset eos, std
 
         bet(from, referal, eos, seed, under);
     } else if (operation == "buy") {
-        buy(from, eos);
+        //buy(from, eos);
     } else {
     }
 }
@@ -404,10 +328,10 @@ void happyeosdice::test(const account_name account, asset eos) {
             {                                                                                                        \
                 eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account"); \
             }                                                                                                        \
-            if (code == N(eosio.token) && action == N(transfer)) {                                                   \
+            if (code == TOKEN_CONTRACT && action == N(transfer)) {                                                   \
                 action = N(onTransfer);                                                                              \
             }                                                                                                        \
-            if ((code == N(eosio.token) && action == N(onTransfer)) || code == self && action != N(onTransfer)) {                               \
+            if ((code == TOKEN_CONTRACT && action == N(onTransfer)) || code == self && action != N(onTransfer)) {                               \
                 TYPE thiscontract(self);                                                                             \
                 switch (action)                                                                                      \
                 {                                                                                                    \
@@ -417,7 +341,7 @@ void happyeosdice::test(const account_name account, asset eos) {
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-// MY_EOSIO_ABI(happyeosdice, (onTransfer)(init)(reveal)(test))
+MY_EOSIO_ABI(happyeosdice, (onTransfer)(init)(reveal)(test))
 
 // generate .abi file
 // EOSIO_ABI(happyeosdice, (init)(reveal)(test))
