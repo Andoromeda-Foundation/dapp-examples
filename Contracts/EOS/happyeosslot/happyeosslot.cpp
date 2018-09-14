@@ -284,8 +284,6 @@ void happyeosslot::init(const checksum256 &hash) {
 }
  void happyeosslot::bet(const account_name account, asset eos, const checksum256& seed) {
 
-//    require_auth( _self );
-
     eosio_assert(offers.begin() == offers.end(), "only one bet at one time.");
 
     offers.emplace(_self, [&](auto& offer) {

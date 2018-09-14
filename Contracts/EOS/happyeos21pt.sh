@@ -1,4 +1,6 @@
-# /usr/local/eosio/bin/eosiocpp -o happyeos21pt/happyeos21pt.wast happyeos21pt/happyeos21pt.cpp
+
+
+/usr/local/eosio/bin/eosiocpp -o happyeos21pt/happyeos21pt.wast happyeos21pt/happyeos21pt.cpp
 
 /usr/local/eosio/bin/eosiocpp -g happyeos21pt/happyeos21pt.abi happyeos21pt/happyeos21pt.cpp
 
@@ -12,6 +14,9 @@
 # /usr/local/eosio/bin/eosiocpp -g happyeosdice/happyeosdice.abi happyeosdice/happyeosdice.cpp
 # cleos -u https://api-kylin.eosasia.one set contract happyeosdice happyeosdice -p happyeosdice@active
 # cleos -u https://api-kylin.eosasia.one push action eosio.token transfer '[ "minakokojima", "happyeosdice", "1.0000 EOS", "bet 50 fda pomelodex111" ]' -p minakokojima@active
+
+
+
 # cleos -u https://api-kylin.eosasia.one get table happyeosdice happyeosdice offer
 # cleos -u https://api-kylin.eosasia.one get table happyeosdice minakokojima result
 

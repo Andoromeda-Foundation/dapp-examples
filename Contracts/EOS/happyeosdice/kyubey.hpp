@@ -7,7 +7,7 @@
 #include "eosio.token.hpp"
 
 #define EOS_SYMBOL S(4, EOS)
-#define HPY_SYMBOL S(4, DMT)
+#define DMT_SYMBOL S(4, DMT)
 typedef double real_type;
 
 using eosio::token;
@@ -21,17 +21,16 @@ class kyubey : public token {
             _market(_self, _self) {}
         
         void buy(const account_name account, asset eos);
-        void sell(const account_name account, asset hpy);
+        void sell(const account_name account, asset dmt);
         
         const uint64_t init_quote_balance = 1250 * 10000ll; // 初始保证金 1250 EOS;
         uint64_t get_deposit() const{
             auto market_itr = _market.begin();
             return market_itr->deposit.balance.amount - init_quote_balance;  
         }
-
+        
         real_type grief_ratio() const;
 
-   
         // @abi table market i64
         struct exchange_state {
             uint64_t id = 0;
@@ -81,10 +80,10 @@ class kyubey : public token {
             }
 
             asset convert_from_exchange(connector &c, asset in) {
-                // 每出售250000个HPY价格提升1EOS
+                // 每出售250000个DMT价格提升1EOS
                 // (((supply.amount / 250000) 上底 + ((supply.amount - in.amount) /250000)下底))
                 //  * (in.amount / 10000高) / 2 * 10000(EOS兑换)
-                // 现在限制发行250000 HPY 所以这里不会整数溢出
+                // 现在限制发行250000 DMT 所以这里不会整数溢出
                 int64_t eos_return = (((supply.amount << 1) - in.amount) * in.amount / 500000 / 10000);
                 supply.amount -= in.amount;
                 //supply.amount -= eos_return;
@@ -93,9 +92,9 @@ class kyubey : public token {
             }
 
             asset convert(asset from, symbol_type to) {
-                if (from.symbol == EOS_SYMBOL && to == HPY_SYMBOL) {
+                if (from.symbol == EOS_SYMBOL && to == DMT_SYMBOL) {
                     return convert_to_exchange(deposit, from);
-                } else if (from.symbol == HPY_SYMBOL && to == EOS_SYMBOL) {
+                } else if (from.symbol == DMT_SYMBOL && to == EOS_SYMBOL) {
                     return convert_from_exchange(deposit, from);
                 } else {
                     eosio_assert(false, "Illegal convertion.");

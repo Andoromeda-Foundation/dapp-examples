@@ -52,7 +52,7 @@ class stringSplitter {
           result->clear();
           skip_empty();
           // if (eof()) return -1;
-          eosio_assert(!eof(), "No enough chars.");
+          //eosio_assert(!eof(), "No enough chars.");
           char ch;
           while (get_char(&ch)) {
               *result+= ch;
@@ -79,7 +79,6 @@ class stringSplitter {
 
 // @abi table bets i64
 struct rec_bet {
-    uint64_t receipt_id;
     account_name player;
     account_name referrer;
     asset amount;
@@ -92,7 +91,6 @@ struct rec_bet {
 };
 
 struct rec_reveal {
-    uint64_t receipt_id;
     account_name player;
     asset amount;
 //    uint8_t only_odd;
@@ -106,17 +104,15 @@ struct rec_reveal {
 };
 
 struct rec_buy {
-    uint64_t receipt_id;
     account_name buyer;
     asset eos;
-    asset hpy;
+    asset dmt;
     uint32_t average_price;
 };
 
 struct rec_sell {
-    uint64_t receipt_id;
     account_name seller;
-    asset hpy;    
+    asset dmt;    
     asset eos;
     uint32_t average_price;
 };

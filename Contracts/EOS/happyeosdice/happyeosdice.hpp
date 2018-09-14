@@ -21,16 +21,11 @@ class happyeosdice : public kyubey {
             global(_self, _self),
             offers(_self, _self) {}
 
-        // @abi action    
-        void create( account_name issuer,
-                      asset        maximum_supply);
-        // @abi action            
-        void issue( account_name to, asset quantity, string memo );
         // @abi action  
         void transfer(account_name from,
-                        account_name to,
-                        asset        quantity,
-                        string       memo);    
+                      account_name to,
+                      asset        quantity,
+                      string       memo);    
 
         // @abi action
         void init(const checksum256& hash);
@@ -39,41 +34,32 @@ class happyeosdice : public kyubey {
         // @abi action
         void buy(const account_name account, asset eos);
         // @abi action        
-        void sell(const account_name account, asset hpy); 
+        void sell(const account_name account, asset dmt); 
 
         // EOS transfer event.
         void onTransfer(account_name from,
                         account_name to,
                         asset        quantity,
-                        string       memo);     
-        
-        // HPY transfer event.
-        void onSell    (account_name from,
-                        account_name to,
-                        asset        quantity,
-                        string       memo);                                       
+                        string       memo);                                        
 
         // @abi action
         void reveal( const checksum256 &seed, const checksum256 &hash);
 
         // @abi action
-        void bet_receipt(const rec_bet& rec);
+        void betreceipt(const rec_bet& rec);
         // @abi action
-        void sell_receipt(const rec_sell& rec);        
+        void receipt(const rec_reveal& rec);        
         // @abi action
-        void buy_receipt(const rec_buy& rec);
+        void buyreceipt(const rec_buy& rec);
         // @abi action
-        void sell_receipt(const rec_sell& rec);
+        void sellreceipt(const rec_sell& rec);
 
-        struct account {
-            asset    balance;
-            uint64_t primary_key() const { return balance.symbol.name(); }
-        };
-        typedef eosio::multi_index<N(accounts), account> accounts; 
+        real_type grief_ratio() const;
 
         // @abi table global i64
         struct global {
-            uint64_t id = 0;
+            uint64_t id = 0;        
+            uint64_t defer_id = 0;
             checksum256 hash; // hash of the game seed, 0 when idle.
             uint64_t offerBalance; // All balance in offer list.
 
@@ -105,7 +91,6 @@ class happyeosdice : public kyubey {
             EOSLIB_SERIALIZE(result, (id)(roll_number))
         };
         typedef eosio::multi_index<N(result), result> results;
-
         
         void send_referal_bonus(const account_name referal, asset eos);
         void bet(const account_name account, const account_name referal, asset eos, const checksum256& seed, const uint64_t bet_number);
@@ -118,19 +103,14 @@ class happyeosdice : public kyubey {
 };
 
 extern "C" {
-void apply(uint64_t receiver, uint64_t code, uint64_t action) {
-    happyeosdice thiscontract(receiver);
-    if ((code == N(eosio.token)) && (action == N(transfer))) {
-        execute_action(&thiscontract, &happyeosdice::onTransfer);
-        return;
+    void apply(uint64_t receiver, uint64_t code, uint64_t action) {
+        happyeosdice thiscontract(receiver);
+        if ((code == N(eosio.token)) && (action == N(transfer))) {
+            execute_action(&thiscontract, &happyeosdice::onTransfer);
+            return;
+        }
+        if (code != receiver) return;
+        switch (action) { EOSIO_API(happyeosdice, (transfer)(init)(test)(reveal) ) };
+        eosio_exit(0);
     }
-    if ((code == receiver) && (action == N(transfer))) {
-        execute_action(&thiscontract, &happyeosdice::onSell);
-        return;
-    }    
-    if (code != receiver) return;
-
-    switch (action) { EOSIO_API(happyeosdice, (create)(issue)(transfer)(init)(test)(reveal) ) };
-    eosio_exit(0);
-}
 }
