@@ -2,11 +2,9 @@
  *  @file
  *  @copyright defined in eos/LICENSE.txt
  */
-#pragma once
 
 // dicemaster
-
-#include <eiosio.token.hpp>
+/*
 
 class kyubey : public token {
     public:
@@ -115,3 +113,4 @@ class kyubey : public token {
         typedef eosio::multi_index<N(market), exchange_state> market;
         market _market;
 };
+*/
