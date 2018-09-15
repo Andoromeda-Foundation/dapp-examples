@@ -322,17 +322,8 @@ uint64_t happyeosdice::merge_seed(const checksum256 &s1, const checksum256 &s2) 
                 permission_level{_self, N(active)},
                 N(eosio.token), N(transfer),
                 make_tuple(_self, itr->owner, asset(itr->bet * 98 / return_rate , EOS_SYMBOL),
-<<<<<<< HEAD
                     std::string("... happy eos dice bonus. The result is: ") + int_to_string(bonus_rate) + std::string(" happyeosslot.com") ))
             .send();       
-=======
-                    std::string("happy eos dice bonus. The result is: ") + int_to_string(bonus_rate) + std::string(" happyeosslot.com") ))
-            .send();
-    */
-        tx.delay_sec = 10;
-        tx.send((uint64_t)seed, _self); // need set sender_id
-                  
->>>>>>> e1013c02746b15547cfd53c7ae6a5435d5784ebc
     } else {
         if (itr->bet / 200 > 0) {        
             auto tar = eosio::name{itr->owner}.to_string();
