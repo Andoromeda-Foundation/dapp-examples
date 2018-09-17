@@ -37,11 +37,11 @@ class eosslgbackup : public contract {
                     asset        quantity,
                     string       memo);    
 
-    // @abi table card i64
+    // @abi table player account_name
     struct player {
         account_name account;
         asset balance;
-        uint64_t primary_key() const { return account; }
+        account_name primary_key() const { return account; }
         EOSLIB_SERIALIZE(player, (account)(balance))
     };
     typedef eosio::multi_index<N(player), player> player_index;

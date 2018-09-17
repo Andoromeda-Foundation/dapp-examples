@@ -2,13 +2,18 @@
 #include <cstdio>
 #include "eosslgbackup.hpp"
 
+// @abi action
 void eosslgbackup::test(const account_name account, asset eos){
     require_auth(_self);
 }
+
+// @abi action
 void eosslgbackup::buy(const account_name account, asset eos){
     require_auth(account);
     _add_price(account, eos);
 }
+
+// @abi action
 void eosslgbackup::sell(const account_name account, asset eos){
     require_auth(_self);
     _sub_price(account, eos);
@@ -18,6 +23,8 @@ void eosslgbackup::sell(const account_name account, asset eos){
         make_tuple(_self, account, eos, std::string("Sold bonus. Have Fun!")))
     .send();
 }
+
+// @abi action
 void eosslgbackup::take(const account_name from, const account_name to, asset eos){
     require_auth(_self);
     _sub_price(from, eos);
@@ -27,6 +34,8 @@ void eosslgbackup::take(const account_name from, const account_name to, asset eo
         make_tuple(_self, to, eos, std::string("Winner bunus. Have fun!")))
     .send();
 }
+
+// @abi action
 void eosslgbackup::bonus(const account_name account, asset eos){
     require_auth(_self);
     action(
@@ -35,10 +44,13 @@ void eosslgbackup::bonus(const account_name account, asset eos){
         make_tuple(_self, account, eos, std::string("Bouns. Have fun!")))
     .send();
 }
+
+// @abi action
 void eosslgbackup::burn(const account_name account, asset eos){
     require_auth(_self);
     _sub_price(account, eos);
 }
+
 void eosslgbackup::_add_price(const account_name account, asset eos){
     auto p = players.find(account);
     if (p == players.end()) { // Player already exist
@@ -50,6 +62,7 @@ void eosslgbackup::_add_price(const account_name account, asset eos){
         player.balance.amount += eos.amount;
     }); 
 }
+
 void eosslgbackup::_sub_price(const account_name account, asset eos){
     auto p = players.find(account);
 
@@ -61,6 +74,7 @@ void eosslgbackup::_sub_price(const account_name account, asset eos){
     }); 
 }
 
+// @abi action
 void eosslgbackup::onTransfer(account_name from, account_name to, asset eos, std::string memo) {        
     if (to != _self) {
         return;
@@ -101,5 +115,5 @@ EOSIO_WAST(eosslgbackup, (onTransfer)(buy)(sell)(take)(bonus)(burn)(test))
 
 // generate .abi file
 // EOSIO_ABI(eosslgbackup, (buy)(sell)(take)(bonus)(burn)(test))
-/* transfer() add by hand*/
+/* onTransfer() add by hand*/
 
