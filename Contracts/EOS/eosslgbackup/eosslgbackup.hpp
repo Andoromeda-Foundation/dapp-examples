@@ -27,6 +27,7 @@ class eosslgbackup : public contract {
         
     void test(const account_name account, asset eos);
     void buy(const account_name account, asset eos);
+    void check(const account_name account, asset eos, string memo);
     void sell(const account_name account, asset eos);
     void take(const account_name from, const account_name to, asset eos);
     void bonus(const account_name account, asset eos);
@@ -37,11 +38,11 @@ class eosslgbackup : public contract {
                     asset        quantity,
                     string       memo);    
 
-    // @abi table player account_name
+    // @abi table player i64
     struct player {
         account_name account;
         asset balance;
-        account_name primary_key() const { return account; }
+        uint64_t primary_key() const { return account; }
         EOSLIB_SERIALIZE(player, (account)(balance))
     };
     typedef eosio::multi_index<N(player), player> player_index;

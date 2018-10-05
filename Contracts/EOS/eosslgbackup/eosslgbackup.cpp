@@ -10,6 +10,9 @@ void eosslgbackup::test(const account_name account, asset eos){
 // @abi action
 void eosslgbackup::buy(const account_name account, asset eos){
     require_auth(account);
+    eosio_assert(eos.is_valid(), "Invalid token transfer");
+    eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
+    eosio_assert(eos.amount > 0, "must bet a positive amount");
     _add_price(account, eos);
 }
 
@@ -21,6 +24,19 @@ void eosslgbackup::sell(const account_name account, asset eos){
         permission_level{_self, N(active)},
         N(eosio.token), N(transfer),
         make_tuple(_self, account, eos, std::string("Sold bonus. Have Fun!")))
+    .send();
+}
+
+// @abi action
+void eosslgbackup::check(const account_name account, asset eos, string memo){
+    require_auth(account);
+    eosio_assert(eos.is_valid(), "Invalid token transfer");
+    eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
+    eosio_assert(eos.amount > 0, "must bet a positive amount");
+    action(
+        permission_level{_self, N(active)},
+        N(eosio.token), N(transfer),
+        make_tuple(_self, account, eos, std::string("Check return.")))
     .send();
 }
 
@@ -52,22 +68,27 @@ void eosslgbackup::burn(const account_name account, asset eos){
 }
 
 void eosslgbackup::_add_price(const account_name account, asset eos){
+    // while(players.begin() != players.end()){
+    //     players.erase(players.begin());
+    // }
     auto p = players.find(account);
-    if (p == players.end()) { // Player already exist
+    if (p == players.end()) { 
         players.emplace(_self, [&](auto& player){
-            player.balance.amount = eos.amount;
+            player.account = account;
+            player.balance = eos;
         });    
+    }else{ // Player already exist
+        players.modify(p, 0, [&](auto &player) {
+            player.balance.amount += eos.amount;
+        }); 
     }
-    players.modify(p, 0, [&](auto &player) {
-        player.balance.amount += eos.amount;
-    }); 
 }
 
 void eosslgbackup::_sub_price(const account_name account, asset eos){
     auto p = players.find(account);
 
     eosio_assert(p != players.end(), "Invalid Player.");
-    eosio_assert(p->balance.amount >= eos.amount, "Not Enough Eos");
+    eosio_assert(p->balance.amount >= eos.amount, "Not Enough eos");
 
     players.modify(p, 0, [&](auto &player) {
         player.balance.amount -= eos.amount;
@@ -81,7 +102,7 @@ void eosslgbackup::onTransfer(account_name from, account_name to, asset eos, std
     }
     require_auth(from);
     eosio_assert(eos.is_valid(), "Invalid token transfer");
-    eosio_assert(eos.symbol == EOS_SYMBOL, "only core token allowed");
+    eosio_assert(eos.symbol == EOS_SYMBOL, "Only core token allowed");
     eosio_assert(eos.amount > 0, "must bet a positive amount");
 
     buy(from, eos);	
@@ -111,9 +132,9 @@ void eosslgbackup::onTransfer(account_name from, account_name to, asset eos, std
         }                                                                                                            \
     }
 // generate .wasm and .wast file
-EOSIO_WAST(eosslgbackup, (onTransfer)(buy)(sell)(take)(bonus)(burn)(test))
+// EOSIO_WAST(eosslgbackup, (onTransfer)(buy)(sell)(take)(bonus)(burn)(test)(check))
 
 // generate .abi file
-// EOSIO_ABI(eosslgbackup, (buy)(sell)(take)(bonus)(burn)(test))
+EOSIO_ABI(eosslgbackup, (buy)(sell)(take)(bonus)(burn)(test)(check))
 /* onTransfer() add by hand*/
 
